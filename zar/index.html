@@ -585,7 +585,7 @@ let SHOP = null;
   const db = window.supabase.createClient(SELLUP.url, SELLUP.key);
   const [{ data: r }, { data: menu }] = await Promise.all([
     db.from('restaurants').select('name, phone, address, delivery_fee, free_delivery_from, is_open, settings, module').eq('slug', SLUG).maybeSingle(),
-    db.from('menu_items').select('kind, code, name, price, max_qty, data, sort').eq('restaurant_id', (await db.from('restaurants').select('id').eq('slug', SLUG).maybeSingle()).data?.id || '00000000-0000-0000-0000-000000000000').order('sort')
+    db.from('menu_items').select('kind, code, name, price, max_qty, data, sort').eq('active', true).eq('restaurant_id', (await db.from('restaurants').select('id').eq('slug', SLUG).maybeSingle()).data?.id || '00000000-0000-0000-0000-000000000000').order('sort')
   ]);
   if (!r || r.module !== 'kebab'){ document.body.innerHTML = '<p style="padding:40px;font:18px system-ui;color:#fff;background:#111;min-height:100vh;margin:0">Nie znaleziono lokalu.</p>'; return; }
   const st = r.settings || {}, b = st.brand || {}, by = c => menu.find(m => m.code === c);
