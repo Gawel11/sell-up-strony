@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101010">
+<meta name="robots" content="noindex">
+<title>Kuchnia · Sell-UP</title>
+<style>
+:root{--bg:#0f0f0f;--s1:#171717;--s2:#202020;--s3:#2a2a2a;--line:#2c2c2c;--fg:#f2f2f2;--mut:#9a9a9a;--new:#ffb15c;--cook:#ff7a3d;--ready:#7fd17a;--road:#6cb6ff;--bad:#ff5d5d;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+.num{font-variant-numeric:tabular-nums}
+/* Logowanie */
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.lbox{width:min(400px,100%);background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:26px}
+.lbox h1{margin:0 0 4px;font-size:26px}.lbox p{margin:0 0 18px;color:var(--mut)}
+.lbox label{display:block;font-size:13px;color:var(--mut);margin:12px 0 6px}
+.lbox input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--s2);font-size:16px}
+.lbox input:focus{outline:2px solid var(--cook);border-color:transparent}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 18px;border-radius:12px;background:var(--cook);color:#1a0d05;font-weight:800}
+.btn.w{width:100%;margin-top:18px}.btn.g{background:var(--s3);color:var(--fg)}.btn:disabled{opacity:.5}
+.err{color:var(--bad);font-size:14px;margin-top:12px;min-height:1.2em}
+/* Pasek górny */
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top,0px));background:#151515;border-bottom:1px solid var(--line)}
+.top h2{margin:0;font-size:18px;font-weight:800;white-space:nowrap}.top h2 small{color:var(--mut);font-weight:500;margin-left:6px}
+.top select{background:var(--s2);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stats span{background:var(--s2);border-radius:99px;padding:6px 12px;font-size:13px;color:#bdbdbd}.stats b{color:#fff;margin-left:4px}
+.right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.clock{font-size:22px;font-weight:800}
+.chip{padding:8px 12px;border-radius:99px;background:var(--s3);font-weight:700;font-size:13px;white-space:nowrap}
+.chip.on{background:#2f7d32}.chip.off{background:#7d2f2f}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut)}
+.live i{width:9px;height:9px;border-radius:50%;background:var(--mut)}
+.live.ok i{background:var(--ready);box-shadow:0 0 8px var(--ready)}.live.bad i{background:var(--bad)}
+/* Tablica */
+.board{display:grid;grid-template-columns:repeat(4,minmax(260px,1fr));gap:12px;padding:12px 16px;align-items:start}
+@media (max-width:1100px){.board{grid-template-columns:repeat(4,82vw);overflow-x:auto;scroll-snap-type:x mandatory}.col{scroll-snap-align:start}}
+.col{background:var(--s1);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:60vh}
+.col h3{margin:2px 4px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between}
+.col[data-st="new"] h3{color:var(--new)}.col[data-st="cooking"] h3{color:var(--cook)}.col[data-st="ready"] h3{color:var(--ready)}.col[data-st="delivering"] h3{color:var(--road)}
+.empty{color:#555;font-size:13px;text-align:center;padding:24px 0}
+.card{background:var(--s2);border-radius:14px;padding:12px;border-left:5px solid #444;display:flex;flex-direction:column;gap:8px}
+.card[data-st="new"]{border-left-color:var(--new)}.card[data-st="cooking"]{border-left-color:var(--cook)}.card[data-st="ready"]{border-left-color:var(--ready)}.card[data-st="delivering"]{border-left-color:var(--road)}
+.card.flash{animation:flash 1s ease 6}@keyframes flash{50%{background:#4a2f12}}
+.card.late .age{color:var(--bad);font-weight:800}
+.h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.h b{font-size:24px}.age{font-size:13px;color:var(--mut)}
+.meta{display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px}
+.meta span,.meta a{background:var(--s3);border-radius:7px;padding:3px 8px;color:#d0d0d0;text-decoration:none}
+.meta .pk{background:#24321f;color:#a9e39b}.meta .dl{background:#1f2a36;color:#9fcbff}.meta .pay{background:#3a3220;color:#ffcf7a}
+.items{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.items li{display:grid;grid-template-columns:auto 1fr;gap:8px;font-size:15.5px;line-height:1.25}
+.items li>b{font-size:17px}
+.items small{display:block;color:#bcbcbc;font-size:13px;margin-top:2px}
+.items small i{font-style:normal;color:var(--new)}
+.note{background:#3a2a17;color:#ffd9a8;border-radius:8px;padding:6px 9px;font-size:13.5px}
+.addr{font-size:13px;color:#cfcfcf}
+.acts{display:flex;gap:8px}
+.acts button{flex:1;padding:13px;border-radius:10px;font-weight:800;font-size:15px;background:var(--cook);color:#1a0d05}
+.acts .go-new{background:var(--new)}.acts .go-ready{background:var(--ready);color:#0b1a0a}.acts .go-road{background:var(--road);color:#04121f}
+.acts .x{flex:none;width:46px;background:var(--s3);color:var(--mut)}
+.tot{display:flex;justify-content:space-between;font-size:13.5px;color:var(--mut)}.tot b{color:var(--fg)}
+/* Okno potwierdzenia, start dźwięku */
+.modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:20px}
+.mbox{width:min(420px,100%);background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:22px;text-align:center}
+.mbox h3{margin:0 0 8px;font-size:20px}.mbox p{color:var(--mut);margin:0 0 16px}
+.mbox .row{display:flex;gap:10px}.mbox .row .btn{flex:1}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:#111;padding:10px 18px;border-radius:99px;font-weight:700;z-index:30;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<section class="login" id="loginView" hidden>
+  <form class="lbox" id="loginForm">
+    <h1>Kuchnia</h1>
+    <p>Zaloguj się kontem obsługi lokalu.</p>
+    <label for="em">E-mail</label><input id="em" type="email" autocomplete="username" required>
+    <label for="pw">Hasło</label><input id="pw" type="password" autocomplete="current-password" required>
+    <button class="btn w" id="loginBtn" type="submit">Zaloguj</button>
+    <div class="err" id="loginErr"></div>
+  </form>
+</section>
+
+<section id="appView" hidden>
+  <div class="top">
+    <h2 id="rName">Kuchnia</h2>
+    <select id="rSel" aria-label="Lokal" hidden></select>
+    <div class="stats" id="stats"></div>
+    <div class="right">
+      <span class="live" id="live"><i></i><span>łączę…</span></span>
+      <button class="chip" id="openBtn" title="Czy lokal przyjmuje zamówienia">…</button>
+      <button class="chip on" id="sndBtn">🔔 Dźwięk</button>
+      <button class="chip" id="testBtn" title="Wyślij zamówienie próbne">+ Próbne</button>
+      <span class="clock num" id="clock"></span>
+      <button class="chip" id="outBtn">Wyloguj</button>
+    </div>
+  </div>
+  <div class="board" id="board"></div>
+</section>
+
+<div class="modal" id="startModal" hidden>
+  <div class="mbox"><h3>Gotowi do pracy?</h3><p>Dotknij, żeby włączyć dzwonek przy nowych zamówieniach i nie wygaszać ekranu.</p><button class="btn w" id="startBtn">Zaczynamy</button></div>
+</div>
+<div class="modal" id="confirmModal" hidden>
+  <div class="mbox"><h3 id="cfT"></h3><p id="cfP"></p><div class="row"><button class="btn g" id="cfNo">Wróć</button><button class="btn" id="cfYes" style="background:var(--bad);color:#fff">Tak, anuluj</button></div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* Sell-UP: adres bazy i klucz publiczny (bezpieczny do pokazania w przeglądarce – dostęp chronią reguły w bazie) */
+window.SELLUP = {
+  url: 'https://medldonrwgoxfryandbp.supabase.co',
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZGxkb25yd2dveGZyeWFuZGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MjQ5OTYsImV4cCI6MjExMDAwMDk5Nn0.F4S0Wv3PXhb3ii5IQWsOuNZwSYq84Dnf3diAvfTcY20'
+};
+</script>
+<script>
+const sb = supabase.createClient(SELLUP.url, SELLUP.key);
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const zl = n => Number(n).toFixed(2).replace('.', ',') + ' zł';
+const COOK = { pizza: 'W piecu', burger: 'Na grillu', kebab: 'Kroimy' };
+const NEXT = { new: 'cooking', cooking: 'ready', ready: 'done', delivering: 'done' };
+let R = null, RS = [], orders = [], chan = null, sound = true, ac = null, wake = null, doneToday = 0;
+
+/* ===== Logowanie ===== */
+$('#loginForm').onsubmit = async e => {
+  e.preventDefault(); $('#loginBtn').disabled = true; $('#loginErr').textContent = '';
+  const { error } = await sb.auth.signInWithPassword({ email: $('#em').value.trim(), password: $('#pw').value });
+  $('#loginBtn').disabled = false;
+  if (error) $('#loginErr').textContent = 'Nie udało się zalogować. Sprawdź e-mail i hasło.';
+};
+$('#outBtn').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+sb.auth.onAuthStateChange((ev, session) => { if (ev === 'SIGNED_IN' || ev === 'INITIAL_SESSION') session ? boot() : showLogin(); });
+function showLogin(){ $('#appView').hidden = true; $('#loginView').hidden = false; }
+
+/* ===== Start ===== */
+let booted = false;
+async function boot(){
+  if (booted) return; booted = true;
+  const { data: { user } } = await sb.auth.getUser();
+  const { data: staff, error } = await sb.from('restaurant_staff').select('restaurant_id, role, restaurants(id, slug, name, module, is_open)').eq('user_id', user.id);
+  if (error || !staff || !staff.length){ $('#loginView').hidden = false; $('#loginErr').textContent = 'To konto nie jest przypisane do żadnego lokalu. Poproś właściciela o dostęp.'; booted = false; await sb.auth.signOut(); return; }
+  RS = staff.map(s => s.restaurants);
+  const saved = (() => { try { return localStorage.getItem('sellup-r'); } catch(e) { return null; } })();
+  R = RS.find(r => r.id === saved) || RS[0];
+  $('#rSel').hidden = RS.length < 2;
+  $('#rSel').innerHTML = RS.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join('');
+  $('#rSel').value = R.id;
+  $('#rSel').onchange = () => { R = RS.find(r => r.id === $('#rSel').value); try { localStorage.setItem('sellup-r', R.id); } catch(e) {} openRestaurant(); };
+  $('#loginView').hidden = true; $('#appView').hidden = false;
+  $('#startModal').hidden = false;
+  openRestaurant();
+}
+$('#startBtn').onclick = async () => {
+  $('#startModal').hidden = true; audio(); ding(true);
+  try { if ('wakeLock' in navigator) wake = await navigator.wakeLock.request('screen'); } catch(e) {}
+  try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch(e) {}
+};
+document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible'){ try { if ('wakeLock' in navigator && $('#startModal').hidden && R) wake = await navigator.wakeLock.request('screen'); } catch(e) {} if (R) load(); } });
+
+async function openRestaurant(){
+  $('#rName').innerHTML = `${esc(R.name)} <small>kuchnia</small>`;
+  renderOpen();
+  await load();
+  subscribe();
+}
+async function load(){
+  const since = new Date(); since.setHours(0, 0, 0, 0);
+  const { data, error } = await sb.from('orders').select('*').eq('restaurant_id', R.id)
+    .or(`status.in.(new,cooking,ready,delivering),created_at.gte.${since.toISOString()}`).order('created_at', { ascending: true }).limit(300);
+  if (error){ toast('Błąd pobierania zamówień'); return; }
+  orders = data.filter(o => ['new', 'cooking', 'ready', 'delivering'].includes(o.status));
+  doneToday = data.filter(o => o.status === 'done' && new Date(o.created_at) >= since).length;
+  render();
+}
+function subscribe(){
+  if (chan) sb.removeChannel(chan);
+  setLive('wait');
+  chan = sb.channel('orders-' + R.id)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${R.id}` }, p => {
+      if (p.eventType === 'INSERT'){ const o = p.new; o._flash = true; orders.push(o); render(); ding(); notify(o); }
+      else if (p.eventType === 'UPDATE'){ const o = p.new, i = orders.findIndex(x => x.id === o.id);
+        if (['done', 'cancelled'].includes(o.status)){ if (i >= 0) orders.splice(i, 1); if (o.status === 'done') doneToday++; }
+        else if (i >= 0) orders[i] = { ...orders[i], ...o }; else orders.push(o);
+        render(); }
+    })
+    .subscribe(st => setLive(st === 'SUBSCRIBED' ? 'ok' : (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT' || st === 'CLOSED') ? 'bad' : 'wait'));
+}
+function setLive(s){ const el = $('#live'); el.className = 'live ' + (s === 'ok' ? 'ok' : s === 'bad' ? 'bad' : ''); el.querySelector('span').textContent = s === 'ok' ? 'na żywo' : s === 'bad' ? 'brak połączenia' : 'łączę…'; if (s === 'bad') setTimeout(() => { if ($('#live').classList.contains('bad')) { load(); subscribe(); } }, 5000); }
+
+/* ===== Widok ===== */
+const mins = t => Math.max(0, Math.floor((Date.now() - new Date(t)) / 60000));
+function cols(){ return [['new', 'Nowe'], ['cooking', COOK[R.module] || 'W przygotowaniu'], ['ready', 'Gotowe do wydania'], ['delivering', 'W drodze']]; }
+function card(o){
+  const items = (o.items || []).map(i => {
+    const opts = (i.options || []).filter(x => x.code && !x.code.startsWith('sauce_')).map(x => `+ ${esc(x.name.toLowerCase())}${x.qty > 1 ? ' ×' + x.qty : ''}`);
+    const sauce = (i.options || []).filter(x => x.code && x.code.startsWith('sauce_')).map(x => esc(x.name.toLowerCase()));
+    const sub = [i.variant ? esc(i.variant) : '', i.label ? `<i>${esc(i.label)}</i>` : '', opts.join(', '), sauce.join(', '), i.note ? '„' + esc(i.note) + '”' : ''].filter(Boolean).join(' · ');
+    return `<li><b>${i.qty}×</b><span>${esc(i.name)}${sub ? `<small>${sub}</small>` : ''}</span></li>`; }).join('');
+  let act = '';
+  if (o.status === 'new') act = `<button class="go-new" data-id="${o.id}" data-to="cooking">${R.module === 'pizza' ? 'Do pieca' : R.module === 'kebab' ? 'Kroimy' : 'Na grill'}</button>`;
+  if (o.status === 'cooking') act = `<button class="go-ready" data-id="${o.id}" data-to="ready">Gotowe, pakuj</button>`;
+  if (o.status === 'ready') act = o.mode === 'delivery' ? `<button class="go-road" data-id="${o.id}" data-to="delivering">Kierowca wziął</button>` : `<button class="go-ready" data-id="${o.id}" data-to="done">Wydane klientowi</button>`;
+  if (o.status === 'delivering') act = `<button class="go-ready" data-id="${o.id}" data-to="done">Dostarczone</button>`;
+  const late = (o.status === 'new' && mins(o.created_at) >= 5) || mins(o.created_at) >= 40;
+  return `<div class="card${o._flash ? ' flash' : ''}${late ? ' late' : ''}" data-st="${o.status}">
+    <div class="h"><b class="num">#${o.number}</b><span class="age num" data-t="${o.created_at}">${mins(o.created_at)} min</span></div>
+    <div class="meta"><span class="${o.mode === 'delivery' ? 'dl' : 'pk'}">${o.mode === 'delivery' ? 'Dostawa' : 'Odbiór'}</span><span>${esc(o.customer_name)}</span><a href="tel:${esc(o.customer_phone.replace(/\s/g, ''))}">${esc(o.customer_phone)}</a><span class="pay">${o.paid ? 'zapłacone' : o.payment === 'cash' ? 'gotówka' : o.payment === 'card_on_delivery' ? 'karta przy odbiorze' : 'online'}</span></div>
+    ${o.mode === 'delivery' && o.address ? `<div class="addr">📍 ${esc(o.address)}</div>` : ''}
+    <ul class="items">${items}</ul>
+    ${o.note ? `<div class="note">${esc(o.note)}</div>` : ''}
+    <div class="tot"><span>Razem</span><b class="num">${zl(o.total)}</b></div>
+    <div class="acts">${act}<button class="x" data-cancel="${o.id}" aria-label="Anuluj">✕</button></div></div>`;
+}
+function render(){
+  const c = cols();
+  $('#board').innerHTML = c.map(([st, nm]) => { const l = orders.filter(o => o.status === st);
+    return `<div class="col" data-st="${st}"><h3>${nm}<b class="num">${l.length}</b></h3>${l.map(card).join('') || '<div class="empty">Brak zamówień</div>'}</div>`; }).join('');
+  orders.forEach(o => o._flash = false);
+  const n = s => orders.filter(o => o.status === s).length;
+  $('#stats').innerHTML = `<span>Nowe<b class="num">${n('new')}</b></span><span>${COOK[R.module] || 'W toku'}<b class="num">${n('cooking')}</b></span><span>Gotowe<b class="num">${n('ready')}</b></span><span>Wydane dziś<b class="num">${doneToday}</b></span>`;
+  document.title = (n('new') ? `(${n('new')}) ` : '') + 'Kuchnia · ' + R.name;
+}
+$('#board').onclick = async e => {
+  const b = e.target.closest('[data-to]'), c = e.target.closest('[data-cancel]');
+  if (b){ b.disabled = true; await setStatus(b.dataset.id, b.dataset.to); }
+  if (c){ const o = orders.find(x => x.id === c.dataset.cancel); confirmBox(`Anulować #${o.number}?`, 'Zadzwoń najpierw do klienta. Anulowanego zamówienia nie da się przywrócić z tablicy.', () => setStatus(o.id, 'cancelled')); }
+};
+async function setStatus(id, st){
+  const { error } = await sb.from('orders').update({ status: st }).eq('id', id);
+  if (error){ toast('Nie udało się zmienić statusu'); render(); return; }
+  const i = orders.findIndex(o => o.id === id);
+  if (i >= 0){ if (['done', 'cancelled'].includes(st)){ orders.splice(i, 1); if (st === 'done') doneToday++; } else orders[i].status = st; }
+  render();
+}
+function confirmBox(t, p, yes){ $('#cfT').textContent = t; $('#cfP').textContent = p; $('#confirmModal').hidden = false; $('#cfNo').onclick = () => $('#confirmModal').hidden = true; $('#cfYes').onclick = () => { $('#confirmModal').hidden = true; yes(); }; }
+
+/* ===== Lokal otwarty / zamknięty ===== */
+function renderOpen(){ const b = $('#openBtn'); b.textContent = R.is_open ? '● Przyjmujemy' : '● Zamknięte'; b.className = 'chip ' + (R.is_open ? 'on' : 'off'); }
+$('#openBtn').onclick = () => {
+  const go = async () => { const { error } = await sb.from('restaurants').update({ is_open: !R.is_open }).eq('id', R.id); if (error){ toast('Nie udało się zmienić'); return; } R.is_open = !R.is_open; renderOpen(); toast(R.is_open ? 'Przyjmujemy zamówienia' : 'Wstrzymano przyjmowanie zamówień'); };
+  if (R.is_open) confirmBox('Wstrzymać zamówienia?', 'Klienci nie będą mogli złożyć nowego zamówienia, dopóki znowu nie otworzysz.', go); else go();
+};
+
+/* ===== Zamówienie próbne (do testów) ===== */
+$('#testBtn').onclick = async () => {
+  const { data: menu } = await sb.from('menu_items').select('code, kind, variants').eq('restaurant_id', R.id).eq('active', true);
+  const prod = (menu || []).filter(m => m.kind === 'product'), opt = (menu || []).filter(m => m.kind === 'option' && !m.code.startsWith('sauce_'));
+  if (!prod.length){ toast('Ten lokal nie ma jeszcze menu'); return; }
+  const p = prod[Math.floor(Math.random() * prod.length)], it = { code: p.code, qty: 1, options: opt.slice(0, 2).map(o => ({ code: o.code })) };
+  if (p.variants && p.variants.length) it.variant = p.variants[0].id;
+  const { error } = await sb.rpc('place_order', { p_restaurant: R.slug, p_items: [it], p_mode: Math.random() < .5 ? 'pickup' : 'delivery', p_name: 'Zamówienie próbne', p_phone: '500 000 000', p_address: 'ul. Próbna 1', p_note: 'TEST – nie przygotowywać', p_payment: 'cash' });
+  toast(error ? 'Błąd: ' + error.message : 'Wysłano zamówienie próbne');
+};
+
+/* ===== Dźwięk i powiadomienia ===== */
+function audio(){ try { return ac || (ac = new (window.AudioContext || window.webkitAudioContext)()); } catch(e) { return null; } }
+function ding(soft){
+  if (!sound) return; const a = audio(); if (!a) return; if (a.state === 'suspended') a.resume();
+  const seq = soft ? [[880, 0]] : [[880, 0], [1320, .18], [880, .5], [1320, .68], [880, 1.0], [1320, 1.18]];
+  seq.forEach(([f, t]) => { const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.value = f;
+    g.gain.setValueAtTime(0, a.currentTime + t); g.gain.linearRampToValueAtTime(.4, a.currentTime + t + .02); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + t + .4);
+    o.connect(g).connect(a.destination); o.start(a.currentTime + t); o.stop(a.currentTime + t + .45); });
+  try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch(e) {}
+}
+function notify(o){ try { if (document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification(`Nowe zamówienie #${o.number}`, { body: `${o.mode === 'delivery' ? 'Dostawa' : 'Odbiór'} · ${zl(o.total)}` }); } catch(e) {} }
+$('#sndBtn').onclick = () => { sound = !sound; $('#sndBtn').textContent = sound ? '🔔 Dźwięk' : '🔕 Cisza'; $('#sndBtn').className = 'chip ' + (sound ? 'on' : ''); if (sound) ding(true); };
+/* przypomnienie: dzwoń co 30 s, dopóki są nieprzyjęte zamówienia */
+setInterval(() => { if (R && orders.some(o => o.status === 'new' && mins(o.created_at) >= 1)) ding(); }, 30000);
+
+/* ===== Zegar ===== */
+setInterval(() => { $('#clock').textContent = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }); document.querySelectorAll('[data-t]').forEach(el => el.textContent = mins(el.dataset.t) + ' min'); }, 1000);
+let tT; function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(tT); tT = setTimeout(() => el.classList.remove('show'), 2200); }
+</script>
+</body>
+</html>
