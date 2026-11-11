@@ -58,7 +58,7 @@ async function boot(){
 async function load(){
   const [{ data: r }, { data: m }] = await Promise.all([
     sb.from('restaurants').select('is_open, phone, address, delivery_fee, free_delivery_from, min_order, settings').eq('id', cur.id).single(),
-    sb.from('menu_items').select('id, kind, code, name, price, variants, data, active, sort, off_until').eq('restaurant_id', cur.id).order('sort')
+    sb.from('menu_items').select('id, kind, code, name, price, variants, data, active, sort, off_until, description').eq('restaurant_id', cur.id).order('sort')
   ]);
   cur.info = r; items = m || [];
 }
@@ -66,13 +66,13 @@ async function pick(id){
   cur = shops.find(s => s.id === id); try { localStorage.setItem('panel-shop', id); } catch (e) {}
   $('#seeSite').href = '../' + cur.slug + '/';
   await load();
-  const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['promo', 'Kody rabatowe'], ['shop', 'Dane lokalu']);
+  const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['promo', 'Kody rabatowe'], ['stats', 'Statystyki'], ['qr', 'QR i link'], ['shop', 'Dane lokalu']);
   if (!tabs.some(t => t[0] === tab)) tab = 'menu';
   $('#tabs').innerHTML = tabs.map(([k, t]) => `<button class="tab" data-t="${k}" aria-pressed="${k === tab}">${t}</button>`).join('');
   $('#tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.t; $('#tabs').querySelectorAll('.tab').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
   render();
 }
-function render(){ if (!cur) return; ({ menu: renderMenu, ready: renderReady, look: renderLook, shop: renderShop, promo: renderPromo })[tab](); }
+function render(){ if (!cur) return; ({ menu: renderMenu, ready: renderReady, look: renderLook, shop: renderShop, promo: renderPromo, stats: renderStats, qr: renderQR })[tab](); }
 async function saveSettings(patch){
   const s = { ...(cur.info.settings || {}), ...patch };
   const { error } = await sb.from('restaurants').update({ settings: s }).eq('id', cur.id);
@@ -86,7 +86,7 @@ function rowHTML(m){
   const price = v.length ? v.map(x => `<label>${esc(x.name)}<input inputmode="decimal" data-id="${m.id}" data-v="${esc(x.id)}" value="${n2(x.price)}"></label>`).join('') : `<label>zł<input inputmode="decimal" data-id="${m.id}" value="${n2(m.price)}"></label>`;
   const offT = m.off_until && new Date(m.off_until) > new Date();
   const today = offT ? `<button class="chip today" data-today="${m.id}" data-off="0" title="Przywróć">brak do jutra ✕</button>` : (m.active ? `<button class="chip today" data-today="${m.id}" data-off="1" title="Ukryj do jutra rano">Dziś brak</button>` : '');
-  return `<div class="row${m.active && !offT ? '' : ' off'}" data-row="${m.id}"><div class="nm">${hexOk(d.color) ? `<i class="dot" style="background:${d.color}"></i>` : ''}<span>${esc(m.name)}</span></div><div class="pr">${price}</div>${today}${d.custom ? `<button class="x" data-del="${m.id}" title="Usuń">✕</button>` : ''}<button class="sw" data-sw="${m.id}" aria-pressed="${m.active}" aria-label="Dostępne"></button></div>`;
+  return `<div class="row${m.active && !offT ? '' : ' off'}" data-row="${m.id}"><div class="nm">${hexOk(d.color) ? `<i class="dot" style="background:${d.color}"></i>` : ''}<span>${esc(m.name)}</span></div><div class="pr">${price}</div>${today}<button class="x" data-edit="${m.id}" title="Opis, alergeny, zdjęcie" style="color:var(--fg)">✎</button>${d.custom ? `<button class="x" data-del="${m.id}" title="Usuń">✕</button>` : ''}<button class="sw" data-sw="${m.id}" aria-pressed="${m.active}" aria-label="Dostępne"></button></div>`;
 }
 function renderMenu(){
   const vis = items.filter(m => !m.code.endsWith('_half'));
@@ -100,6 +100,7 @@ function renderMenu(){
   $('#main').querySelectorAll('.pr input').forEach(i => i.onchange = () => savePrice(i));
   $('#main').querySelectorAll('.sw').forEach(b => b.onclick = () => toggle(b));
   $('#main').querySelectorAll('[data-today]').forEach(b => b.onclick = () => offToday(b));
+  $('#main').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openEdit(b.dataset.edit));
   $('#main').querySelectorAll('[data-add]').forEach(b => b.onclick = () => openAdd(b.dataset.add));
   $('#main').querySelectorAll('[data-del]').forEach(b => b.onclick = () => { if (b.dataset.sure){ del(b.dataset.del); return; } b.dataset.sure = 1; b.textContent = '?'; b.title = 'Kliknij jeszcze raz, żeby usunąć'; setTimeout(() => { b.textContent = '✕'; delete b.dataset.sure; }, 2500); });
 }
@@ -123,6 +124,42 @@ async function toggle(b){
   items.forEach(x => { if (ids.includes(x.id)) x.active = on; });
   b.setAttribute('aria-pressed', on); b.closest('.row').classList.toggle('off', !on); toast(on ? 'Włączone ✓' : 'Wyłączone ✓');
 }
+const ALG = [['gluten', 'Gluten'], ['mleko', 'Mleko'], ['jaja', 'Jaja'], ['ryby', 'Ryby'], ['skorupiaki', 'Skorupiaki'], ['mieczaki', 'Mięczaki'], ['orzeszki', 'Orzeszki ziemne'], ['orzechy', 'Orzechy'], ['soja', 'Soja'], ['seler', 'Seler'], ['gorczyca', 'Gorczyca'], ['sezam', 'Sezam'], ['siarczyny', 'Siarczyny'], ['lubin', 'Łubin']];
+function openEdit(id){
+  const m = items.find(x => x.id === id), d = m.data || {}, al = new Set(d.allergens || []);
+  const canPhoto = m.kind === 'extra' || (m.kind === 'product' && d.combo) || (m.kind === 'product' && !d.area && !d.combo);
+  const o = modal(`<h4>${esc(m.name)}</h4>
+    <label class="f">Nazwa</label><input class="in" id="e_name" maxlength="60" value="${esc(m.name)}">
+    <label class="f">Opis (widoczny na stronie)</label><input class="in" id="e_desc" maxlength="200" value="${esc(m.description || d.sub || '')}">
+    <label class="f">Alergeny (zaznacz, jeśli występują)</label><div class="chips" id="e_al">${ALG.map(([k, t]) => `<button type="button" class="chip" data-a="${k}" aria-pressed="${al.has(k)}">${t}</button>`).join('')}</div>
+    ${canPhoto ? `<label class="f">Własne zdjęcie (PNG, JPG, WebP, do 2 MB)</label>${d.photo ? `<img class="logo-prev" src="${esc(d.photo)}" alt="">` : ''}<input type="file" id="e_file" accept="image/png,image/jpeg,image/webp" hidden><div style="display:flex;gap:8px"><button class="btn g s" id="e_up">${d.photo ? 'Zmień zdjęcie' : 'Wgraj zdjęcie'}</button>${d.photo ? '<button class="btn s d" id="e_rm">Usuń zdjęcie</button>' : ''}</div>` : '<p class="hint">Ta pozycja używa zdjęć z szablonu.</p>'}
+    <p class="err" id="e_err"></p><button class="btn w" id="e_ok">Zapisz</button>`);
+  o.querySelectorAll('[data-a]').forEach(b => b.onclick = () => b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'));
+  let photo = d.photo || null;
+  const up = o.querySelector('#e_up');
+  if (up){
+    up.onclick = () => o.querySelector('#e_file').click();
+    o.querySelector('#e_file').onchange = async e => {
+      const f = e.target.files[0]; if (!f) return; if (f.size > 2097152) { o.querySelector('#e_err').textContent = 'Plik jest za duży (max 2 MB)'; return; }
+      const ext = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }[f.type]; if (!ext) { o.querySelector('#e_err').textContent = 'Dozwolone: PNG, JPG, WebP'; return; }
+      const path = `${cur.id}/${m.code}-${Date.now()}.${ext}`;
+      const { error } = await sb.storage.from('items').upload(path, f, { contentType: f.type });
+      if (error) { o.querySelector('#e_err').textContent = 'Nie wgrano: ' + error.message; return; }
+      photo = sb.storage.from('items').getPublicUrl(path).data.publicUrl; up.textContent = 'Wgrano ✓ (kliknij Zapisz)';
+    };
+    const rm = o.querySelector('#e_rm'); if (rm) rm.onclick = () => { photo = null; rm.textContent = 'Usunięte (kliknij Zapisz)'; };
+  }
+  o.querySelector('#e_ok').onclick = async () => {
+    const name = o.querySelector('#e_name').value.trim(); if (!name) { o.querySelector('#e_err').textContent = 'Wpisz nazwę'; return; }
+    const nd = { ...d }, allergens = [...o.querySelectorAll('[data-a][aria-pressed="true"]')].map(b => b.dataset.a);
+    if (nd.short) nd.short = m.code.startsWith('sauce_') ? name.replace(/^sos\s+/i, '') : name; if (nd.label) nd.label = name.toLowerCase();
+    if (allergens.length) nd.allergens = allergens; else delete nd.allergens; if (canPhoto) { if (photo) nd.photo = photo; else delete nd.photo; }
+    const upd = { name, description: o.querySelector('#e_desc').value.trim() || null, data: nd };
+    const { error } = await sb.from('menu_items').update(upd).eq('id', m.id);
+    if (error) { o.querySelector('#e_err').textContent = error.message; return; }
+    Object.assign(m, upd); o.remove(); renderMenu(); toast('Zapisano ✓');
+  };
+}
 async function offToday(b){
   const m = items.find(x => x.id === b.dataset.today), off = b.dataset.off === '1';
   const { data, error } = await sb.rpc('item_off_today', { p_id: m.id, p_off: off });
@@ -138,7 +175,7 @@ async function del(id){
 
 /* ---------- dodawanie pozycji (kebab) ---------- */
 async function insertItem(row){
-  const { data, error } = await sb.from('menu_items').insert({ restaurant_id: cur.id, max_qty: 3, active: true, variants: [], ...row }).select('id, kind, code, name, price, variants, data, active, sort, off_until').single();
+  const { data, error } = await sb.from('menu_items').insert({ restaurant_id: cur.id, max_qty: 3, active: true, variants: [], ...row }).select('id, kind, code, name, price, variants, data, active, sort, off_until, description').single();
   if (error) throw new Error(error.message);
   items.push(data); return data;
 }
@@ -355,4 +392,47 @@ async function renderPromo(){
   };
   $('#main').querySelectorAll('[data-pact]').forEach(b => b.onclick = async () => { const on = b.getAttribute('aria-pressed') !== 'true'; const { error } = await sb.from('promo_codes').update({ active: on }).eq('id', b.dataset.pact); if (error) return toast('Nie zapisano', true); b.setAttribute('aria-pressed', on); b.closest('.row').classList.toggle('off', !on); });
   $('#main').querySelectorAll('[data-pdel]').forEach(b => b.onclick = async () => { if (!b.dataset.sure){ b.dataset.sure = 1; b.textContent = '?'; setTimeout(() => { b.textContent = '✕'; delete b.dataset.sure; }, 2500); return; } const { error } = await sb.from('promo_codes').delete().eq('id', b.dataset.pdel); if (error) return toast('Nie usunięto', true); toast('Usunięte ✓'); renderPromo(); });
+}
+
+/* ---------- statystyki ---------- */
+let statRange = 7;
+async function renderStats(){
+  $('#main').innerHTML = '<p class="hint">Liczę…</p>';
+  const days = statRange, since = new Date(Date.now() - days * 864e5 * (days === 1 ? 1 : 1)).toISOString();
+  const { data, error } = await sb.from('orders').select('created_at, status, mode, total, discount, promo_code, items').eq('restaurant_id', cur.id).gte('created_at', since).order('created_at', { ascending: false }).limit(3000);
+  if (error){ $('#main').innerHTML = '<p class="err">' + esc(error.message) + '</p>'; return; }
+  const tz = { timeZone: 'Europe/Warsaw' }, dayKey = d => new Date(d).toLocaleDateString('sv-SE', tz);
+  const today = dayKey(Date.now());
+  let rows = (data || []).filter(o => o.status !== 'cancelled'); if (days === 1) rows = rows.filter(o => dayKey(o.created_at) === today);
+  const sum = rows.reduce((a, o) => a + Number(o.total), 0), n = rows.length;
+  const del = rows.filter(o => o.mode === 'delivery').length, disc = rows.reduce((a, o) => a + Number(o.discount || 0), 0);
+  const hours = Array(24).fill(0), byDay = {}, top = {};
+  rows.forEach(o => { hours[+new Date(o.created_at).toLocaleString('en-GB', { ...tz, hour: '2-digit', hour12: false }) % 24]++; byDay[dayKey(o.created_at)] = (byDay[dayKey(o.created_at)] || 0) + Number(o.total);
+    (o.items || []).forEach(i => { top[i.name] = (top[i.name] || 0) + (i.qty || 1); }); });
+  const topL = Object.entries(top).sort((a, b) => b[1] - a[1]).slice(0, 10), hmax = Math.max(1, ...hours);
+  const dkeys = []; for (let i = Math.max(days, 1) - 1; i >= 0; i--) dkeys.push(dayKey(Date.now() - i * 864e5)); const dmax = Math.max(1, ...dkeys.map(k => byDay[k] || 0));
+  const zl = v => n2(Math.round(v * 100) / 100) + ' zł';
+  $('#main').innerHTML = `<div class="chips">${[[1, 'Dziś'], [7, '7 dni'], [30, '30 dni']].map(([d, t]) => `<button class="chip" data-r="${d}" aria-pressed="${d === statRange}">${t}</button>`).join('')}</div>
+  <div class="g2" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))">${[['Utarg', zl(sum)], ['Zamówienia', n], ['Średnie zamówienie', n ? zl(sum / n) : '—'], ['Dostawy / odbiory', `${del} / ${n - del}`], ['Rabaty', zl(disc)]].map(([k, v]) => `<div class="card" style="margin:0"><div class="hint" style="margin:0">${k}</div><div style="font-size:24px;font-weight:800;margin-top:4px">${v}</div></div>`).join('')}</div>
+  <h3><span>Najczęściej zamawiane</span></h3><div class="card">${topL.length ? topL.map(([k, v]) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--line)"><span>${esc(k)}</span><b>${v}</b></div>`).join('') : '<p class="hint">Brak danych.</p>'}</div>
+  <h3><span>Godziny zamówień</span></h3><div class="card"><div style="display:flex;align-items:end;gap:3px;height:110px">${hours.map((v, i) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%"><div title="${i}:00 – ${v}" style="width:100%;height:${v / hmax * 90}%;min-height:${v ? 3 : 0}px;background:var(--acc);border-radius:3px 3px 0 0"></div><small style="font-size:9px;color:var(--mut)">${i % 3 === 0 ? i : ''}</small></div>`).join('')}</div></div>
+  ${days > 1 ? `<h3><span>Utarg dzień po dniu</span></h3><div class="card"><div style="display:flex;align-items:end;gap:3px;height:110px">${dkeys.map(k => `<div style="flex:1;display:flex;flex-direction:column;justify-content:end;height:100%"><div title="${k}: ${zl(byDay[k] || 0)}" style="width:100%;height:${(byDay[k] || 0) / dmax * 100}%;min-height:${byDay[k] ? 3 : 0}px;background:var(--ok);border-radius:3px 3px 0 0"></div></div>`).join('')}</div></div>` : ''}`;
+  $('#main').querySelectorAll('[data-r]').forEach(b => b.onclick = () => { statRange = +b.dataset.r; renderStats(); });
+}
+
+/* ---------- QR i link ---------- */
+function renderQR(){
+  const url = location.origin + '/' + cur.slug + '/';
+  $('#main').innerHTML = `<div class="card"><h4 style="margin:0 0 6px">Link do zamówień</h4><input class="in" id="q_url" readonly value="${esc(url)}"><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn g s" id="q_copy">Kopiuj link</button><a class="btn g s" href="${esc(url)}" target="_blank" rel="noopener">Otwórz</a></div></div>
+  <div class="card" style="text-align:center"><h4 style="margin:0 0 10px">Kod QR (na ulotki, plakat, stolik, szybę)</h4><canvas id="q_cv" style="background:#fff;border-radius:12px;max-width:100%"></canvas>
+  <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap"><button class="btn s" id="q_png">Pobierz PNG</button><button class="btn g s" id="q_print">Drukuj kartkę</button></div></div>`;
+  $('#q_copy').onclick = async () => { try { await navigator.clipboard.writeText(url); toast('Skopiowano ✓'); } catch (e) { $('#q_url').select(); toast('Zaznaczone, skopiuj ręcznie'); } };
+  if (!window.qrcode){ $('#q_cv').replaceWith(Object.assign(document.createElement('p'), { className: 'hint', textContent: 'Nie udało się wczytać generatora QR. Odśwież stronę.' })); return; }
+  const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+  const cnt = qr.getModuleCount(), sc = Math.floor(720 / (cnt + 8)), size = sc * (cnt + 8), cv = $('#q_cv'); cv.width = cv.height = size; cv.style.width = 'min(320px,100%)'; cv.style.height = 'auto';
+  const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, size, size); cx.fillStyle = '#000';
+  for (let r = 0; r < cnt; r++) for (let c = 0; c < cnt; c++) if (qr.isDark(r, c)) cx.fillRect((c + 4) * sc, (r + 4) * sc, sc, sc);
+  $('#q_png').onclick = () => { const a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = 'qr-' + cur.slug + '.png'; a.click(); };
+  $('#q_print').onclick = () => { const b = (cur.info.settings || {}).brand || {}, w = window.open('', '_blank'); if (!w) return toast('Zezwól na wyskakujące okno', true);
+    w.document.write(`<!doctype html><meta charset="utf-8"><title>QR</title><style>body{font-family:system-ui,sans-serif;text-align:center;padding:40px}h1{font-size:44px;margin:0 0 6px}p{font-size:22px;margin:4px 0}img{width:420px;margin:24px 0}</style><h1>${esc(b.name || cur.name)}</h1><p>Zamów online: zeskanuj kod</p><img src="${cv.toDataURL('image/png')}"><p style="font-size:18px">${esc(url)}</p>`); w.document.close(); w.focus(); setTimeout(() => w.print(), 400); };
 }

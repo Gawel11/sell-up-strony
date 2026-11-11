@@ -606,7 +606,7 @@ function fallbackImg(k){
   const db = window.supabase.createClient(SELLUP.url, SELLUP.key);
   const [{ data: r }, { data: menu }] = await Promise.all([
     db.from('restaurants').select('name, phone, address, delivery_fee, free_delivery_from, is_open, settings, module').eq('slug', SLUG).maybeSingle(),
-    db.from('menu_items').select('kind, code, name, price, max_qty, data, sort').eq('active', true).eq('restaurant_id', (await db.from('restaurants').select('id').eq('slug', SLUG).maybeSingle()).data?.id || '00000000-0000-0000-0000-000000000000').order('sort')
+    db.from('menu_items').select('kind, code, name, price, max_qty, data, sort, description').eq('active', true).eq('restaurant_id', (await db.from('restaurants').select('id').eq('slug', SLUG).maybeSingle()).data?.id || '00000000-0000-0000-0000-000000000000').order('sort')
   ]);
   if (!r || r.module !== 'kebab'){ document.body.innerHTML = '<p style="padding:40px;font:18px system-ui;color:#fff;background:#111;min-height:100vh;margin:0">Nie znaleziono lokalu.</p>'; return; }
   const st = r.settings || {}, b = st.brand || {}, by = c => menu.find(m => m.code === c);
@@ -617,7 +617,7 @@ function fallbackImg(k){
     if (m.kind === 'option' && m.code.startsWith('meat_') && m.code !== 'meat_extra') meats[m.code.slice(5)] = { name: d.short || m.name, sub: d.sub || '', piles: d.piles || [], price: Number(m.price) };
     if (m.kind === 'option' && d.lada) lada.push({ ...d.lada, color: d.color, name: d.short || m.name, price: Number(m.price) });
     if (m.kind === 'product' && d.combo) combos.push({ code: m.code, name: m.name, price: Number(m.price), includes: d.includes || '', img: d.photo || d.img || 'box' });
-    if (m.kind === 'extra') extras.push({ id: m.code, name: d.short || m.name, sub: d.sub || '', img: d.img || 'x_generic', price: Number(m.price) });
+    if (m.kind === 'extra') extras.push({ id: m.code, name: d.short || m.name, sub: d.sub || '', img: d.photo || d.img || 'x_generic', price: Number(m.price) });
   });
   const ok = x => forms[x.form] && meats[x.meat] && Object.keys(x.lada || {}).every(id => lada.some(l => l.id === id));
   window.KEBAB_DB = { forms, meats, lada, extras, combos,
@@ -625,6 +625,15 @@ function fallbackImg(k){
     ready: (st.ready || []).filter(ok) };
   /* wygląd i teksty lokalu */
   document.title = r.name;
+  /* alergeny i opisy */
+  const ALG = { gluten: 'Gluten', mleko: 'Mleko', jaja: 'Jaja', ryby: 'Ryby', skorupiaki: 'Skorupiaki', mieczaki: 'Mięczaki', orzeszki: 'Orzeszki ziemne', orzechy: 'Orzechy', soja: 'Soja', seler: 'Seler', gorczyca: 'Gorczyca', sezam: 'Sezam', siarczyny: 'Siarczyny', lubin: 'Łubin' };
+  const info = menu.filter(m => (m.data && m.data.allergens && m.data.allergens.length) || m.description).map(m => ({ name: m.name, desc: m.description || '', al: ((m.data && m.data.allergens) || []).map(a => ALG[a]).filter(Boolean) }));
+  if (info.length){
+    const fi = document.getElementById('footInfo'); const bt = document.createElement('button'); bt.textContent = 'Alergeny i składniki'; bt.style.cssText = 'margin-left:10px;background:none;border:1px solid currentColor;border-radius:99px;padding:4px 12px;color:inherit;font:inherit;cursor:pointer;opacity:.8'; fi.after(bt);
+    bt.onclick = () => { const o = document.createElement('div'); o.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:16px';
+      o.innerHTML = `<div style="width:min(560px,100%);max-height:88vh;overflow:auto;background:#1a1816;color:#f4ede2;border-radius:20px;padding:20px;font:15px system-ui"><button style="float:right;border:0;background:#fff2;color:inherit;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer">✕</button><h3 style="margin:0 0 12px;font-size:22px">Alergeny i składniki</h3>${info.map(i => `<div style="padding:9px 0;border-top:1px solid #fff2"><b>${i.name}</b>${i.desc ? `<div style="opacity:.75;font-size:14px">${i.desc}</div>` : ''}${i.al.length ? `<div style="font-size:14px;color:#ffb15c">Alergeny: ${i.al.join(', ')}</div>` : ''}</div>`).join('')}</div>`;
+      o.onclick = e => { if (e.target === o || e.target.tagName === 'BUTTON') o.remove(); }; document.body.appendChild(o); };
+  }
   if (st.logo) document.querySelectorAll('.logo').forEach(l => { l.innerHTML = `<img src="${st.logo}" alt="${r.name}" style="height:42px;width:auto;display:block">`; });
   document.querySelectorAll('[data-b]').forEach(el => { const v = b[el.dataset.b]; if (v) el.textContent = v; });
   if (st.colors){ const root = document.documentElement.style; if (st.colors.fire) root.setProperty('--fire', st.colors.fire); if (st.colors.amber) root.setProperty('--amber', st.colors.amber); }

@@ -211,11 +211,12 @@ function card(o){
   return `<div class="card${o._flash ? ' flash' : ''}${late ? ' late' : ''}" data-st="${o.status}">
     <div class="h"><b class="num">#${o.number}</b><span class="age num" data-t="${o.created_at}">${mins(o.created_at)} min</span></div>
     <div class="meta"><span class="${o.mode === 'delivery' ? 'dl' : 'pk'}">${o.mode === 'delivery' ? 'Dostawa' : 'Odbiór'}</span><span>${esc(o.customer_name)}</span><a href="tel:${esc(o.customer_phone.replace(/\s/g, ''))}">${esc(o.customer_phone)}</a><span class="pay">${o.paid ? 'zapłacone' : o.payment === 'cash' ? 'gotówka' : o.payment === 'card_on_delivery' ? 'karta przy odbiorze' : 'online'}</span></div>
-    ${o.mode === 'delivery' && o.address ? `<div class="addr">📍 ${esc(o.address)}</div>` : ''}
+    ${o.mode === 'delivery' && o.address ? `<div class="addr">📍 ${esc(o.address)}${o.zone_name ? ' · ' + esc(o.zone_name) : ''}</div>` : ''}
     <ul class="items">${items}</ul>
     ${o.note ? `<div class="note">${esc(o.note)}</div>` : ''}
+    ${Number(o.discount) > 0 ? `<div class="note" style="background:#1f2a1f;color:#9fe09f">Kod ${esc(o.promo_code || '')}: −${zl(o.discount)}</div>` : ''}
     <div class="tot"><span>Razem</span><b class="num">${zl(o.total)}</b></div>
-    <div class="acts">${act}<button class="x" data-cancel="${o.id}" aria-label="Anuluj">✕</button></div></div>`;
+    <div class="acts">${act}<button class="x" data-print="${o.id}" aria-label="Drukuj" title="Drukuj zamówienie">🖨</button><button class="x" data-cancel="${o.id}" aria-label="Anuluj">✕</button></div></div>`;
 }
 function render(){
   const c = cols();
@@ -227,10 +228,26 @@ function render(){
   document.title = (n('new') ? `(${n('new')}) ` : '') + 'Kuchnia · ' + R.name;
 }
 $('#board').onclick = async e => {
-  const b = e.target.closest('[data-to]'), c = e.target.closest('[data-cancel]');
+  const b = e.target.closest('[data-to]'), c = e.target.closest('[data-cancel]'), pr = e.target.closest('[data-print]');
+  if (pr){ const o = orders.find(x => x.id === pr.dataset.print); if (o) printOrder(o); return; }
   if (b){ b.disabled = true; await setStatus(b.dataset.id, b.dataset.to); }
   if (c){ const o = orders.find(x => x.id === c.dataset.cancel); confirmBox(`Anulować #${o.number}?`, 'Zadzwoń najpierw do klienta. Anulowanego zamówienia nie da się przywrócić z tablicy.', () => setStatus(o.id, 'cancelled')); }
 };
+function printOrder(o){
+  const lines = (o.items || []).map(i => {
+    const opts = (i.options || []).map(x => esc(x.name) + (x.qty > 1 ? ' x' + x.qty : '')).join(', ');
+    return `<div class="l"><b>${i.qty}x ${esc(i.name)}</b>${i.variant ? '<br>' + esc(i.variant) : ''}${i.label ? '<br><i>' + esc(i.label) + '</i>' : ''}${opts ? '<br>' + opts : ''}${i.note ? '<br>„' + esc(i.note) + '”' : ''}</div>`; }).join('');
+  const t = new Date(o.created_at).toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const html = `<!doctype html><meta charset="utf-8"><title>#${o.number}</title><style>@page{margin:4mm}body{font:13px/1.35 monospace;width:72mm;margin:0}h1{font-size:26px;margin:0}hr{border:0;border-top:1px dashed #000;margin:6px 0}.l{margin:5px 0}.r{display:flex;justify-content:space-between}</style>
+    <h1>#${o.number} ${o.mode === 'delivery' ? 'DOSTAWA' : 'ODBIÓR'}</h1><div>${esc(R.name)} · ${t}</div><hr>
+    <div><b>${esc(o.customer_name)}</b><br>${esc(o.customer_phone)}${o.mode === 'delivery' && o.address ? '<br>' + esc(o.address) + (o.zone_name ? ' (' + esc(o.zone_name) + ')' : '') : ''}</div><hr>${lines}<hr>
+    ${o.note ? '<div>UWAGI: ' + esc(o.note) + '</div><hr>' : ''}
+    ${Number(o.delivery_fee) > 0 ? `<div class="r"><span>Dostawa</span><span>${zl(o.delivery_fee)}</span></div>` : ''}${Number(o.discount) > 0 ? `<div class="r"><span>Rabat ${esc(o.promo_code || '')}</span><span>-${zl(o.discount)}</span></div>` : ''}
+    <div class="r"><b>RAZEM</b><b>${zl(o.total)}</b></div><div>${o.paid ? 'ZAPŁACONE' : o.payment === 'cash' ? 'Gotówka' : o.payment === 'card_on_delivery' ? 'Karta przy odbiorze' : 'Online'}</div>`;
+  const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;width:0;height:0;border:0;right:0;bottom:0'; document.body.appendChild(f);
+  f.contentDocument.open(); f.contentDocument.write(html); f.contentDocument.close();
+  setTimeout(() => { f.contentWindow.focus(); f.contentWindow.print(); setTimeout(() => f.remove(), 3000); }, 250);
+}
 async function setStatus(id, st){
   const { error } = await sb.from('orders').update({ status: st }).eq('id', id);
   if (error){ toast('Nie udało się zmienić statusu'); render(); return; }
