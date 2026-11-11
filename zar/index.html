@@ -611,15 +611,16 @@ function fallbackImg(k){
   if (!r || r.module !== 'kebab'){ document.body.innerHTML = '<p style="padding:40px;font:18px system-ui;color:#fff;background:#111;min-height:100vh;margin:0">Nie znaleziono lokalu.</p>'; return; }
   const st = r.settings || {}, b = st.brand || {}, by = c => menu.find(m => m.code === c);
   SHOP = { phone: r.phone || '', fee: Number(r.delivery_fee), free: r.free_delivery_from == null ? 1e9 : Number(r.free_delivery_from), assets: st.assets || 'assets/' };
-  const forms = {}, meats = {}, lada = [], extras = [];
+  const forms = {}, meats = {}, lada = [], extras = [], combos = [];
   menu.forEach(m => { const d = m.data || {};
     if (m.kind === 'product' && d.area) forms[m.code] = { name: d.short || m.name, price: Number(m.price), top: d.top, final: d.final, label: d.label || m.name.toLowerCase(), area: d.area };
     if (m.kind === 'option' && m.code.startsWith('meat_') && m.code !== 'meat_extra') meats[m.code.slice(5)] = { name: d.short || m.name, sub: d.sub || '', piles: d.piles || [], price: Number(m.price) };
     if (m.kind === 'option' && d.lada) lada.push({ ...d.lada, color: d.color, name: d.short || m.name, price: Number(m.price) });
+    if (m.kind === 'product' && d.combo) combos.push({ code: m.code, name: m.name, price: Number(m.price), includes: d.includes || '', img: d.photo || d.img || 'box' });
     if (m.kind === 'extra') extras.push({ id: m.code, name: d.short || m.name, sub: d.sub || '', img: d.img || 'x_generic', price: Number(m.price) });
   });
   const ok = x => forms[x.form] && meats[x.meat] && Object.keys(x.lada || {}).every(id => lada.some(l => l.id === id));
-  window.KEBAB_DB = { forms, meats, lada, extras,
+  window.KEBAB_DB = { forms, meats, lada, extras, combos,
     extraMeat: Number(by('meat_extra')?.price ?? 7), maxP: (by('meat_extra')?.max_qty ?? 2) + 1, extraVeg: Number(by('extra_portion')?.price ?? 1),
     ready: (st.ready || []).filter(ok) };
   /* wygląd i teksty lokalu */
@@ -636,7 +637,7 @@ function fallbackImg(k){
 })();
 </script>
 <script type="text/plain" id="mainjs">
-const IMG = new Proxy(Object.fromEntries(Object.entries({"g_onion": "g_onion.webp", "spit": "spit.jpg", "g_garlic": "g_garlic.webp", "x_woda": "x_woda.webp", "rollo": "rollo.webp", "h_garlic": "h_garlic.webp", "t_pita": "t_pita.webp", "x_fries": "x_fries.webp", "g_chili": "g_chili.webp", "x_cola": "x_cola.webp", "h_onion": "h_onion.webp", "g_tomato": "g_tomato.webp", "g_feta": "g_feta.webp", "g_cabbage": "g_cabbage.webp", "h_cabbage": "h_cabbage.webp", "h_tomato": "h_tomato.webp", "t_lavash": "t_lavash.webp", "x_baklava": "x_baklava.webp", "counter": "counter.jpg", "x_ayran": "x_ayran.webp", "h_chili": "h_chili.webp", "g_jalapeno": "g_jalapeno.webp", "h_beef": "h_beef.webp", "box": "box.webp", "h_cucumber": "h_cucumber.webp", "knife_poster": "knife_poster.jpg", "g_cucumber": "g_cucumber.webp", "h_chicken": "h_chicken.webp", "x_ostry": "x_ostry.webp", "x_rings": "x_rings.webp", "h_jalapeno": "h_jalapeno.webp", "g_lettuce": "g_lettuce.webp", "h_lettuce": "h_lettuce.webp", "h_feta": "h_feta.webp", "x_cheesef": "x_cheesef.webp", "t_box": "t_box.webp", "x_czosnkowy": "x_czosnkowy.webp", "bun": "bun.webp", "spitvid": "spitvid.mp4", "spitvid_webm": "spitvid_webm.webm", "knife": "knife.mp4", "knife_webm": "knife_webm.webm"}).map(([k, v]) => [k, SHOP.assets + v])), { get: (t, k) => t[k] ?? fallbackImg(String(k)) });
+const IMG = new Proxy(Object.fromEntries(Object.entries({"g_onion": "g_onion.webp", "spit": "spit.jpg", "g_garlic": "g_garlic.webp", "x_woda": "x_woda.webp", "rollo": "rollo.webp", "h_garlic": "h_garlic.webp", "t_pita": "t_pita.webp", "x_fries": "x_fries.webp", "g_chili": "g_chili.webp", "x_cola": "x_cola.webp", "h_onion": "h_onion.webp", "g_tomato": "g_tomato.webp", "g_feta": "g_feta.webp", "g_cabbage": "g_cabbage.webp", "h_cabbage": "h_cabbage.webp", "h_tomato": "h_tomato.webp", "t_lavash": "t_lavash.webp", "x_baklava": "x_baklava.webp", "counter": "counter.jpg", "x_ayran": "x_ayran.webp", "h_chili": "h_chili.webp", "g_jalapeno": "g_jalapeno.webp", "h_beef": "h_beef.webp", "box": "box.webp", "h_cucumber": "h_cucumber.webp", "knife_poster": "knife_poster.jpg", "g_cucumber": "g_cucumber.webp", "h_chicken": "h_chicken.webp", "x_ostry": "x_ostry.webp", "x_rings": "x_rings.webp", "h_jalapeno": "h_jalapeno.webp", "g_lettuce": "g_lettuce.webp", "h_lettuce": "h_lettuce.webp", "h_feta": "h_feta.webp", "x_cheesef": "x_cheesef.webp", "t_box": "t_box.webp", "x_czosnkowy": "x_czosnkowy.webp", "bun": "bun.webp", "spitvid": "spitvid.mp4", "spitvid_webm": "spitvid_webm.webm", "knife": "knife.mp4", "knife_webm": "knife_webm.webm"}).map(([k, v]) => [k, SHOP.assets + v])), { get: (t, k) => t[k] ?? (/^(https?:|data:)/.test(String(k)) ? k : fallbackImg(String(k))) });
 const $ = s => document.querySelector(s);
 const zl = n => (Math.round(n * 100) / 100).toFixed(n % 1 ? 2 : 0).replace('.', ',') + ' zł';
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -864,8 +865,13 @@ ambient($('#hSparks'), [.35, .3]);
 function renderReady(){
   $('#rgrid').innerHTML = KEBAB.ready.map((r, i) => { const c = copyCfg(r);
     return `<article class="rc"><img src="${IMG[KEBAB.forms[r.form].final]}" alt=""><h3>${r.name.toUpperCase()}</h3><p>${descOf(c)}</p>
-      <div class="row"><b class="num">${zl(priceOf(c))}</b><button class="ed" data-ed="${i}">Zmień</button><button data-add="${i}" aria-label="Dodaj ${r.name}">+</button></div></article>`; }).join('');
+      <div class="row"><b class="num">${zl(priceOf(c))}</b><button class="ed" data-ed="${i}">Zmień</button><button data-add="${i}" aria-label="Dodaj ${r.name}">+</button></div></article>`; }).join('') + KEBAB.combos.map((z, i) => `<article class="rc"><img src="${IMG[z.img]}" alt=""><h3>${z.name.toUpperCase()}</h3><p>${z.includes}</p>
+      <div class="row"><b class="num">${zl(z.price)}</b><button data-cadd="${i}" aria-label="Dodaj ${z.name}">+</button></div></article>`).join('');
   $('#rgrid').onclick = e => {
+    const ca = e.target.closest('[data-cadd]');
+    if (ca){ const z = KEBAB.combos[+ca.dataset.cadd], key = 'combo|' + z.code, ex = cart.find(x => x.key === key);
+      if (ex) ex.qty++; else cart.push({ key, name: z.name, unit: z.price, qty: 1, img: z.img, desc: z.includes, api: { code: z.code, options: [], label: z.name, note: '' } });
+      renderCart(); toast(z.name + ' w koszyku'); return; }
     const a = e.target.closest('[data-add]'), ed = e.target.closest('[data-ed]');
     if (a){ const r = KEBAB.ready[+a.dataset.add], c = copyCfg(r); addToCart(c, r.name, a.closest('.rc').querySelector('img')); }
     if (ed){ const r = KEBAB.ready[+ed.dataset.ed]; unwrap(); Object.assign(S, copyCfg(r), { bp: true, noSauce: false, step: 'wrap' });

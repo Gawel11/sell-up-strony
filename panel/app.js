@@ -31,7 +31,7 @@ const n2 = v => String(Number(v)).replace('.', ',');
 const pn = v => { const x = parseFloat(String(v).replace(',', '.')); return isFinite(x) && x >= 0 && x < 10000 ? Math.round(x * 100) / 100 : null; };
 const slug = s => s.toLowerCase().replace(/ł/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 24);
 const isKebab = () => cur && cur.module === 'kebab';
-const kindOf = m => m.kind === 'product' ? (m.data && m.data.area ? 'form' : 'product')
+const kindOf = m => m.kind === 'product' ? (m.data && m.data.combo ? 'combo' : m.data && m.data.area ? 'form' : 'product')
   : m.kind === 'extra' ? 'extra'
   : (m.data && m.data.lada) ? m.data.lada.kind
   : (m.code.startsWith('meat_') && m.code !== 'meat_extra') ? 'meat' : 'opt';
@@ -93,7 +93,7 @@ function renderMenu(){
   let groups;
   if (isKebab()){
     const by = k => vis.filter(m => kindOf(m) === k);
-    groups = [['Formy podania', by('form'), 'form'], ['Mięsa', by('meat')], ['Składniki', by('veg'), 'veg'], ['Sosy', by('sauce'), 'sauce'], ['Dodatki i napoje', by('extra'), 'extra'], ['Dopłaty za dodatkowe porcje', by('opt')]];
+    groups = [['Zestawy (cena za całość)', by('combo'), 'combo'], ['Formy podania', by('form'), 'form'], ['Mięsa', by('meat')], ['Składniki', by('veg'), 'veg'], ['Sosy', by('sauce'), 'sauce'], ['Dodatki i napoje', by('extra'), 'extra'], ['Dopłaty za dodatkowe porcje', by('opt')]];
   } else groups = [['Dania', vis.filter(m => m.kind === 'product' && m.code !== 'custom')], ['Baza do kreatora', vis.filter(m => m.code === 'custom')], ['Składniki i opcje', vis.filter(m => m.kind === 'option')], ['Dodatki, napoje, desery', vis.filter(m => m.kind === 'extra')]];
   $('#main').innerHTML = '<p class="hint">Zmiany zapisują się od razu i są widoczne na stronie. Wyłącz przełącznik, gdy czegoś brakuje.</p>' +
     groups.filter(g => g[1].length || g[2]).map(([t, l, add]) => `<h3><span>${t}</span>${add ? `<button class="btn s" data-add="${add}">+ Dodaj</button>` : ''}</h3><div class="g2">${l.map(rowHTML).join('')}</div>`).join('');
@@ -160,16 +160,17 @@ function newForm(name, like, price){
 }
 function modal(html){ const o = document.createElement('div'); o.className = 'ov'; o.innerHTML = `<div class="md">${html}</div>`; o.addEventListener('click', e => { if (e.target === o) o.remove(); }); document.body.appendChild(o); return o; }
 function openAdd(kind){
-  const title = { veg: 'Nowy składnik', sauce: 'Nowy sos', extra: 'Nowy dodatek / napój', form: 'Nowa forma podania' }[kind];
+  const title = { veg: 'Nowy składnik', sauce: 'Nowy sos', extra: 'Nowy dodatek / napój', form: 'Nowa forma podania', combo: 'Nowy zestaw' }[kind];
   const used = new Set(items.map(m => (m.data && m.data.lada && m.data.lada.id) || ''));
   const presets = kind === 'veg' ? PV.filter(p => !used.has(slug(p[0]))) : kind === 'sauce' ? PS.filter(p => !used.has(slug(p[0]))) : kind === 'form' ? PF.filter(p => !items.some(m => m.code === 'f_' + slug(p[0]))) : [];
   const forms = items.filter(m => kindOf(m) === 'form' && !(m.data && m.data.custom));
   const o = modal(`<h4>${title}</h4>
     ${presets.length ? `<p class="hint">Gotowe propozycje (kliknij, żeby dodać od razu):</p><div class="chips">${presets.map((p, i) => `<button class="chip" data-p="${i}">${kind === 'veg' ? `<i class="dot" style="background:${p[1]}"></i>` : ''}${esc(p[0])}${kind === 'veg' && p[2] ? ` · +${p[2]} zł` : ''}${kind === 'form' ? ` · ${p[2]} zł` : ''}</button>`).join('')}</div><p class="hint">Albo dodaj własny:</p>` : ''}
     <label class="f">Nazwa</label><input class="in" id="a_name" maxlength="40" placeholder="${kind === 'sauce' ? 'np. Serowy' : kind === 'form' ? 'np. Kebab na talerzu' : 'np. Ogórki konserwowe'}">
-    <div class="flex"><div><label class="f">${kind === 'sauce' ? 'Dopłata (zł, 0 = w cenie)' : kind === 'veg' ? 'Dopłata (zł, 0 = w cenie)' : 'Cena (zł)'}</label><input class="in" id="a_price" inputmode="decimal" value="${kind === 'form' ? '30' : '0'}"></div>
+    <div class="flex"><div><label class="f">${kind === 'sauce' ? 'Dopłata (zł, 0 = w cenie)' : kind === 'veg' ? 'Dopłata (zł, 0 = w cenie)' : 'Cena (zł)'}</label><input class="in" id="a_price" inputmode="decimal" value="${kind === 'form' ? '30' : kind === 'combo' ? '39' : '0'}"></div>
     ${kind === 'veg' || kind === 'sauce' ? `<div class="fit"><label class="f">Kolor</label><input type="color" id="a_color" value="${kind === 'sauce' ? '#ffcc4d' : '#9bbf3a'}"></div>` : ''}</div>
     ${kind === 'form' ? `<label class="f">Wygląd taki jak</label><select class="in" id="a_like">${forms.map(f => `<option value="${f.code}">${esc(f.name)}</option>`).join('')}</select>` : ''}
+    ${kind === 'combo' ? `<label class="f">Co wchodzi w skład (widoczne na stronie)</label><input class="in" id="a_inc" maxlength="120" placeholder="np. Rollo z kurczakiem + frytki + cola 0,5 l">` : ''}
     ${kind === 'extra' ? `<label class="f">Podpis (opcjonalnie)</label><input class="in" id="a_sub" maxlength="40" placeholder="np. 0,33 l, zimny">` : ''}
     <p class="err" id="a_err"></p><button class="btn w" id="a_ok">Dodaj</button>`);
   const run = async fn => { try { await fn(); toast('Dodane ✓'); o.remove(); render(); } catch (e) { o.querySelector('#a_err').textContent = e.message; } };
@@ -181,6 +182,7 @@ function openAdd(kind){
     if (kind === 'veg'){ if (items.some(m => m.data && m.data.lada && m.data.lada.id === slug(name))) throw new Error('Taki składnik już jest'); await newVeg(name, color, price); }
     else if (kind === 'sauce'){ if (items.some(m => m.data && m.data.lada && m.data.lada.id === slug(name))) throw new Error('Taki sos już jest'); await newSauce(name.replace(/^sos\s+/i, ''), color); const s = items.find(m => m.code === 'sauce_' + slug(name.replace(/^sos\s+/i, ''))); if (s && price){ await sb.from('menu_items').update({ price }).eq('id', s.id); s.price = price; } }
     else if (kind === 'form') await newForm(name, o.querySelector('#a_like').value, price);
+    else if (kind === 'combo'){ const code = 'combo_' + (slug(name) || 'zestaw'); if (items.some(m => m.code === code)) throw new Error('Taki zestaw już istnieje'); await insertItem({ kind: 'product', code, name, price, sort: nextSort(), data: { combo: true, includes: o.querySelector('#a_inc').value.trim(), img: 'box', custom: true } }); }
     else { const code = 'x_' + (slug(name) || 'dodatek'); if (items.some(m => m.code === code)) throw new Error('Taki dodatek już jest'); await insertItem({ kind: 'extra', code, name, price, sort: nextSort(), data: { sub: o.querySelector('#a_sub').value.trim(), short: name, custom: true } }); }
   });
 }
