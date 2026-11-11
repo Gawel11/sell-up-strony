@@ -3,7 +3,7 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta charset="utf-8">
-<title>ŻAR Kebab</title>
+<title>Kebab</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 @font-face{font-family:'Anton';src:url(../kebab/assets/fonts/anton-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
@@ -443,7 +443,7 @@ footer{border-top:1px solid var(--line);padding-block:24px 110px;color:var(--mut
 
 <nav class="nav" id="nav">
   <div class="wrap">
-    <div class="logo">ŻAR<span class="dot">.</span><small>KEBAB &amp; GRILL</small></div>
+    <div class="logo"><span data-b="name">ŻAR</span><span class="dot">.</span><small data-b="sub">KEBAB &amp; GRILL</small></div>
     <div class="links"><button data-go="lada">Kreator</button><button data-go="gotowe">Menu</button></div>
     <div class="mods" aria-label="Moduły systemu"><a class="opt" href="../pizza/">Pizza</a><span class="on">Kebab</span><span class="opt">Burgery</span></div>
     <button class="cartb" id="cartBtn" aria-label="Koszyk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="c num" id="cartN">0</span></button>
@@ -451,33 +451,28 @@ footer{border-top:1px solid var(--line);padding-block:24px 110px;color:var(--mut
 </nav>
 
 <main>
-  <section class="hero" aria-label="ŻAR — rożen">
+  <section class="hero" aria-label="Rożen">
     <img class="poster" id="hPoster" src="" data-img="spit" alt="Rożen z mięsem kebab przy żarzącym się palniku">
     <video id="hVid" muted playsinline loop autoplay preload="auto"></video>
     <canvas id="hSparks"></canvas>
     <div class="vig"></div>
     <div class="hcopy">
-      <span class="live"><i></i>Rożen na ogniu od 10:00</span>
-      <h1>ŻAR<span class="dot">.</span></h1>
-      <p>Kebab z prawdziwego rożna. Mięso kroimy dopiero, gdy zamówisz, a resztę składasz sam, prosto z lady.</p>
+      <span class="live"><i></i><span data-b="live">Rożen na ogniu od 10:00</span></span>
+      <h1><span data-b="name">ŻAR</span><span class="dot">.</span></h1>
+      <p data-b="hero">Kebab z prawdziwego rożna. Mięso kroimy dopiero, gdy zamówisz, a resztę składasz sam, prosto z lady.</p>
       <div class="acts"><button class="cta" data-go="lada">Złóż swojego kebaba</button><button class="cta ghost" data-go="gotowe">Nasze typowe dania</button></div>
     </div>
   </section>
 
   <section class="facts" aria-label="Fakty">
-    <div class="wrap">
-      <div><b class="num">24 h</b><span>marynata w jogurcie</span></div>
-      <div><b class="num">220°C</b><span>żar przy rożnie</span></div>
-      <div><b class="num">2 mm</b><span>grubość płatów</span></div>
-      <div><b class="num">90 s</b><span>od noża do bułki</span></div>
-    </div>
+    <div class="wrap"><!--facts--></div>
   </section>
 
   <!-- LADA -->
   <section class="lada" id="lada">
     <div class="wrap">
       <div class="lh">
-        <div><div class="eyebrow">//Kreator ŻAR</div><h2>ZRÓB SWOJEGO<br>KEBABA<span class="dot">.</span></h2></div>
+        <div><div class="eyebrow">//Kreator <span data-b="name">ŻAR</span></div><h2>ZRÓB SWOJEGO<br>KEBABA<span class="dot">.</span></h2></div>
         <div><p class="howto"><b>1</b> pieczywo <b>2</b> mięso <b>3</b> dodatki i sosy <b>4</b> kolejny kebab albo koszyk</p></div>
       </div>
 
@@ -538,7 +533,7 @@ footer{border-top:1px solid var(--line);padding-block:24px 110px;color:var(--mut
     <h2>NASZE TYPOWE DANIA<span class="dot">.</span></h2>
     <div class="rgrid" id="rgrid"></div>
   </section>
-  <footer class="wrap">ŻAR · Kebab &amp; Grill · ul. Ogniowa 7 · tel. 500 700 900 · <a href="#" id="trackLink" style="color:inherit" hidden>Sprawdź status ostatniego zamówienia</a></footer>
+  <footer class="wrap"><span id="footInfo"></span> · <a href="#" id="trackLink" style="color:inherit" hidden>Sprawdź status ostatniego zamówienia</a></footer>
 </main>
 
 <div class="scrim" id="scrim"></div>
@@ -583,8 +578,43 @@ window.SELLUP = {
 </script>
 <script src="../lib/sellup-order.js"></script>
 <script>
-const SLUG = 'zar';
-const IMG = {"g_onion": "../kebab/assets/g_onion.webp", "spit": "../kebab/assets/spit.jpg", "g_garlic": "../kebab/assets/g_garlic.webp", "x_woda": "../kebab/assets/x_woda.webp", "rollo": "../kebab/assets/rollo.webp", "h_garlic": "../kebab/assets/h_garlic.webp", "t_pita": "../kebab/assets/t_pita.webp", "x_fries": "../kebab/assets/x_fries.webp", "g_chili": "../kebab/assets/g_chili.webp", "x_cola": "../kebab/assets/x_cola.webp", "h_onion": "../kebab/assets/h_onion.webp", "g_tomato": "../kebab/assets/g_tomato.webp", "g_feta": "../kebab/assets/g_feta.webp", "g_cabbage": "../kebab/assets/g_cabbage.webp", "h_cabbage": "../kebab/assets/h_cabbage.webp", "h_tomato": "../kebab/assets/h_tomato.webp", "t_lavash": "../kebab/assets/t_lavash.webp", "x_baklava": "../kebab/assets/x_baklava.webp", "counter": "../kebab/assets/counter.jpg", "x_ayran": "../kebab/assets/x_ayran.webp", "h_chili": "../kebab/assets/h_chili.webp", "g_jalapeno": "../kebab/assets/g_jalapeno.webp", "h_beef": "../kebab/assets/h_beef.webp", "box": "../kebab/assets/box.webp", "h_cucumber": "../kebab/assets/h_cucumber.webp", "knife_poster": "../kebab/assets/knife_poster.jpg", "g_cucumber": "../kebab/assets/g_cucumber.webp", "h_chicken": "../kebab/assets/h_chicken.webp", "x_ostry": "../kebab/assets/x_ostry.webp", "x_rings": "../kebab/assets/x_rings.webp", "h_jalapeno": "../kebab/assets/h_jalapeno.webp", "g_lettuce": "../kebab/assets/g_lettuce.webp", "h_lettuce": "../kebab/assets/h_lettuce.webp", "h_feta": "../kebab/assets/h_feta.webp", "x_cheesef": "../kebab/assets/x_cheesef.webp", "t_box": "../kebab/assets/t_box.webp", "x_czosnkowy": "../kebab/assets/x_czosnkowy.webp", "bun": "../kebab/assets/bun.webp", "spitvid": "../kebab/assets/spitvid.mp4", "spitvid_webm": "../kebab/assets/spitvid_webm.webm", "knife": "../kebab/assets/knife.mp4", "knife_webm": "../kebab/assets/knife_webm.webm"};
+/* ===== Szablon: dane lokalu z bazy (nazwa, kolory, menu, ceny, zestawy) ===== */
+const SLUG = new URLSearchParams(location.search).get('l') || location.pathname.split('/').filter(Boolean)[0] || 'zar';
+let SHOP = null;
+(async () => {
+  const db = window.supabase.createClient(SELLUP.url, SELLUP.key);
+  const [{ data: r }, { data: menu }] = await Promise.all([
+    db.from('restaurants').select('name, phone, address, delivery_fee, free_delivery_from, is_open, settings, module').eq('slug', SLUG).maybeSingle(),
+    db.from('menu_items').select('kind, code, name, price, max_qty, data, sort').eq('restaurant_id', (await db.from('restaurants').select('id').eq('slug', SLUG).maybeSingle()).data?.id || '00000000-0000-0000-0000-000000000000').order('sort')
+  ]);
+  if (!r || r.module !== 'kebab'){ document.body.innerHTML = '<p style="padding:40px;font:18px system-ui;color:#fff;background:#111;min-height:100vh;margin:0">Nie znaleziono lokalu.</p>'; return; }
+  const st = r.settings || {}, b = st.brand || {}, by = c => menu.find(m => m.code === c);
+  SHOP = { phone: r.phone || '', fee: Number(r.delivery_fee), free: r.free_delivery_from == null ? 1e9 : Number(r.free_delivery_from), assets: st.assets || 'assets/' };
+  const forms = {}, meats = {}, lada = [], extras = [];
+  menu.forEach(m => { const d = m.data || {};
+    if (m.kind === 'product' && d.area) forms[m.code] = { name: d.short || m.name, price: Number(m.price), top: d.top, final: d.final, label: d.label || m.name.toLowerCase(), area: d.area };
+    if (m.kind === 'option' && m.code.startsWith('meat_') && m.code !== 'meat_extra') meats[m.code.slice(5)] = { name: d.short || m.name, sub: d.sub || '', piles: d.piles || [], price: Number(m.price) };
+    if (m.kind === 'option' && d.lada) lada.push({ ...d.lada, name: d.short || m.name, price: Number(m.price) });
+    if (m.kind === 'extra') extras.push({ id: m.code, name: d.short || m.name, sub: d.sub || '', img: d.img, price: Number(m.price) });
+  });
+  const ok = x => forms[x.form] && meats[x.meat] && Object.keys(x.lada || {}).every(id => lada.some(l => l.id === id));
+  window.KEBAB_DB = { forms, meats, lada, extras,
+    extraMeat: Number(by('meat_extra')?.price ?? 7), maxP: (by('meat_extra')?.max_qty ?? 2) + 1, extraVeg: Number(by('extra_portion')?.price ?? 1),
+    ready: (st.ready || []).filter(ok) };
+  /* wygląd i teksty lokalu */
+  document.title = r.name;
+  document.querySelectorAll('[data-b]').forEach(el => { const v = b[el.dataset.b]; if (v) el.textContent = v; });
+  if (st.colors){ const root = document.documentElement.style; if (st.colors.fire) root.setProperty('--fire', st.colors.fire); if (st.colors.amber) root.setProperty('--amber', st.colors.amber); }
+  const facts = document.querySelector('.facts .wrap');
+  if (facts) facts.innerHTML = (st.facts || []).map(([v, t]) => `<div><b class="num">${v}</b><span>${t}</span></div>`).join('');
+  if (!(st.facts || []).length && facts) facts.closest('.facts').hidden = true;
+  document.getElementById('footInfo').textContent = [r.name, r.address, r.phone && 'tel. ' + r.phone].filter(Boolean).join(' · ');
+  /* start właściwej strony */
+  const main = document.createElement('script'); main.textContent = document.getElementById('mainjs').textContent; document.body.appendChild(main);
+})();
+</script>
+<script type="text/plain" id="mainjs">
+const IMG = Object.fromEntries(Object.entries({"g_onion": "g_onion.webp", "spit": "spit.jpg", "g_garlic": "g_garlic.webp", "x_woda": "x_woda.webp", "rollo": "rollo.webp", "h_garlic": "h_garlic.webp", "t_pita": "t_pita.webp", "x_fries": "x_fries.webp", "g_chili": "g_chili.webp", "x_cola": "x_cola.webp", "h_onion": "h_onion.webp", "g_tomato": "g_tomato.webp", "g_feta": "g_feta.webp", "g_cabbage": "g_cabbage.webp", "h_cabbage": "h_cabbage.webp", "h_tomato": "h_tomato.webp", "t_lavash": "t_lavash.webp", "x_baklava": "x_baklava.webp", "counter": "counter.jpg", "x_ayran": "x_ayran.webp", "h_chili": "h_chili.webp", "g_jalapeno": "g_jalapeno.webp", "h_beef": "h_beef.webp", "box": "box.webp", "h_cucumber": "h_cucumber.webp", "knife_poster": "knife_poster.jpg", "g_cucumber": "g_cucumber.webp", "h_chicken": "h_chicken.webp", "x_ostry": "x_ostry.webp", "x_rings": "x_rings.webp", "h_jalapeno": "h_jalapeno.webp", "g_lettuce": "g_lettuce.webp", "h_lettuce": "h_lettuce.webp", "h_feta": "h_feta.webp", "x_cheesef": "x_cheesef.webp", "t_box": "t_box.webp", "x_czosnkowy": "x_czosnkowy.webp", "bun": "bun.webp", "spitvid": "spitvid.mp4", "spitvid_webm": "spitvid_webm.webm", "knife": "knife.mp4", "knife_webm": "knife_webm.webm"}).map(([k, v]) => [k, SHOP.assets + v]));
 const $ = s => document.querySelector(s);
 const zl = n => (Math.round(n * 100) / 100).toFixed(n % 1 ? 2 : 0).replace('.', ',') + ' zł';
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -592,47 +622,7 @@ document.querySelectorAll('[data-img]').forEach(el => el.src = IMG[el.dataset.im
 document.querySelector('.lada').style.setProperty('--counter', `url(${IMG.counter})`);
 
 /* ===== Konfiguracja modułu KEBAB ===== */
-const KEBAB = {
-  forms: {
-    bun:  { name: 'Bułka',  price: 26, top: 't_pita',   final: 'bun',   label: 'kebab w bułce',    area: { cx: 50, cy: 72, rx: 31, ry: 15, k: .8 } },
-    wrap: { name: 'Lawasz', price: 28, top: 't_lavash', final: 'rollo', label: 'rollo w tortilli', area: { cx: 50, cy: 50, rx: 33, ry: 30, k: 1 } },
-    box:  { name: 'Box',    price: 31, top: 't_box',    final: 'box',   label: 'box z frytkami',   area: { cx: 50, cy: 53, rx: 30, ry: 21, k: .92 } }
-  },
-  meats: {
-    chicken: { name: 'Kurczak',  sub: 'jogurt, papryka', piles: ['h_chicken'], price: 0 },
-    beef:    { name: 'Wołowina', sub: 'z baraniną',      piles: ['h_beef'],    price: 3 },
-    mix:     { name: 'Mix',      sub: 'pół na pół',      piles: ['h_chicken', 'h_beef'], price: 2 }
-  },
-  extraMeat: 7, extraVeg: 1, maxP: 3,
-  lada: [
-    { id: 'lettuce',  name: 'Sałata',  price: 0, kind: 'veg', size: 40, n: 3 },
-    { id: 'cabbage',  name: 'Kapusta', price: 0, kind: 'veg', size: 38, n: 3 },
-    { id: 'tomato',   name: 'Pomidor', price: 0, kind: 'veg', size: 30, n: 3 },
-    { id: 'cucumber', name: 'Ogórek',  price: 0, kind: 'veg', size: 28, n: 3 },
-    { id: 'onion',    name: 'Cebula',  price: 0, kind: 'veg', size: 30, n: 3 },
-    { id: 'jalapeno', name: 'Jalapeño', price: 2, kind: 'veg', size: 25, n: 3 },
-    { id: 'feta',     name: 'Feta',    price: 3, kind: 'veg', size: 30, n: 3 },
-    { id: 'garlic',   name: 'Czosnkowy', price: 0, kind: 'sauce', size: 40, n: 1 },
-    { id: 'chili',    name: 'Ostry',   price: 0, kind: 'sauce', size: 36, n: 1 }
-  ],
-  extras: [
-    { id: 'fries',   name: 'Frytki',                 sub: 'porcja 200 g',    img: 'x_fries',   price: 9 },
-    { id: 'cheesef', name: 'Frytki z serem',         sub: 'cheddar, jalapeño', img: 'x_cheesef', price: 14 },
-    { id: 'rings',   name: 'Krążki cebulowe',        sub: '8 sztuk',         img: 'x_rings',   price: 11 },
-    { id: 'ayran',   name: 'Ayran',                  sub: '0,3 l, zimny',    img: 'x_ayran',   price: 7 },
-    { id: 'cola',    name: 'Cola',                   sub: '0,5 l, szkło',    img: 'x_cola',    price: 8 },
-    { id: 'water',   name: 'Woda gazowana',          sub: '0,5 l',           img: 'x_woda',    price: 5 },
-    { id: 'sgarlic', name: 'Sos czosnkowy',          sub: 'kubek 100 ml',    img: 'x_czosnkowy', price: 3 },
-    { id: 'schili',  name: 'Sos ostry',              sub: 'kubek 100 ml',    img: 'x_ostry',   price: 3 },
-    { id: 'baklava', name: 'Baklawa',                sub: '3 kawałki, pistacje', img: 'x_baklava', price: 12 }
-  ],
-  ready: [
-    { name: 'Klasyk w bułce', form: 'bun',  meat: 'chicken', mp: 1, lada: { lettuce: 1, cabbage: 1, tomato: 1, onion: 1, garlic: 1 } },
-    { name: 'Ostre rollo',    form: 'wrap', meat: 'beef',    mp: 1, lada: { lettuce: 1, cabbage: 1, onion: 1, jalapeno: 1, chili: 1 } },
-    { name: 'Box Mix XL',     form: 'box',  meat: 'mix',     mp: 2, lada: { lettuce: 1, tomato: 1, onion: 1, garlic: 1, chili: 1 } },
-    { name: 'Rollo z fetą',   form: 'wrap', meat: 'chicken', mp: 1, lada: { lettuce: 2, tomato: 1, cucumber: 1, feta: 1, garlic: 1 } }
-  ]
-};
+const KEBAB = window.KEBAB_DB;
 const L = Object.fromEntries(KEBAB.lada.map(x => [x.id, x]));
 const S = { form: 'bun', meat: null, mp: 1, lada: {}, step: 'bread', bp: false, noSauce: false };
 const STEPS = ['bread', 'meat', 'veg', 'sauce', 'wrap'];
@@ -863,7 +853,7 @@ function renderReady(){
 }
 
 /* ===== Koszyk ===== */
-const cart = []; const FREE = 60, DEL = 7;
+const cart = []; const FREE = SHOP.free, DEL = SHOP.fee;
 function kebabApi(c, name){
   const opts = [{ code: 'meat_' + c.meat, qty: 1 }]; let extra = 0;
   if (c.mp > 1) opts.push({ code: 'meat_extra', qty: c.mp - 1 });
@@ -939,7 +929,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeCart()
 let TRK = null, FMODE = 'delivery';
 function fSteps(st){
   const names = ['Przyjęte', 'Kroimy', 'Gotowe', FMODE === 'delivery' ? 'W drodze' : 'Do odbioru'], i = { new: 0, cooking: 1, ready: 2, delivering: 3, done: 4 }[st];
-  if (st === 'cancelled'){ $('#fSteps').innerHTML = '<div class="n" style="grid-column:1/-1"><i></i>Zamówienie anulowane – zadzwoń: 500 700 900</div>'; return; }
+  if (st === 'cancelled'){ $('#fSteps').innerHTML = '<div class="n" style="grid-column:1/-1"><i></i>Zamówienie anulowane – zadzwoń: ' + SHOP.phone + '</div>'; return; }
   $('#fSteps').innerHTML = names.map((n, k) => `<div class="${k < i || i === 4 ? 'd' : k === i ? 'n' : ''}"><i></i>${n}</div>`).join('');
   const msg = { new: 'Czekamy, aż kuchnia przyjmie zamówienie.', cooking: 'Kroimy Twoje mięso prosto z rożna.', ready: FMODE === 'delivery' ? 'Gotowe! Pakujemy i czekamy na kierowcę.' : 'Gotowe! Możesz odebrać zamówienie.', delivering: 'Kierowca jest w drodze.', done: 'Smacznego!' }[st];
   if (msg) $('#fText').textContent = msg;
@@ -948,7 +938,7 @@ $('#order').onclick = async () => {
   if (!cart.length) return;
   if (!(await SellUpOrder.isOpen(SLUG))){ SellUpOrder.closedBar(true); toast('Lokal teraz nie przyjmuje zamówień'); return; }
   closeCart();
-  SellUpOrder.open({ slug: SLUG, mode: 'delivery', chooseMode: true, phone: '500 700 900',
+  SellUpOrder.open({ slug: SLUG, mode: 'delivery', chooseMode: true, phone: SHOP.phone,
     total: m => { const it = totals().it, del = m === 'pickup' || it >= FREE ? 0 : DEL; return { total: it + del, del }; },
     items: cart.map(c => ({ ...c.api, qty: c.qty })),
     onSuccess: (srv, m) => showFin(srv, m) });
