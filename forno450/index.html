@@ -538,7 +538,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
 
 <header class="wrap top">
   <div>
-    <div class="logo">Forno<b>450</b></div>
+    <div class="logo"><span data-b="name">Forno</span><b data-b="sub">450</b></div>
     <div class="status"><span class="open">Otwarte do 22:00</span><span>Dostawa 35–45 min</span><span>ul. Piekarska 12</span></div>
   </div>
   <button class="loy-chip" id="loyChip" aria-label="Karta lojalnościowa"><span id="loyChipSvg"></span><span class="num" id="loyChipTx">2/12</span></button>
@@ -585,7 +585,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
     <div class="phone" aria-hidden="true"><div class="notch"></div>
       <div class="scr">
         <div class="push"><i>F</i><span><b>Forno 450</b>Twoja pizza wyjechała. Kierowca będzie za 12 minut.</span></div>
-        <div class="lg">Forno<b>450</b></div>
+        <div class="lg"><span data-b="name">Forno</span><b data-b="sub">450</b></div>
         <span id="phoneLoy"></span>
         <div class="k"><b class="num" id="phoneLoyTx">2 z 12</b> kawałków na karcie</div>
         <div class="re">Zamów to samo co ostatnio</div>
@@ -604,7 +604,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
     </div>
   </section>
 
-  <footer class="wrap">Forno 450 · ul. Piekarska 12 · tel. 500 600 700 · <a href="#" id="trackLink" style="color:inherit" hidden>Sprawdź status ostatniego zamówienia</a></footer>
+  <footer class="wrap"><span id="footInfo"></span> · <a href="#" id="trackLink" style="color:inherit" hidden>Sprawdź status ostatniego zamówienia</a></footer>
   <div class="spacer"></div>
   </div>
 </main>
@@ -687,7 +687,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
   <div class="wrap">
     <div class="b-top">
       <button class="icon-btn" id="bBack" aria-label="Wróć do menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <div class="b-brand">Forno<b>450</b></div>
+      <div class="b-brand"><span data-b="name">Forno</span><b data-b="sub">450</b></div>
       <button class="icon-btn" id="bUndo" aria-label="Cofnij"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9h11a5 5 0 0 1 0 10H9"/><path d="M8 5L4 9l4 4"/></svg></button>
       <button class="icon-btn" id="bClear" aria-label="Wyczyść składniki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg></button>
     </div>
@@ -822,52 +822,42 @@ window.SELLUP = {
 </script>
 <script src="../lib/sellup-order.js"></script>
 <script>
-const SLUG = 'forno450';
-const IMG = {"19_prosciutto": "../pizza/assets/19_prosciutto.webp", "05_bazylia": "../pizza/assets/05_bazylia.webp", "10_jalapeno": "../pizza/assets/10_jalapeno.webp", "00_base": "../pizza/assets/00_base.webp", "15_funghi": "../pizza/assets/15_funghi.webp", "x_woda": "../pizza/assets/x_woda.webp", "12_margherita": "../pizza/assets/12_margherita.webp", "02_salami": "../pizza/assets/02_salami.webp", "x_tiramisu": "../pizza/assets/x_tiramisu.webp", "18_4sery": "../pizza/assets/18_4sery.webp", "06_papryka": "../pizza/assets/06_papryka.webp", "08_pomidor": "../pizza/assets/08_pomidor.webp", "13_diavola": "../pizza/assets/13_diavola.webp", "16_hawajska": "../pizza/assets/16_hawajska.webp", "17_wege": "../pizza/assets/17_wege.webp", "09_szynka": "../pizza/assets/09_szynka.webp", "x_oliwa": "../pizza/assets/x_oliwa.webp", "01_mozzarella": "../pizza/assets/01_mozzarella.webp", "03_pieczarki": "../pizza/assets/03_pieczarki.webp", "07_cebula": "../pizza/assets/07_cebula.webp", "11_ananas": "../pizza/assets/11_ananas.webp", "14_capricciosa": "../pizza/assets/14_capricciosa.webp", "x_lemoniada": "../pizza/assets/x_lemoniada.webp", "x_ostry": "../pizza/assets/x_ostry.webp", "04_oliwki": "../pizza/assets/04_oliwki.webp", "x_czosnkowy": "../pizza/assets/x_czosnkowy.webp", "oven_wide": "../pizza/assets/oven_wide.jpg", "oven_tall": "../pizza/assets/oven_tall.jpg", "vid_wide": "../pizza/assets/vid_wide.mp4", "vid_tall": "../pizza/assets/vid_tall.mp4", "vid_wide_webm": "../pizza/assets/vid_wide_webm.webm", "vid_tall_webm": "../pizza/assets/vid_tall_webm.webm"};
+/* ===== Szablon pizzerii: dane lokalu z bazy (nazwa, menu, ceny, składniki) ===== */
+const SLUG = new URLSearchParams(location.search).get('l') || location.pathname.split('/').filter(Boolean)[0] || 'forno450';
+let SHOP = null;
+(async () => {
+  const db = window.supabase.createClient(SELLUP.url, SELLUP.key);
+  const { data: r } = await db.from('restaurants').select('id, name, phone, address, delivery_fee, free_delivery_from, settings, module').eq('slug', SLUG).maybeSingle();
+  if (!r || r.module !== 'pizza'){ document.body.innerHTML = '<p style="padding:40px;font:18px system-ui;color:#fff;background:#111;min-height:100vh;margin:0">Nie znaleziono lokalu.</p>'; return; }
+  const { data: menu } = await db.from('menu_items').select('kind, code, name, price, variants, data, sort').eq('active', true).eq('restaurant_id', r.id).order('sort');
+  const st = r.settings || {}, b = st.brand || {};
+  SHOP = { phone: r.phone || '', fee: Number(r.delivery_fee), free: r.free_delivery_from == null ? 1e9 : Number(r.free_delivery_from), assets: st.assets || 'assets/', bn: b.name || r.name, bs: b.sub || '' };
+  const pr = m => Object.fromEntries((m.variants || []).map(v => [v.id, Number(v.price)]));
+  const custom = menu.find(m => m.code === 'custom'), crust = menu.find(m => m.code === 'crust');
+  const sizes = (custom ? custom.variants : []).map(v => ({ id: v.id, label: v.id.toUpperCase(), name: v.name }));
+  const items = [], toppings = [], extras = [];
+  menu.forEach(m => { const d = m.data || {};
+    if (m.kind === 'product' && m.code !== 'custom' && d.img) items.push({ id: m.code, name: m.name, img: d.img, desc: d.desc || '', price: pr(m), tags: d.tags || [], top: d.top || {}, badge: d.badge });
+    if (m.kind === 'option' && d.n && !m.code.endsWith('_half') && m.code !== 'crust') toppings.push({ id: m.code, name: m.name, short: d.short, img: d.img, price: Number(m.price), prices: pr(m), n: d.n, sz: d.sz, z: d.z });
+    if (m.kind === 'extra') extras.push({ id: m.code, name: m.name, img: d.img, price: Number(m.price) });
+  });
+  window.PIZZA_DB = { id: 'pizza', noun: 'pizzę', sizes, toppingFactor: { s: 1, m: 1.4, l: 1.8 }, maxPortions: 2,
+    customBase: custom ? pr(custom) : {}, crust: crust ? pr(crust) : {}, extras, toppings,
+    filters: [ {id:'all', name:'Wszystkie'}, {id:'klasyk', name:'Klasyki'}, {id:'ostre', name:'Ostre'}, {id:'wege', name:'Wegetariańskie'}, {id:'biala', name:'Bez sosu'} ],
+    items };
+  document.title = r.name;
+  document.querySelectorAll('[data-b]').forEach(el => { const v = b[el.dataset.b]; if (v) el.textContent = v; });
+  document.getElementById('footInfo').textContent = [r.name, r.address, r.phone && 'tel. ' + r.phone].filter(Boolean).join(' · ');
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); const ns = []; while (w.nextNode()) ns.push(w.currentNode);
+  ns.forEach(n => { if (n.nodeValue.includes('Forno 450') && !n.parentElement.closest('script')) n.nodeValue = n.nodeValue.replaceAll('Forno 450', r.name); });
+  const main = document.createElement('script'); main.textContent = document.getElementById('mainjs').textContent; document.body.appendChild(main);
+})();
+</script>
+<script type="text/plain" id="mainjs">
+const IMG = Object.fromEntries(Object.entries({"19_prosciutto": "19_prosciutto.webp", "05_bazylia": "05_bazylia.webp", "10_jalapeno": "10_jalapeno.webp", "00_base": "00_base.webp", "15_funghi": "15_funghi.webp", "x_woda": "x_woda.webp", "12_margherita": "12_margherita.webp", "02_salami": "02_salami.webp", "x_tiramisu": "x_tiramisu.webp", "18_4sery": "18_4sery.webp", "06_papryka": "06_papryka.webp", "08_pomidor": "08_pomidor.webp", "13_diavola": "13_diavola.webp", "16_hawajska": "16_hawajska.webp", "17_wege": "17_wege.webp", "09_szynka": "09_szynka.webp", "x_oliwa": "x_oliwa.webp", "01_mozzarella": "01_mozzarella.webp", "03_pieczarki": "03_pieczarki.webp", "07_cebula": "07_cebula.webp", "11_ananas": "11_ananas.webp", "14_capricciosa": "14_capricciosa.webp", "x_lemoniada": "x_lemoniada.webp", "x_ostry": "x_ostry.webp", "04_oliwki": "04_oliwki.webp", "x_czosnkowy": "x_czosnkowy.webp", "oven_wide": "oven_wide.jpg", "oven_tall": "oven_tall.jpg", "vid_wide": "vid_wide.mp4", "vid_tall": "vid_tall.mp4", "vid_wide_webm": "vid_wide_webm.webm", "vid_tall_webm": "vid_tall_webm.webm"}).map(([k, v]) => [k, SHOP.assets + v]));
 
 /* ===== Konfiguracja modułu. Burger i kebab dostaną własny obiekt o tym samym kształcie. ===== */
-const MODULE = {
-  id: 'pizza',
-  noun: 'pizzę',
-  sizes: [ {id:'s', label:'S', name:'32 cm'}, {id:'m', label:'M', name:'40 cm'}, {id:'l', label:'L', name:'50 cm'} ],
-  toppingFactor: { s:1, m:1.4, l:1.8 },
-  maxPortions: 2,
-  customBase: { s:22, m:30, l:40 },
-  crust: { s:7, m:9, l:12 },
-  extras: [
-    {id:'czosnkowy', name:'Sos czosnkowy', img:'x_czosnkowy', price:4},
-    {id:'ostry', name:'Sos pikantny', img:'x_ostry', price:4},
-    {id:'oliwa', name:'Oliwa z chili', img:'x_oliwa', price:5},
-    {id:'lemoniada', name:'Lemoniada 0,5 l', img:'x_lemoniada', price:12},
-    {id:'woda', name:'Woda gazowana 0,75 l', img:'x_woda', price:9},
-    {id:'tiramisu', name:'Tiramisu w słoiku', img:'x_tiramisu', price:16},
-  ],
-  /* scatter: n = sztuk na porcję, sz = rozmiar w % średnicy, z = warstwa */
-  toppings: [
-    {id:'mozzarella', name:'Mozzarella', img:'01_mozzarella', price:5, n:9,  sz:19, z:1},
-    {id:'salami',     name:'Salami',     img:'02_salami',     price:6, n:8,  sz:15, z:3},
-    {id:'szynka',     name:'Szynka',     img:'09_szynka',     price:6, n:7,  sz:15, z:2},
-    {id:'pieczarki',  name:'Pieczarki',  img:'03_pieczarki',  price:4, n:9,  sz:12, z:4},
-    {id:'oliwki',     name:'Oliwki',     img:'04_oliwki',     price:4, n:11, sz:7,  z:6},
-    {id:'bazylia',    name:'Bazylia',    img:'05_bazylia',    price:3, n:6,  sz:11, z:9},
-    {id:'papryka',    name:'Papryka',    img:'06_papryka',    price:4, n:9,  sz:13, z:5},
-    {id:'cebula',     name:'Czerwona cebula', short:'Cebula', img:'07_cebula', price:3, n:7, sz:12, z:7},
-    {id:'pomidor',    name:'Pomidor',    img:'08_pomidor',    price:4, n:6,  sz:15, z:2},
-    {id:'jalapeno',   name:'Jalapeño',   img:'10_jalapeno',   price:4, n:9,  sz:8,  z:8},
-    {id:'ananas',     name:'Ananas',     img:'11_ananas',     price:5, n:9,  sz:9,  z:5},
-  ],
-  filters: [ {id:'all', name:'Wszystkie'}, {id:'klasyk', name:'Klasyki'}, {id:'ostre', name:'Ostre'}, {id:'wege', name:'Wegetariańskie'}, {id:'biala', name:'Bez sosu'} ],
-  items: [
-    {id:'margherita', name:'Margherita', img:'12_margherita', desc:'Sos z pomidorów San Marzano, fior di latte, świeża bazylia, oliwa.', price:{s:29,m:39,l:52}, tags:['klasyk','wege'], top:{mozzarella:1,bazylia:1}},
-    {id:'diavola', name:'Diavola', img:'13_diavola', desc:'Pomidory, mozzarella, pikantne salami, jalapeño, miód z chili.', price:{s:36,m:48,l:62}, tags:['ostre'], top:{mozzarella:1,salami:1,jalapeno:1}, badge:'Ostra'},
-    {id:'capricciosa', name:'Capricciosa', img:'14_capricciosa', desc:'Pomidory, mozzarella, szynka gotowana, pieczarki.', price:{s:35,m:46,l:60}, tags:['klasyk'], top:{mozzarella:1,szynka:1,pieczarki:1}, badge:'Hit'},
-    {id:'funghi', name:'Funghi', img:'15_funghi', desc:'Pomidory, mozzarella, pieczone pieczarki, tymianek.', price:{s:33,m:44,l:57}, tags:['klasyk','wege'], top:{mozzarella:1,pieczarki:2}},
-    {id:'hawajska', name:'Hawajska', img:'16_hawajska', desc:'Pomidory, mozzarella, szynka, ananas. Kontrowersyjna i lubiana.', price:{s:35,m:46,l:60}, tags:['klasyk'], top:{mozzarella:1,szynka:1,ananas:1}},
-    {id:'ortolana', name:'Ortolana', img:'17_wege', desc:'Pomidory, mozzarella, papryka, czerwona cebula, oliwki, pomidorki.', price:{s:34,m:45,l:58}, tags:['wege'], top:{mozzarella:1,papryka:1,cebula:1,oliwki:1,pomidor:1}},
-    {id:'formaggi', name:'Quattro formaggi', img:'18_4sery', desc:'Biała pizza: mozzarella, gorgonzola, parmezan, scamorza.', price:{s:38,m:50,l:65}, tags:['wege','biala'], top:{mozzarella:2}, badge:'Bez sosu'},
-    {id:'prosciutto', name:'Prosciutto e rucola', img:'19_prosciutto', desc:'Pomidory, mozzarella, szynka parmeńska, rukola, płatki parmezanu.', price:{s:39,m:52,l:68}, tags:['klasyk'], top:{mozzarella:1,szynka:1}},
-  ],
-};
+const MODULE = window.PIZZA_DB;
 const T = Object.fromEntries(MODULE.toppings.map(t=>[t.id,t]));
 const ITEMS = Object.fromEntries(MODULE.items.map(i=>[i.id,i]));
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -877,7 +867,7 @@ const $ = s => document.querySelector(s);
 const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const plKaw = n => n === 1 ? 'kawałek' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'kawałki' : 'kawałków';
 const zl = n => n.toFixed(2).replace('.', ',') + ' zł';
-const tp = (t, size) => Math.round(t.price * MODULE.toppingFactor[size] * 2) / 2;
+const tp = (t, size) => t.prices ? t.prices[size] : Math.round(t.price * MODULE.toppingFactor[size] * 2) / 2;
 const sizeName = id => { const z = MODULE.sizes.find(s => s.id === id); return z ? z.name : ''; };
 function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function hash(s){ let h=2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h; }
@@ -1269,7 +1259,7 @@ $('#bAdd').onclick = () => {
 
 /* ===== Koszyk ===== */
 const cart = []; let mode = 'delivery';
-const DELIVERY = 6.99, FREE_FROM = 80;
+const DELIVERY = SHOP.fee, FREE_FROM = SHOP.free;
 function addToCart(line, silent){
   const key = [line.kind, line.name, line.size, line.extra, line.xid].join('|');
   const ex = cart.find(c => c.key === key);
@@ -1314,7 +1304,7 @@ function renderCart(){
   $('#cUps').querySelectorAll('[data-x]').forEach(b => b.onclick = () => addExtra(b.dataset.x, b.querySelector('img'), $('#checkout')));
   $('#cSummary').hidden = cart.length === 0; $('#cFoot').hidden = cart.length === 0;
   $('#sItems').textContent = zl(t.items);
-  $('#sDelLbl').textContent = mode === 'pickup' ? 'Odbiór osobisty' : (t.items >= FREE_FROM ? 'Dostawa (gratis od 80 zł)' : `Dostawa · gratis od ${FREE_FROM} zł`);
+  $('#sDelLbl').textContent = mode === 'pickup' ? 'Odbiór osobisty' : (t.items >= FREE_FROM ? 'Dostawa (gratis od ' + FREE_FROM + ' zł)' : `Dostawa · gratis od ${FREE_FROM} zł`);
   $('#sDel').textContent = t.del ? zl(t.del) : '0,00 zł';
   $('#sTotal').textContent = zl(t.total); $('#cTotalBtn').textContent = zl(t.total);
   setFreeBar($('#cFree'));
@@ -1327,7 +1317,7 @@ $('#checkout').onclick = async () => {
   if (!cart.length) return;
   if (!(await SellUpOrder.isOpen(SLUG))){ SellUpOrder.closedBar(true); toast('Lokal teraz nie przyjmuje zamówień'); return; }
   closeSheet();
-  SellUpOrder.open({ slug: SLUG, mode, chooseMode: false, phone: '500 600 700',
+  SellUpOrder.open({ slug: SLUG, mode, chooseMode: false, phone: SHOP.phone,
     total: m => { const it = totals().items, del = m === 'pickup' || it >= FREE_FROM ? 0 : DELIVERY; return { total: it + del, del }; },
     items: cart.map(c => ({ ...c.api, qty: c.qty, label: c.api.label || (c.custom ? '„' + c.name + '”' : '') })),
     onSuccess: srv => startOven(srv) });
@@ -1335,7 +1325,7 @@ $('#checkout').onclick = async () => {
 let TRK = null;
 function ocSteps(st){
   const names = ['Przyjęte', 'W piecu', 'Gotowe', mode === 'delivery' ? 'W drodze' : 'Do odbioru'], i = { new: 0, cooking: 1, ready: 2, delivering: 3, done: 4 }[st];
-  if (st === 'cancelled'){ $('#ocSteps').innerHTML = '<div class="now" style="grid-column:1/-1"><i></i>Zamówienie anulowane – zadzwoń: 500 600 700</div>'; return; }
+  if (st === 'cancelled'){ $('#ocSteps').innerHTML = '<div class="now" style="grid-column:1/-1"><i></i>Zamówienie anulowane – zadzwoń: ' + SHOP.phone + '</div>'; return; }
   $('#ocSteps').innerHTML = names.map((n, k) => `<div class="${k < i || i === 4 ? 'done' : k === i ? 'now' : ''}"><i></i>${n}</div>`).join('');
   const msg = { new: 'Czekamy, aż pizzerman przyjmie zamówienie.', cooking: 'Twoja pizza piecze się w 450°C.', ready: mode === 'delivery' ? 'Gotowe! Pakujemy i czekamy na kierowcę.' : 'Gotowe! Możesz odebrać zamówienie.', delivering: 'Kierowca jest w drodze.', done: 'Smacznego! Zamówienie dostarczone.' }[st];
   if (msg) $('#ocText').textContent = msg;
@@ -1469,7 +1459,7 @@ $('#uShare').onclick = () => { if (U.line) openShare(U.line); };
 /* ===== Udostępnianie własnej pizzy ===== */
 function slug(v){ const m = {'ą':'a','ć':'c','ę':'e','ł':'l','ń':'n','ó':'o','ś':'s','ź':'z','ż':'z'}; return v.toLowerCase().replace(/[ąćęłńóśźż]/g, c => m[c]).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'moja-pizza'; }
 function openShare(line){
-  $('#shareCard').innerHTML = `<div class="by">Skomponowana w Forno 450</div>${thumbHTML(line, 'min(230px,62vw)')}<h3>${esc(line.name)}</h3><p>${esc(sizeName(line.size))}${line.extra ? ' · ' + esc(line.extra) : ''}</p><div class="brand">Forno<b>450</b></div>`;
+  $('#shareCard').innerHTML = `<div class="by">Skomponowana w ${document.title}</div>${thumbHTML(line, 'min(230px,62vw)')}<h3>${esc(line.name)}</h3><p>${esc(sizeName(line.size))}${line.extra ? ' · ' + esc(line.extra) : ''}</p><div class="brand">${SHOP.bn}<b>${SHOP.bs}</b></div>`;
   $('#shareLink').textContent = `https://forno450.pl/p/${slug(line.name)}`;
   openSheet($('#shareSheet'));
 }
