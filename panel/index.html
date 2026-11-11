@@ -15,34 +15,48 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0;ba
 .box{width:min(400px,100%);background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:26px}
 .box h1{margin:0 0 4px;font-size:26px}.box p{margin:0 0 18px;color:var(--mut)}
 label.f{display:block;font-size:13px;color:var(--mut);margin:12px 0 6px}
-input.in{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--s2);font-size:16px}
-input.in:focus{outline:2px solid var(--acc);border-color:transparent}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:12px;background:var(--acc);color:#1a0d05;font-weight:800}
-.btn.w{width:100%;margin-top:18px}.btn.g{background:var(--s3);color:var(--fg)}.btn:disabled{opacity:.5}
+input.in,select.in{width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:var(--s2);font-size:16px}
+input.in:focus,select.in:focus{outline:2px solid var(--acc);border-color:transparent}
+input[type=color]{width:54px;height:42px;padding:2px;border-radius:10px;border:1px solid var(--line);background:var(--s2);cursor:pointer}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:12px;background:var(--acc);color:#1a0d05;font-weight:800;text-decoration:none}
+.btn.w{width:100%;margin-top:18px}.btn.g{background:var(--s3);color:var(--fg)}.btn.s{padding:7px 12px;font-size:13px;border-radius:10px}.btn.d{background:#4a2020;color:#ffb0b0}.btn:disabled{opacity:.5}
 .err{color:var(--bad);font-size:14px;margin-top:12px;min-height:1.2em}
 .top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;background:#151515;border-bottom:1px solid var(--line)}
 .top h2{margin:0;font-size:18px}.top select{background:var(--s2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 .top .r{margin-left:auto;display:flex;gap:8px}
-.tabs{display:flex;gap:6px;padding:12px 16px 0;max-width:820px;margin:0 auto}
-.tab{padding:9px 16px;border-radius:99px;background:var(--s2);font-weight:700;color:var(--mut)}.tab[aria-pressed=true]{background:var(--acc);color:#1a0d05}
-main{max-width:820px;margin:0 auto;padding:12px 16px 90px}
-h3{margin:22px 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
-.row{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.tabs{display:flex;gap:6px;padding:12px 16px 0;max-width:1100px;margin:0 auto;overflow-x:auto}
+.tab{padding:9px 15px;border-radius:99px;background:var(--s2);font-weight:700;color:var(--mut);white-space:nowrap}.tab[aria-pressed=true]{background:var(--acc);color:#1a0d05}
+main{max-width:1100px;margin:0 auto;padding:12px 16px 90px}
+h3{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.g2{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:8px}
+.row{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:9px 12px}
 .row.off{opacity:.5}
-.row .nm{flex:1;min-width:0;font-weight:600}.row .nm small{display:block;color:var(--mut);font-weight:400;font-size:12px}
+.row .nm{flex:1;min-width:0;font-weight:600;display:flex;align-items:center;gap:8px}
+.dot{width:14px;height:14px;border-radius:50%;flex:none;border:1px solid #fff3}
 .pr{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .pr label{font-size:11px;color:var(--mut);display:flex;flex-direction:column;gap:2px;align-items:center}
-.pr input{width:68px;padding:8px 6px;border-radius:9px;border:1px solid var(--line);background:var(--s2);text-align:center;font-size:15px}
+.pr input{width:64px;padding:7px 5px;border-radius:9px;border:1px solid var(--line);background:var(--s2);text-align:center;font-size:15px}
 .pr input:focus{outline:2px solid var(--acc);border-color:transparent}
 .sw{width:46px;height:28px;border-radius:99px;background:var(--s3);position:relative;flex:none;transition:background .2s}
 .sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s}
 .sw[aria-pressed=true]{background:var(--ok)}.sw[aria-pressed=true]::after{transform:translateX(18px)}
+.x{width:28px;height:28px;border-radius:8px;background:var(--s3);color:#ff9a9a;flex:none}
 .card{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}@media(max-width:520px){.grid{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}@media(max-width:560px){.grid,.g2{grid-template-columns:1fr}}
 .open{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700}
-.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);opacity:0;background:#2a2a2a;border:1px solid var(--line);padding:11px 18px;border-radius:99px;font-weight:600;transition:.25s;z-index:20;pointer-events:none}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);opacity:0;background:#2a2a2a;border:1px solid var(--line);padding:11px 18px;border-radius:99px;font-weight:600;transition:.25s;z-index:60;pointer-events:none}
 .toast.show{opacity:1;transform:translate(-50%,0)}.toast.bad{background:#5a2323}
 .hint{color:var(--mut);font-size:13px;margin:6px 2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:99px;background:var(--s2);border:1px solid var(--line);font-size:13px;font-weight:600}
+.chip:hover{border-color:var(--acc)}.chip[aria-pressed=true]{background:var(--acc);color:#1a0d05;border-color:var(--acc)}
+.ov{position:fixed;inset:0;background:#000a;z-index:40;display:grid;place-items:center;padding:16px}
+.md{width:min(480px,100%);max-height:92vh;overflow:auto;background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:20px}
+.md h4{margin:0 0 6px;font-size:20px}
+.flex{display:flex;gap:10px;align-items:end}.flex>*{flex:1}.flex>.fit{flex:none}
+.logo-prev{height:64px;max-width:240px;object-fit:contain;background:var(--s2);border-radius:12px;padding:8px;display:block;margin:6px 0}
+.ready{display:grid;gap:10px}
+.price-tag{font-weight:800;color:var(--acc)}
 </style>
 </head>
 <body>
@@ -56,7 +70,7 @@ h3{margin:22px 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercas
 </div>
 <div id="app" hidden>
   <div class="top"><h2>Panel</h2><select id="rs" aria-label="Lokal"></select><div class="r"><a class="btn g" id="seeSite" target="_blank" rel="noopener">Zobacz stronę</a><button class="btn g" id="out">Wyloguj</button></div></div>
-  <div class="tabs"><button class="tab" data-t="menu" aria-pressed="true">Menu i ceny</button><button class="tab" data-t="shop" aria-pressed="false">Dane lokalu</button></div>
+  <div class="tabs" id="tabs"></div>
   <main id="main"></main>
 </div>
 <div class="toast" id="toast"></div>
@@ -67,95 +81,5 @@ window.SELLUP = {
   key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZGxkb25yd2dveGZyeWFuZGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MjQ5OTYsImV4cCI6MjExMDAwMDk5Nn0.F4S0Wv3PXhb3ii5IQWsOuNZwSYq84Dnf3diAvfTcY20'
 };
 </script>
-<script>
-const $ = s => document.querySelector(s);
-const sb = supabase.createClient(SELLUP.url, SELLUP.key);
-const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-let shops = [], cur = null, items = [], tab = 'menu', booted = false;
-function toast(t, bad){ const e = $('#toast'); e.textContent = t; e.classList.toggle('bad', !!bad); e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('show'), 1800); }
-$('#lf').onsubmit = async e => { e.preventDefault(); $('#lb').disabled = true; $('#le').textContent = '';
-  const { error } = await sb.auth.signInWithPassword({ email: $('#em').value.trim(), password: $('#pw').value }); $('#lb').disabled = false;
-  if (error) $('#le').textContent = 'Zły e-mail lub hasło'; };
-$('#out').onclick = async () => { await sb.auth.signOut(); location.reload(); };
-sb.auth.onAuthStateChange((ev, s) => { if (ev === 'SIGNED_IN' || ev === 'INITIAL_SESSION') s ? boot() : ($('#loginView').hidden = false); });
-async function boot(){
-  if (booted) return; booted = true; $('#loginView').hidden = true;
-  const { data: staff } = await sb.from('restaurant_staff').select('role, restaurants(id, slug, name, module)').in('role', ['owner', 'manager']);
-  shops = (staff || []).map(s => s.restaurants).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
-  if (!shops.length){ booted = false; $('#loginView').hidden = false; $('#le').textContent = 'To konto nie ma dostępu do panelu (tylko właściciel lub manager).'; await sb.auth.signOut(); return; }
-  $('#app').hidden = false;
-  $('#rs').innerHTML = shops.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
-  $('#rs').onchange = () => pick($('#rs').value);
-  const last = localStorage.getItem('panel-shop'); pick(shops.some(s => s.id === last) ? last : shops[0].id); $('#rs').value = cur.id;
-}
-async function pick(id){
-  cur = shops.find(s => s.id === id); try { localStorage.setItem('panel-shop', id); } catch (e) {}
-  $('#seeSite').href = '../' + cur.slug + '/';
-  const [{ data: r }, { data: m }] = await Promise.all([
-    sb.from('restaurants').select('is_open, phone, address, delivery_fee, free_delivery_from, min_order').eq('id', id).single(),
-    sb.from('menu_items').select('id, kind, code, name, price, variants, active, sort').eq('restaurant_id', id).order('sort')
-  ]);
-  cur.info = r; items = m || []; render();
-}
-document.querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.t; document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
-const n2 = v => String(Number(v)).replace('.', ',');
-const pn = v => { const x = parseFloat(String(v).replace(',', '.')); return isFinite(x) && x >= 0 && x < 10000 ? Math.round(x * 100) / 100 : null; };
-function render(){ if (!cur) return; tab === 'menu' ? renderMenu() : renderShop(); }
-function rowHTML(m){
-  const v = m.variants || [];
-  const price = v.length ? v.map(x => `<label>${esc(x.name)}<input inputmode="decimal" data-id="${m.id}" data-v="${esc(x.id)}" value="${n2(x.price)}"></label>`).join('') : `<label>zł<input inputmode="decimal" data-id="${m.id}" value="${n2(m.price)}"></label>`;
-  return `<div class="row${m.active ? '' : ' off'}" data-row="${m.id}"><div class="nm">${esc(m.name)}</div><div class="pr">${price}</div><button class="sw" data-sw="${m.id}" aria-pressed="${m.active}" aria-label="Dostępne"></button></div>`;
-}
-function renderMenu(){
-  const vis = items.filter(m => !m.code.endsWith('_half'));
-  const g = [['Dania', vis.filter(m => m.kind === 'product' && m.code !== 'custom' && !/^(bun|wrap|box)$/.test(m.code))],
-    ['Baza do kreatora i rozmiary', vis.filter(m => m.kind === 'product' && (m.code === 'custom' || /^(bun|wrap|box)$/.test(m.code)))],
-    ['Składniki i opcje', vis.filter(m => m.kind === 'option')], ['Dodatki, napoje, desery', vis.filter(m => m.kind === 'extra')]].filter(x => x[1].length);
-  $('#main').innerHTML = '<p class="hint">Zmiany zapisują się od razu i są widoczne na stronie. Wyłącz przełącznik, gdy czegoś brakuje.</p>' +
-    g.map(([t, l]) => `<h3>${t}</h3>${l.map(rowHTML).join('')}`).join('');
-  $('#main').querySelectorAll('.pr input').forEach(i => i.onchange = () => savePrice(i));
-  $('#main').querySelectorAll('.sw').forEach(b => b.onclick = () => toggle(b));
-}
-async function savePrice(i){
-  const m = items.find(x => x.id === i.dataset.id), p = pn(i.value);
-  if (p === null){ toast('Podaj poprawną cenę', true); renderMenu(); return; }
-  let upd;
-  if (i.dataset.v){ const vs = m.variants.map(v => v.id === i.dataset.v ? { ...v, price: p } : v); upd = { variants: vs, price: vs[0].price }; } else upd = { price: p };
-  const { error } = await sb.from('menu_items').update(upd).eq('id', m.id);
-  if (error){ toast('Nie zapisano: ' + error.message, true); return; }
-  Object.assign(m, upd);
-  /* składniki z wersją „½” liczymy z pełnej ceny (60%, do 0,50 zł) */
-  const half = items.find(x => x.code === m.code + '_half');
-  if (half && m.kind === 'option'){ const hv = m.variants.length ? m.variants.map(v => ({ ...v, price: Math.round(v.price * .6 * 2) / 2 })) : []; const hu = { variants: hv, price: hv.length ? hv[0].price : Math.round(m.price * .6 * 2) / 2 }; await sb.from('menu_items').update(hu).eq('id', half.id); Object.assign(half, hu); }
-  i.value = n2(p); toast('Zapisano ✓');
-}
-async function toggle(b){
-  const m = items.find(x => x.id === b.dataset.sw), on = !m.active;
-  const ids = items.filter(x => x.id === m.id || x.code === m.code + '_half').map(x => x.id);
-  const { error } = await sb.from('menu_items').update({ active: on }).in('id', ids);
-  if (error){ toast('Nie zapisano: ' + error.message, true); return; }
-  items.forEach(x => { if (ids.includes(x.id)) x.active = on; });
-  b.setAttribute('aria-pressed', on); b.closest('.row').classList.toggle('off', !on); toast(on ? 'Włączone ✓' : 'Wyłączone ✓');
-}
-function renderShop(){
-  const r = cur.info;
-  $('#main').innerHTML = `<div class="card"><div class="open"><span>Przyjmujemy zamówienia online</span><button class="sw" id="open" aria-pressed="${r.is_open}" aria-label="Otwarte"></button></div></div>
-  <div class="card"><div class="grid">
-  <div><label class="f">Telefon</label><input class="in" id="f_phone" value="${esc(r.phone)}" maxlength="30"></div>
-  <div><label class="f">Adres lokalu</label><input class="in" id="f_address" value="${esc(r.address)}" maxlength="120"></div>
-  <div><label class="f">Koszt dostawy (zł)</label><input class="in" id="f_fee" inputmode="decimal" value="${n2(r.delivery_fee)}"></div>
-  <div><label class="f">Darmowa dostawa od (zł)</label><input class="in" id="f_free" inputmode="decimal" value="${r.free_delivery_from == null ? '' : n2(r.free_delivery_from)}" placeholder="brak"></div>
-  <div><label class="f">Minimalne zamówienie (zł)</label><input class="in" id="f_min" inputmode="decimal" value="${n2(r.min_order)}"></div>
-  </div><button class="btn w" id="saveShop">Zapisz dane lokalu</button></div>`;
-  $('#open').onclick = async () => { const on = !cur.info.is_open; const { error } = await sb.from('restaurants').update({ is_open: on }).eq('id', cur.id); if (error) return toast('Nie zapisano', true); cur.info.is_open = on; $('#open').setAttribute('aria-pressed', on); toast(on ? 'Zamówienia włączone ✓' : 'Zamówienia wyłączone ✓'); };
-  $('#saveShop').onclick = async () => {
-    const fee = pn($('#f_fee').value), mn = pn($('#f_min').value), fr = $('#f_free').value.trim() === '' ? null : pn($('#f_free').value);
-    if (fee === null || mn === null || (fr === null && $('#f_free').value.trim() !== '')) return toast('Sprawdź kwoty', true);
-    const upd = { phone: $('#f_phone').value.trim() || null, address: $('#f_address').value.trim() || null, delivery_fee: fee, free_delivery_from: fr, min_order: mn };
-    const { error } = await sb.from('restaurants').update(upd).eq('id', cur.id);
-    if (error) return toast('Nie zapisano: ' + error.message, true); Object.assign(cur.info, upd); toast('Zapisano ✓');
-  };
-}
-</script>
-</body>
+<script src="app.js"></script></body>
 </html>
