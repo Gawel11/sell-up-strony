@@ -99,6 +99,7 @@ textarea{min-height:96px;resize:vertical}
 .ok{display:none;text-align:center;padding:40px 10px}
 .ok .big{width:84px;height:84px;margin:0 auto 18px;border-radius:50%;background:var(--lime);color:var(--ink);display:grid;place-items:center;font:900 40px/1 var(--display)}
 .direct{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.note a,.chk a{color:var(--lime)}
 @media (max-width:640px){
 .wall{gap:1px}
 .tag{bottom:max(14px,env(safe-area-inset-bottom,0px))}
@@ -154,7 +155,7 @@ form{grid-template-columns:1fr}
 <div><b>Statystyki</b><span>Ile zamówień, za ile i co sprzedaje się najlepiej.</span></div>
 <div><b>QR i link</b><span>Gotowy kod do wydruku i link do wklejenia na Facebooka czy Instagram.</span></div>
 </div>
-<div class="direct"><a class="btn lime" href="#kontakt">Chcę taką aplikację</a><a class="btn ghost" href="#pakiety">Zobacz pakiety</a></div>
+<div class="direct"><a class="btn lime" href="#kontakt">Chcę taką aplikację</a><a class="btn ghost" href="#pakiety">Zobacz pakiety</a></div><p class="note" style="margin-top:28px">Twoja Nova Energia sp. z o.o. · NIP 712-350-84-03 · <a href="prawne/polityka-prywatnosci.html">Polityka prywatności</a> · <a href="prawne/regulamin.html">Regulamin</a></p>
 </div>
 </section>
 
@@ -185,7 +186,7 @@ form{grid-template-columns:1fr}
 <a class="btn ghost" href="#kontakt" data-pkg="Studio">Zapytaj o wycenę</a>
 </div>
 </div>
-<p class="note">Funkcje oznaczone „wkrótce” są w przygotowaniu. Zapytaj, kiedy będą dostępne dla Twojego lokalu.</p>
+<p class="note">Funkcje oznaczone „wkrótce” są w przygotowaniu. Zapytaj, kiedy będą dostępne dla Twojego lokalu.</p><p class="note" style="margin-top:28px">Twoja Nova Energia sp. z o.o. · NIP 712-350-84-03 · <a href="prawne/polityka-prywatnosci.html">Polityka prywatności</a> · <a href="prawne/regulamin.html">Regulamin</a></p>
 </div>
 </section>
 
@@ -196,6 +197,8 @@ form{grid-template-columns:1fr}
 <div class="ey">Kontakt</div>
 <h2 class="h" id="h-kon">Porozmawiajmy o Twoim lokalu</h2>
 <p class="lead">Zostaw numer, oddzwonimy. Przygotujemy podgląd strony z Twoim menu i logo, żebyś zobaczył, jak to będzie wyglądać.</p>
+<div class="direct" style="margin:0 0 26px"><a class="btn lime" href="tel:+48501761799">Zadzwoń: 501 761 799</a><a class="btn ghost" href="https://wa.me/48501761799?text=Dzie%C5%84%20dobry%2C%20chc%C4%99%20zapyta%C4%87%20o%20aplikacj%C4%99%20sell-up" target="_blank" rel="noopener">WhatsApp</a><a class="btn ghost" href="mailto:exen.trade@gmail.com?subject=sell-up%20%E2%80%93%20zapytanie">exen.trade@gmail.com</a></div>
+<p class="sub2">albo zostaw numer, oddzwonimy</p>
 <form id="lf" novalidate>
 <label class="f">Imię<input name="name" autocomplete="given-name" maxlength="80"></label>
 <label class="f">Nazwa lokalu<input name="venue" autocomplete="organization" maxlength="120"></label>
@@ -206,10 +209,11 @@ form{grid-template-columns:1fr}
 <label class="f full">Pakiet<select name="package"><option value="">Jeszcze nie wiem</option><option>Start</option><option>Pro AI</option><option>Studio</option></select></label>
 <label class="f full">Wiadomość<textarea name="message" maxlength="1000" placeholder="Np. kiedy najlepiej zadzwonić, co chcesz sprzedawać online"></textarea></label>
 <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-<label class="chk full"><input type="checkbox" name="consent" required><span id="ctext">Zgadzam się na kontakt telefoniczny i e-mailowy w sprawie oferty sell-up.pl. Dane z formularza służą tylko do odpowiedzi na to zgłoszenie. W każdej chwili mogę poprosić o ich usunięcie.</span></label>
+<label class="chk full"><input type="checkbox" name="consent" required><span id="ctext">Zgadzam się na kontakt telefoniczny i e-mailowy w sprawie oferty sell-up.pl. Dane z formularza służą tylko do odpowiedzi na to zgłoszenie. W każdej chwili mogę poprosić o ich usunięcie. Szczegóły: <a href="prawne/polityka-prywatnosci.html" target="_blank">polityka prywatności</a>.</span></label>
 <div class="err full" id="lerr" role="alert"></div>
 <div class="full"><button class="btn lime" type="submit" id="lsend">Wyślij zgłoszenie</button></div>
 </form>
+<p class="note" style="margin-top:28px">Twoja Nova Energia sp. z o.o. · NIP 712-350-84-03 · <a href="prawne/polityka-prywatnosci.html">Polityka prywatności</a> · <a href="prawne/regulamin.html">Regulamin</a></p>
 <div class="ok" id="lok"><div class="big">✓</div><h3 class="h" style="font-size:28px">Dziękujemy!</h3><p class="lead" style="margin:0 auto">Zgłoszenie dotarło. Oddzwonimy najszybciej, jak to możliwe.</p></div>
 </div>
 </section>
