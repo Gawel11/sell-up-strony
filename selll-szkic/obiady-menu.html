@@ -133,9 +133,9 @@ function burst(d){if(RM)return;var x=W*d.cx/100,y=H*d.cy/100;for(var i=0;i<46;i+
 function sprinkle(d){if(RM)return;var x=W*d.cx/100,y=H*d.cy/100;for(var i=0;i<70;i++){parts.push({k:'h',x:x+rnd(-W*.3,W*.3),y:rnd(-H*.25,-4),vx:rnd(-.25,.25),vy:rnd(1.6,3.2),g:.02,r:rnd(1,2.6),rot:rnd(0,6),vr:rnd(-.15,.15),c:pick(d.herb),l:0,m:9999,stop:y+rnd(-H*.07,H*.09),sway:rnd(0,6)})}}
 function steamOn(d){steam={x:W*d.cx/100,y:H*d.cy/100,w:W*d.sw}}
 function tick(ts){raf=requestAnimationFrame(tick);var dt=Math.min(2,(ts-(t0||ts))/16.7);t0=ts;ctx.clearRect(0,0,W,H);
- if(steam&&!RM){if(Math.random()<.2*dt)parts.push({k:'s',x:steam.x+rnd(-steam.w/2,steam.w/2),y:steam.y-rnd(0,H*.06),vx:rnd(-.15,.15),vy:rnd(.4,.85),r:rnd(W*.05,W*.09),l:0,m:rnd(130,210),ph:rnd(0,6)})}
+ if(steam&&!RM){if(Math.random()<.3*dt)parts.push({k:'s',x:steam.x+rnd(-steam.w/2,steam.w/2),y:steam.y-rnd(0,H*.06),vx:rnd(-.15,.15),vy:rnd(.4,.85),r:rnd(W*.05,W*.09),l:0,m:rnd(130,210),ph:rnd(0,6)})}
  for(var i=parts.length-1;i>=0;i--){var p=parts[i];p.l+=dt;
-  if(p.k==='s'){p.y-=p.vy*dt;p.x+=(Math.sin(p.l*.035+p.ph)*.45+p.vx)*dt;p.r*=1+.006*dt;var a=Math.sin(Math.PI*Math.min(1,p.l/p.m))*.11;if(p.l>=p.m){parts.splice(i,1);continue}ctx.globalAlpha=a;ctx.drawImage(puff,p.x-p.r,p.y-p.r,p.r*2,p.r*2);continue}
+  if(p.k==='s'){p.y-=p.vy*dt;p.x+=(Math.sin(p.l*.035+p.ph)*.45+p.vx)*dt;p.r*=1+.006*dt;var a=Math.sin(Math.PI*Math.min(1,p.l/p.m))*.15;if(p.l>=p.m){parts.splice(i,1);continue}ctx.globalAlpha=a;ctx.drawImage(puff,p.x-p.r,p.y-p.r,p.r*2,p.r*2);continue}
   if(p.k==='h'){if(p.y<p.stop){p.vy+=p.g*dt;p.y+=p.vy*dt;p.x+=(p.vx+Math.sin(p.l*.12+p.sway)*.35)*dt;p.rot+=p.vr*dt}else{p.m=Math.min(p.m,p.l+60)}}
   else{p.vy+=p.g*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.rot+=p.vr*dt}
   if(p.l>=p.m||p.y>H+20){parts.splice(i,1);continue}
