@@ -5,4 +5,5 @@ Publiczne pliki stron wgrywane na https://sell-up.pl (to samo, co widzi każdy o
 - `zar/` → https://sell-up.pl/zar (zdjęcia z `kebab/assets` na serwerze)
 - `lib/sellup-order.js` → wspólne okno zamówienia i śledzenie statusu
 - `kuchnia/` → https://sell-up.pl/kuchnia
+- `obiady-domowe/` → https://sell-up.pl/obiady-domowe (demo: intro z wycinanką łowicką, zestaw dnia, tydzień, menu; dane na razie w pliku)
 Kod całego systemu: prywatne repo `sell-up`.
