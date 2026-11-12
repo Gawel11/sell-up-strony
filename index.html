@@ -58,6 +58,14 @@ video{display:block}
 .ey{font:700 12px/1 var(--body);letter-spacing:.28em;text-transform:uppercase;color:var(--lime)}
 .h{font:900 clamp(30px,6vw,60px)/1.02 var(--display);letter-spacing:-.02em;margin:12px 0 14px}
 .lead{font-size:clamp(16px,2vw,19px);line-height:1.55;color:#cfd9c4;max-width:640px;margin:0 0 30px}
+.why{display:grid;grid-template-columns:1fr;gap:12px;margin:0 0 30px}
+.why-big{padding:24px;border-radius:22px;background:linear-gradient(135deg,rgba(185,255,46,.2),rgba(60,240,180,.08));box-shadow:inset 0 0 0 1.5px var(--lime)}
+.why-big b{display:block;font:900 clamp(44px,8vw,72px)/1 var(--display);letter-spacing:-.03em;margin-bottom:10px;animation:hue 14s ease-in-out infinite;text-shadow:0 0 .3em currentColor}
+.why-big span{font-size:17px;line-height:1.45;color:var(--paper);font-weight:700}
+.why-list{display:grid;gap:10px}
+.why-list div{padding:16px 18px;border-radius:18px;background:rgba(242,247,234,.05);box-shadow:inset 0 0 0 1px rgba(242,247,234,.1)}
+.why-list b{display:block;font-size:16px;margin-bottom:4px;color:var(--paper)}.why-list span{color:#b9c6ad;font-size:14.5px;line-height:1.45}
+@media(min-width:760px){.why{grid-template-columns:1fr 1.2fr;align-items:stretch}.why-big{display:flex;flex-direction:column;justify-content:center}}
 .steps{display:grid;gap:14px;counter-reset:s;margin-bottom:34px}
 .step{display:grid;grid-template-columns:54px 1fr;gap:16px;align-items:start;padding:20px;border-radius:20px;background:rgba(242,247,234,.05);box-shadow:inset 0 0 0 1px rgba(242,247,234,.1)}
 .step::before{counter-increment:s;content:counter(s);width:54px;height:54px;border-radius:16px;background:var(--lime);color:var(--ink);font:900 24px/54px var(--display);text-align:center}
@@ -145,6 +153,14 @@ form{grid-template-columns:1fr}
 <div class="ey">sell-up.pl</div>
 <h2 class="h" id="h-jak">Jak to działa?</h2>
 <p class="lead">Twoi klienci zamawiają z telefonu na stronie, która wygląda jak reklama Twojego lokalu. Ty dostajesz zamówienia na tablecie w kuchni, a menu i ceny zmieniasz sam w panelu.</p>
+<div class="why">
+<div class="why-big"><b>do 30%</b><span>Tyle prowizji od każdego zamówienia pobierają portale z dowozem jedzenia. Z własną aplikacją te pieniądze zostają u Ciebie.</span></div>
+<div class="why-list">
+<div><b>Bezpośredni kontakt z klientami</b><span>Dzięki swojej aplikacji masz własną bazę klientów. Nikt nie stoi między Tobą a nimi.</span></div>
+<div><b>Przypomnienia i promocje</b><span>Wysyłasz powiadomienia o promocjach, daniu dnia i nowościach w menu prosto na telefony klientów.</span></div>
+<div><b>Klienci wracają</b><span>Pieczątki i punkty za polecenia sprawiają, że zamawiają u Ciebie, a nie u konkurencji.</span></div>
+</div>
+</div>
 <div class="steps">
 <div class="step"><div><h3>Wybierz branżę i zobacz demo</h3><p>Kliknij kebab, pizzę, burgera albo obiady domowe na stronie głównej. To działające strony, na których możesz złożyć zamówienie testowe.</p></div></div>
 <div class="step"><div><h3>Krótka rozmowa i wycena</h3><p>Zostaw numer, oddzwonimy. Ustalimy, czego potrzebujesz, i przygotujemy podgląd strony z Twoim menu i logo.</p></div></div>
