@@ -92,6 +92,11 @@ input,select,textarea{font:500 16px/1.3 var(--body);color:var(--paper);backgroun
 input:focus,select:focus,textarea:focus{box-shadow:inset 0 0 0 2px var(--lime)}
 select option{background:#111}
 textarea{min-height:96px;resize:vertical}
+.ph{position:relative;display:flex;align-items:center;gap:14px;min-height:76px;border-radius:14px;background:rgba(242,247,234,.06);box-shadow:inset 0 0 0 1px rgba(242,247,234,.16);padding:12px 16px;cursor:pointer}
+.ph:focus-within{box-shadow:inset 0 0 0 2px var(--lime)}
+.ph input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.phb{display:grid;gap:4px}.phb b{font-size:15px;color:var(--paper)}.phb small{font-size:12.5px;color:var(--muted);font-weight:500}
+.phi{width:64px;height:64px;object-fit:cover;border-radius:10px;margin-left:auto;flex:none}
 .chk{display:flex;gap:12px;align-items:flex-start;font-size:13.5px;line-height:1.45;color:#b9c6ad;cursor:pointer}
 .chk input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:var(--lime)}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
@@ -165,7 +170,6 @@ form{grid-template-columns:1fr}
 <div class="panel">
 <div class="ey">Pakiety</div>
 <h2 class="h" id="h-pak">Wybierz, ile chcesz sprzedawać</h2>
-<p class="lead">Każdy lokal jest inny, dlatego cenę ustalamy po krótkiej rozmowie. Zacznij od pakietu Start i rozbuduj go, kiedy zechcesz.</p>
 <div class="pk">
 <div class="card">
 <h3>Start</h3><p class="for">Twoja aplikacja, która ściąga klientów z powrotem.</p>
@@ -197,11 +201,12 @@ form{grid-template-columns:1fr}
 <div class="ey">Kontakt</div>
 <h2 class="h" id="h-kon">Porozmawiajmy o Twoim lokalu</h2>
 <p class="lead">Zostaw numer, oddzwonimy. Przygotujemy podgląd strony z Twoim menu i logo, żebyś zobaczył, jak to będzie wyglądać.</p>
-<div class="direct" style="margin:0 0 26px"><a class="btn lime" href="tel:+48501761799">Zadzwoń: 501 761 799</a><a class="btn ghost" href="https://wa.me/48501761799?text=Dzie%C5%84%20dobry%2C%20chc%C4%99%20zapyta%C4%87%20o%20aplikacj%C4%99%20sell-up" target="_blank" rel="noopener">WhatsApp</a><a class="btn ghost" href="mailto:exen.trade@gmail.com?subject=sell-up%20%E2%80%93%20zapytanie">exen.trade@gmail.com</a></div>
-<p class="sub2">albo zostaw numer, oddzwonimy</p>
+<p class="note" style="margin:0 0 22px">Rozmawiamy tylko z właścicielami lokali, dlatego prosimy o NIP i zdjęcie lokalu.</p>
 <form id="lf" novalidate>
 <label class="f">Imię<input name="name" autocomplete="given-name" maxlength="80"></label>
 <label class="f">Nazwa lokalu<input name="venue" autocomplete="organization" maxlength="120"></label>
+<label class="f">NIP lokalu *<input name="nip" inputmode="numeric" autocomplete="off" maxlength="13" placeholder="np. 712-350-84-03" required></label>
+<label class="f full photo">Zdjęcie lokalu *<span class="ph"><input name="photo" type="file" accept="image/*" required><span class="phb"><b>📷 Zrób zdjęcie lub wybierz z galerii</b><small>szyld, wejście albo wnętrze lokalu</small></span><img class="phi" alt="" hidden></span></label>
 <label class="f">Telefon *<input name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="20" placeholder="np. 600 100 200"></label>
 <label class="f">E-mail<input name="email" type="email" inputmode="email" autocomplete="email" maxlength="120"></label>
 <label class="f">Miasto<input name="city" autocomplete="address-level2" maxlength="80"></label>
@@ -235,17 +240,26 @@ document.querySelectorAll('[data-close]').forEach(function(b){b.onclick=close});
 document.querySelectorAll('.ov').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)close()})});
 addEventListener('keydown',function(e){if(e.key==='Escape'&&document.querySelector('.ov.on'))close()});
 document.querySelectorAll('[data-pkg]').forEach(function(a){a.addEventListener('click',function(){var s=document.querySelector('#lf select[name=package]');s.value=a.dataset.pkg})});
+function nipOk(v){var d=String(v).replace(/\D/g,'');if(d.length!==10)return false;var w=[6,5,7,2,3,4,5,6,7],s=0;for(var i=0;i<9;i++)s+=d[i]*w[i];s%=11;return s!==10&&s===+d[9];}
+async function uploadPhoto(file){var blob;try{var bm=await createImageBitmap(file);var k=Math.min(1,1600/Math.max(bm.width,bm.height));var c=document.createElement('canvas');c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);c.getContext('2d').drawImage(bm,0,0,c.width,c.height);blob=await new Promise(function(r){c.toBlob(r,'image/jpeg',.82)});}catch(e){if(/^image\/(jpeg|png|webp)$/.test(file.type))blob=file;else throw new Error('Nie udało się odczytać zdjęcia. Wybierz zdjęcie JPG lub PNG.');}
+ var ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg',path='leads/'+crypto.randomUUID()+'.'+ext;
+ var r=await fetch(SB+'/storage/v1/object/lead-photos/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':blob.type||'image/jpeg','x-upsert':'false'},body:blob});
+ if(!r.ok)throw new Error('Nie udało się wysłać zdjęcia. Spróbuj ponownie.');return path;}
+var phIn=document.querySelector('#lf input[name=photo]');if(phIn)phIn.addEventListener('change',function(){var im=document.querySelector('#lf .phi'),fl=phIn.files[0];if(fl){im.src=URL.createObjectURL(fl);im.hidden=false;document.querySelector('#lf .phb b').textContent='✓ Zdjęcie dodane';}});
 var f=document.getElementById('lf'),err=document.getElementById('lerr'),btn=document.getElementById('lsend');
 f.addEventListener('submit',async function(e){
  e.preventDefault();err.textContent='';
  var d=Object.fromEntries(new FormData(f));
  if(d.website){return;}
  var ph=(d.phone||'').replace(/[^0-9+]/g,'');
+ if(!nipOk(d.nip||'')){err.textContent='Podaj poprawny NIP lokalu (10 cyfr).';f.nip.focus();return;}
+ if(!f.photo.files[0]){err.textContent='Dodaj zdjęcie lokalu.';return;}
  if(ph.length<9){err.textContent='Podaj numer telefonu (min. 9 cyfr).';f.phone.focus();return;}
  if(!f.consent.checked){err.textContent='Zaznacz zgodę na kontakt.';return;}
- btn.disabled=true;btn.textContent='Wysyłam…';
+ btn.disabled=true;btn.textContent='Wysyłam zdjęcie…';
  try{
-  var r=await fetch(SB+'/rest/v1/rpc/submit_lead',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_name:d.name||null,p_venue:d.venue||null,p_city:d.city||null,p_phone:ph,p_email:d.email||null,p_segment:d.segment||null,p_package:d.package||null,p_message:d.message||null,p_source:'sell-up.pl'+(location.hash?' '+location.hash:''),p_consent:true,p_consent_text:document.getElementById('ctext').textContent})});
+  var path=await uploadPhoto(f.photo.files[0]);btn.textContent='Wysyłam…';
+  var r=await fetch(SB+'/rest/v1/rpc/submit_lead',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_name:d.name||null,p_venue:d.venue||null,p_city:d.city||null,p_phone:ph,p_email:d.email||null,p_segment:d.segment||null,p_package:d.package||null,p_message:d.message||null,p_source:'sell-up.pl'+(location.hash?' '+location.hash:''),p_consent:true,p_consent_text:document.getElementById('ctext').textContent,p_nip:(d.nip||'').replace(/\D/g,''),p_photo:path})});
   var j=await r.json();
   if(!r.ok){throw new Error(j&&j.message?j.message:'Nie udało się wysłać.');}
   fetch(SB+'/functions/v1/lead-mail',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({id:j})}).catch(function(){});
