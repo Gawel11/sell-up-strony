@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Obiady domowe – dziś na obiad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{--cream:#f6efe2;--paper:#fffaf1;--ink:#2e2015;--soft:#7a6650;--line:#e7dac2;--red:#9a2f20;--gold:#c99a4b}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:Nunito,system-ui,sans-serif}
+/* ---------- intro ---------- */
+.intro{position:relative;height:100vh;height:100svh;overflow:hidden;background:#2a1b10}
+.intro .blur{position:absolute;inset:-6%;background:url(intro.jpg) center/cover;filter:blur(28px) brightness(.6);transform:scale(1.1)}
+.intro video{position:absolute;top:0;left:50%;height:100%;width:auto;min-width:100%;max-width:none;transform:translateX(-50%);object-fit:cover}
+@media (min-aspect-ratio:3/4){.intro video{min-width:0;width:auto;height:100%;box-shadow:0 0 80px rgba(0,0,0,.55)}}
+.intro .vg{position:absolute;inset:0;background:linear-gradient(rgba(20,12,6,.55),rgba(20,12,6,0) 22%,rgba(20,12,6,0) 70%,rgba(20,12,6,.7));pointer-events:none}
+.brand{position:absolute;top:calc(18px + env(safe-area-inset-top));left:0;right:0;text-align:center;color:#fff4dc;pointer-events:none}
+.brand small{display:block;font-size:11px;letter-spacing:.36em;text-transform:uppercase;font-weight:800;opacity:.85}
+.brand b{display:block;font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;font-size:30px;letter-spacing:.01em;margin-top:2px;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.cap{position:absolute;left:0;right:0;bottom:calc(120px + env(safe-area-inset-bottom));text-align:center;color:#fff;pointer-events:none;opacity:0;transform:translateY(10px);transition:opacity .6s,transform .6s}
+.cap.on{opacity:1;transform:none}
+.cap small{display:block;font-size:11px;letter-spacing:.32em;text-transform:uppercase;font-weight:800;color:#f1d9a6}
+.cap b{display:block;font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;font-size:34px;line-height:1.05;text-shadow:0 2px 16px rgba(0,0,0,.75);margin-top:4px}
+.skip{position:absolute;top:calc(20px + env(safe-area-inset-top));right:16px;border:1px solid rgba(255,244,220,.5);background:rgba(20,12,6,.35);color:#fff4dc;border-radius:20px;padding:7px 14px;font:700 13px Nunito,sans-serif;cursor:pointer;backdrop-filter:blur(4px)}
+.down{position:absolute;left:50%;bottom:calc(34px + env(safe-area-inset-bottom));transform:translateX(-50%);border:0;background:#fff4dc;color:var(--ink);border-radius:28px;padding:13px 24px;font:800 15px Nunito,sans-serif;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap}
+.down i{font-style:normal;display:inline-block;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(4px)}}
+.sound{display:none}
+/* ---------- menu ---------- */
+.menu{position:relative;padding:28px max(16px,env(safe-area-inset-left)) 130px;max-width:760px;margin:0 auto}
+.mh{text-align:center;margin-bottom:22px}
+.mh small{font-size:11px;letter-spacing:.34em;text-transform:uppercase;font-weight:800;color:var(--gold)}
+.mh h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;font-size:40px;line-height:1.05;margin-top:4px}
+.mh p{color:var(--soft);font-size:14px;margin-top:6px}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.chips span{border:1px solid var(--line);background:var(--paper);border-radius:20px;padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--soft)}
+.set{display:grid;grid-template-columns:1fr 1fr;border-radius:18px;overflow:hidden;background:#3a2617;color:#fff4dc;box-shadow:0 12px 30px rgba(60,35,15,.25);margin-bottom:26px;position:relative}
+.set img{width:100%;height:100%;object-fit:cover;aspect-ratio:1;display:block}
+.set .imgs{display:grid;grid-template-rows:1fr 1fr}
+.set .imgs img{aspect-ratio:auto;height:100%;min-height:0}
+.set .tx{padding:18px 16px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.set small{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;font-weight:800;color:#f1c978}
+.set h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;font-size:27px;line-height:1.05}
+.set p{font-size:13px;opacity:.85;line-height:1.35}
+.set .pr{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:30px;color:#f1d9a6}
+.set button{align-self:flex-start;border:0;background:#f1d9a6;color:#2e2015;border-radius:22px;padding:10px 18px;font:800 14px Nunito,sans-serif;cursor:pointer}
+.cat{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;font-size:28px;margin:8px 0 12px;display:flex;align-items:center;gap:12px}
+.cat::after{content:"";flex:1;height:1px;background:var(--line)}
+.grid{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:24px}
+@media (min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 4px 14px rgba(80,50,20,.06);opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}
+.card.in{opacity:1;transform:none}
+.card .ph{position:relative;aspect-ratio:4/3;overflow:hidden;background:#eadfca}
+.card .ph img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.04);transition:transform 6s ease-out}
+.card.in .ph img{transform:scale(1)}
+.card .ph .hot{position:absolute;left:12px;top:12px;background:rgba(255,250,241,.92);color:var(--red);border-radius:14px;padding:4px 10px;font-size:11.5px;font-weight:800}
+.card .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:23px;line-height:1.1}
+.card p{color:var(--soft);font-size:13.5px;line-height:1.4;flex:1}
+.card .row{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.card .pr{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:26px}
+.card button{border:0;background:var(--red);color:#fff;border-radius:22px;padding:10px 18px;font:800 14px Nunito,sans-serif;cursor:pointer;box-shadow:0 4px 12px rgba(154,47,32,.25)}
+.card button:active,.set button:active{transform:scale(.96)}
+.foot{text-align:center;color:var(--soft);font-size:13px;margin-top:8px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:40;transform:translateY(110%);transition:transform .35s;background:#2e2015;color:#fff4dc;padding:12px max(16px,env(safe-area-inset-left)) calc(12px + env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 -8px 24px rgba(0,0,0,.2)}
+.bar.on{transform:none}.bar small{display:block;opacity:.7;font-size:12px}
+.bar button{border:0;background:#f1d9a6;color:#2e2015;border-radius:22px;padding:11px 22px;font:800 15px Nunito,sans-serif;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%) translateY(16px);background:#2e2015;color:#fff4dc;padding:10px 16px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-size:14px;opacity:0;pointer-events:none;transition:.3s;z-index:50;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%)}
+</style></head><body>
+<section class="intro" id="intro">
+ <div class="blur"></div>
+ <video id="vid" src="intro.mp4" poster="intro.jpg" autoplay muted playsinline preload="auto"></video>
+ <div class="vg"></div>
+ <div class="brand"><small>dziś na obiad</small><b>Obiady domowe</b></div>
+ <div class="cap" id="cap"><small id="capk"></small><b id="capn"></b></div>
+ <button class="skip" id="skip">Pomiń &rsaquo;</button>
+ <button class="down" id="down"><span>Zobacz dzisiejsze menu</span><i>&#8595;</i></button>
+</section>
+<main class="menu" id="menu">
+ <div class="mh"><small>karta dnia</small><h1>Dziś gotujemy</h1><p>Jak u mamy, codziennie świeże</p>
+  <div class="chips"><span>Dostawa ok. 30 min</span><span>Odbiór osobisty</span><span>Porcje do wyczerpania</span></div></div>
+ <div class="set" id="set">
+  <div class="imgs"><img src="k-rosol.jpg" alt="Rosół"><img src="k-schab.jpg" alt="Schabowy"></div>
+  <div class="tx"><small>zestaw dnia</small><h2>Rosół + schabowy z ziemniakami</h2><p>Zupa i drugie danie w jednej cenie</p><div class="pr">35 zł</div><button id="setb">Dodaj zestaw</button></div>
+ </div>
+ <div class="cat">Zupy</div><div class="grid" id="g1"></div>
+ <div class="cat">Drugie dania</div><div class="grid" id="g2"></div>
+ <p class="foot">Ceny zawierają VAT. Alergeny podamy na życzenie.</p>
+</main>
+<div class="bar" id="bar"><div><b id="bsum"></b><small>Gotowe za ok. 30 min</small></div><button id="order">Zamów</button></div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+var Z=[{f:'k-rosol.jpg',n:'Rosół z makaronem',t:'Gotowany godzinami na kurze i warzywach, z cienkim makaronem i natką',p:12,hot:'Klasyk'},
+{f:'k-barszcz.jpg',n:'Barszcz czerwony z uszkami',t:'Czysty, na zakwasie z buraków, z domowymi uszkami z grzybami',p:13},
+{f:'k-zurek.jpg',n:'Żurek z kiełbasą i jajkiem',t:'Na żytnim zakwasie, z białą kiełbasą, jajkiem i majerankiem',p:15}];
+var M=[{f:'k-schab.jpg',n:'Schabowy z ziemniakami i mizerią',t:'Rozbity i smażony na złoto, ziemniaki z koperkiem, mizeria',p:29,hot:'Najczęściej zamawiany'},
+{f:'k-mielony.jpg',n:'Kotlet mielony z buraczkami',t:'Domowy mielony, ziemniaki z koperkiem i buraczki na ciepło',p:25},
+{f:'k-kopytka.jpg',n:'Kopytka w sosie grzybowym',t:'Ręcznie robione, w kremowym sosie z leśnych grzybów',p:24},
+{f:'k-pierogi.jpg',n:'Pierogi ruskie',t:'Z ziemniakami i twarogiem, ze złotą cebulką i śmietaną',p:24}];
+function card(d){var e=document.createElement('article');e.className='card';
+ e.innerHTML='<div class="ph"><img src="'+d.f+'" alt="'+d.n+'" loading="lazy">'+(d.hot?'<span class="hot">'+d.hot+'</span>':'')+'</div><div class="bd"><h3>'+d.n+'</h3><p>'+d.t+'</p><div class="row"><span class="pr">'+d.p+' zł</span><button>Dodaj</button></div></div>';
+ e.querySelector('button').onclick=function(){add(d.n,d.p)};return e}
+Z.forEach(function(d){$('#g1').appendChild(card(d))});M.forEach(function(d){$('#g2').appendChild(card(d))});
+$('#setb').onclick=function(){add('Zestaw dnia: rosół + schabowy',35)};
+var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}})},{threshold:.15});
+document.querySelectorAll('.card').forEach(function(c){io.observe(c)});
+/* intro captions synced to the film */
+var CAP=[[2.6,5.2,'zupa','Rosół z makaronem'],[7.6,10.2,'drugie danie','Schabowy z ziemniakami'],[12.6,20,'drugie danie','Pierogi ruskie']];
+var vid=$('#vid'),cap=$('#cap');
+vid.addEventListener('timeupdate',function(){var t=vid.currentTime,c=null;CAP.forEach(function(x){if(t>=x[0]&&t<x[1])c=x});
+ if(c){$('#capk').textContent=c[2];$('#capn').textContent=c[3];cap.classList.add('on')}else cap.classList.remove('on')});
+vid.addEventListener('ended',function(){$('#down').style.transform='translateX(-50%) scale(1.06)'});
+var p=vid.play&&vid.play();if(p&&p.catch)p.catch(function(){});
+function toMenu(){$('#menu').scrollIntoView({behavior:'smooth'})}
+$('#down').onclick=toMenu;$('#skip').onclick=function(){vid.pause();toMenu()};
+function add(n,p){var c=cart[n]||(cart[n]={q:0,p:p});c.q++;sum();toast('Dodano: '+n)}
+var cart={};
+function sum(){var q=0,s=0;for(var k in cart){q+=cart[k].q;s+=cart[k].q*cart[k].p}$('#bsum').textContent='Zamówienie: '+q+' szt. · '+s+' zł';$('#bar').classList.toggle('on',q>0)}
+var tt;function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},1600)}
+$('#order').onclick=function(){toast('To prototyp – zamówienia włączymy po podłączeniu do bazy')};
+})();
+</script></body></html>
