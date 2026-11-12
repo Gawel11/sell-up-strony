@@ -78,10 +78,10 @@ video{display:block}
 .card .badge{position:absolute;top:-12px;left:22px;background:var(--lime);color:var(--ink);font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;padding:7px 10px;border-radius:999px}
 .card h3{font:900 26px/1 var(--display);margin:0 0 8px}
 .card .for{color:#b9c6ad;font-size:15px;line-height:1.45;margin:0 0 16px}
-.card ul{list-style:none;margin:0 0 20px;padding:0;display:grid;gap:9px;flex:1}
+.card ul{list-style:none;margin:0 0 20px;padding:0;display:grid;gap:9px;flex:1;align-content:start}
 .card li{display:flex;gap:10px;font-size:15px;line-height:1.35}
 .card li::before{content:"";flex:none;width:18px;height:18px;margin-top:1px;border-radius:50%;background:var(--lime) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 12 4 4 8-8' fill='none' stroke='%23070908' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat}
-.card li.plus::before{background:transparent;box-shadow:inset 0 0 0 1.5px var(--lime)}
+.card li.plus{font-weight:700;color:var(--paper)}
 .card li em{font-style:normal;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:#ffd36b;padding:3px 6px;border-radius:6px;margin-left:4px;align-self:center;white-space:nowrap}
 .card .price{font:700 15px/1 var(--body);color:var(--muted);margin-bottom:14px}
 .note{color:var(--muted);font-size:14px;line-height:1.5}
@@ -129,7 +129,7 @@ form{grid-template-columns:1fr}
 <div class="p soon"><div class="scene s-sushi"><img class="kb kb2" src="selll-szkic/sushi.jpg" alt=""></div><div class="tag"><b>Sushi</b><i>Wkrótce</i></div></div>
 <div class="p soon"><div class="scene s-boba"><img class="kb kb3 fa" src="selll-szkic/boba.jpg" alt=""><img class="kb kb6 fb" src="selll-szkic/matcha.jpg" alt=""></div><div class="tag"><b>Bubble tea &amp; matcha</b><i>Wkrótce</i></div></div>
 <div class="p soon"><div class="scene s-ice"><img class="kb kb4 fa" src="selll-szkic/lody.jpg" alt=""><img class="kb kb5 fb" src="selll-szkic/gofry.jpg" alt=""></div><div class="tag"><b>Lody &amp; gofry</b><i>Wkrótce</i></div></div>
-<div class="p soon"><div class="scene s-bread"><img class="kb kb6" src="selll-szkic/piekarnie.jpg" alt=""></div><div class="tag"><b>Piekarnie</b><i>Wkrótce</i></div></div>
+<a class="p" href="bulkaikromka/" aria-label="Piekarnie – Bułka i Kromka"><div class="scene s-bread"><img class="kb kb6" src="selll-szkic/piekarnie.jpg" alt=""></div><div class="tag"><b>Piekarnie</b><i>Działa</i></div></a>
 </main>
 <div class="mark" aria-label="sell-up, sprzedajemy więcej"><div class="word" id="word" aria-hidden="true"></div><div class="sub">sprzedajemy więcej</div></div>
 
@@ -168,25 +168,25 @@ form{grid-template-columns:1fr}
 <p class="lead">Każdy lokal jest inny, dlatego cenę ustalamy po krótkiej rozmowie. Zacznij od pakietu Start i rozbuduj go, kiedy zechcesz.</p>
 <div class="pk">
 <div class="card">
-<h3>Start</h3><p class="for">Własna strona zamówień zamiast portali z prowizją.</p>
-<ul><li>Strona zamówień z Twoim menu</li><li>Panel menu, cen i dostępności</li><li>Panel kuchni z dźwiękiem</li><li>Godziny otwarcia i strefy dostawy</li><li>Kody rabatowe i statystyki</li><li>Kod QR i link do social mediów</li></ul>
+<h3>Start</h3><p class="for">Twoja aplikacja, która ściąga klientów z powrotem.</p>
+<ul><li>Strona www</li><li>Aplikacja lojalnościowa: zbieranie pieczątek</li><li>Kontakt i powiadomienia PUSH do klientów</li><li>Geolokalizacja: PUSH do klientów w promieniu 100 m</li><li>Zdjęcia produktów z AI</li><li>Informacje o promocjach, zmianach w menu i daniu dnia</li><li>Polecenia aplikacji: +50 pkt dla obu osób</li></ul>
 <div class="price">Cena: wycena indywidualna</div>
 <a class="btn ghost" href="#kontakt" data-pkg="Start">Zapytaj o wycenę</a>
 </div>
 <div class="card hot"><span class="badge">Polecany</span>
-<h3>Pro AI</h3><p class="for">Start plus sztuczna inteligencja, która robi za Ciebie marketing.</p>
-<ul><li>Wszystko ze Startu</li><li class="plus">Zdjęcia potraw AI <em>wkrótce</em></li><li class="plus">Gotowe posty na Facebooka i Instagram <em>wkrótce</em></li><li class="plus">Kalendarz treści na tydzień <em>wkrótce</em></li><li class="plus">Poranny raport dla właściciela <em>wkrótce</em></li></ul>
+<h3>PRO</h3><p class="for">Start plus zamówienia online i cała obsługa lokalu w jednym miejscu.</p>
+<ul><li>Wszystko z pakietu Start</li><li class="plus">Zamawianie online</li><li class="plus">CRM: baza Twoich klientów</li><li class="plus">Panel kuchni</li><li class="plus">Panel właściciela</li><li class="plus">Płatności online</li></ul>
 <div class="price">Cena: wycena indywidualna</div>
-<a class="btn lime" href="#kontakt" data-pkg="Pro AI">Zapytaj o wycenę</a>
+<a class="btn lime" href="#kontakt" data-pkg="PRO">Zapytaj o wycenę</a>
 </div>
 <div class="card">
-<h3>Studio</h3><p class="for">Dla lokali, które chcą być wszędzie i mieć z głowy social media.</p>
-<ul><li>Wszystko z Pro AI, z wyższymi limitami</li><li class="plus">Automatyczna publikacja postów <em>wkrótce</em></li><li class="plus">Odpowiedzi na opinie do zatwierdzenia <em>wkrótce</em></li><li class="plus">Tłumaczenia menu <em>wkrótce</em></li></ul>
+<h3>PRO AI</h3><p class="for">PRO plus sztuczna inteligencja, która robi marketing za Ciebie.</p>
+<ul><li>Wszystko z pakietu PRO</li><li class="plus">Opinie Google z AI</li><li class="plus">Remarketing AI</li><li class="plus">Social media AI</li><li class="plus">Raportowanie AI</li><li class="plus">Grupowe SMS do klientów z AI</li></ul>
 <div class="price">Cena: wycena indywidualna</div>
-<a class="btn ghost" href="#kontakt" data-pkg="Studio">Zapytaj o wycenę</a>
+<a class="btn ghost" href="#kontakt" data-pkg="PRO AI">Zapytaj o wycenę</a>
 </div>
 </div>
-<p class="note">Funkcje oznaczone „wkrótce” są w przygotowaniu. Zapytaj, kiedy będą dostępne dla Twojego lokalu.</p><p class="note" style="margin-top:28px">Twoja Nova Energia sp. z o.o. · NIP 712-350-84-03 · <a href="prawne/polityka-prywatnosci.html">Polityka prywatności</a> · <a href="prawne/regulamin.html">Regulamin</a></p>
+<p class="note" style="margin-top:28px">Twoja Nova Energia sp. z o.o. · NIP 712-350-84-03 · <a href="prawne/polityka-prywatnosci.html">Polityka prywatności</a> · <a href="prawne/regulamin.html">Regulamin</a></p>
 </div>
 </section>
 
@@ -206,7 +206,7 @@ form{grid-template-columns:1fr}
 <label class="f">E-mail<input name="email" type="email" inputmode="email" autocomplete="email" maxlength="120"></label>
 <label class="f">Miasto<input name="city" autocomplete="address-level2" maxlength="80"></label>
 <label class="f">Branża<select name="segment"><option value="">Wybierz</option><option>Kebab</option><option>Pizza</option><option>Burger</option><option>Obiady domowe</option><option>Sushi</option><option>Bubble tea / matcha</option><option>Lody / gofry</option><option>Piekarnia</option><option>Inna</option></select></label>
-<label class="f full">Pakiet<select name="package"><option value="">Jeszcze nie wiem</option><option>Start</option><option>Pro AI</option><option>Studio</option></select></label>
+<label class="f full">Pakiet<select name="package"><option value="">Jeszcze nie wiem</option><option>Start</option><option>PRO</option><option>PRO AI</option></select></label>
 <label class="f full">Wiadomość<textarea name="message" maxlength="1000" placeholder="Np. kiedy najlepiej zadzwonić, co chcesz sprzedawać online"></textarea></label>
 <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 <label class="chk full"><input type="checkbox" name="consent" required><span id="ctext">Zgadzam się na kontakt telefoniczny i e-mailowy w sprawie oferty sell-up.pl. Dane z formularza służą tylko do odpowiedzi na to zgłoszenie. W każdej chwili mogę poprosić o ich usunięcie. Szczegóły: <a href="prawne/polityka-prywatnosci.html" target="_blank">polityka prywatności</a>.</span></label>
