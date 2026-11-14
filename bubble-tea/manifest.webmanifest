@@ -1,11 +1,11 @@
 {
- "name": "Perła bubble tea",
- "short_name": "Perła",
+ "name": "Bubble tea",
+ "short_name": "Bubble tea",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
- "background_color": "#fbf4f8",
- "theme_color": "#f7ecf4",
+ "background_color": "#202125",
+ "theme_color": "#202125",
  "lang": "pl",
  "icons": [
   {
