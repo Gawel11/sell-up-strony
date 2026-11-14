@@ -49,6 +49,74 @@ video{display:block}
 .nav a{pointer-events:auto;font:500 clamp(11px,1.05vw,14px)/1 var(--body);letter-spacing:.24em;text-transform:uppercase;text-decoration:none;padding:6px 2px;white-space:nowrap;animation:hue 14s ease-in-out infinite;text-shadow:0 0 12px currentColor,0 1px 6px rgba(0,0,0,.9);opacity:.88;transition:opacity .25s}
 .nav a:nth-child(2){animation-delay:-3s}.nav a:nth-child(3){animation-delay:-6s}
 .nav a:hover,.nav a:focus-visible{opacity:1;outline:none;text-decoration:underline;text-underline-offset:6px}
+
+/* ===== kafelki z przyciskiem aplikacji ===== */
+.p.live{cursor:pointer}
+.p.live:hover,.p.live:focus-within{flex-grow:1.5}
+.p .cover{position:absolute;inset:0;z-index:3}
+.p .cover:focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--lime)}
+.appbtn{position:absolute;z-index:4;left:50%;top:calc(52% );transform:translate(-50%,0);display:flex;flex-direction:column;align-items:center;gap:4px;border:0;cursor:pointer;padding:9px 8px 8px;border-radius:16px;background:rgba(7,9,8,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--lime);box-shadow:inset 0 0 0 1px rgba(185,255,46,.55),0 6px 20px rgba(0,0,0,.45);font:700 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;transition:transform .25s,background .25s}
+.appbtn svg{width:22px;height:22px}
+.appbtn:hover{background:rgba(185,255,46,.18);transform:translate(-50%,-2px)}
+.appbtn::after{content:"";position:absolute;inset:-4px;border-radius:20px;box-shadow:0 0 0 0 rgba(185,255,46,.55);animation:apppulse 2.6s infinite}
+.p.live:nth-child(2) .appbtn::after{animation-delay:.5s}.p.live:nth-child(3) .appbtn::after{animation-delay:1s}.p.live:nth-child(4) .appbtn::after{animation-delay:1.5s}.p.live:last-child .appbtn::after{animation-delay:2s}
+@keyframes apppulse{0%{box-shadow:0 0 0 0 rgba(185,255,46,.5)}70%,100%{box-shadow:0 0 0 12px rgba(185,255,46,0)}}
+@media (max-width:640px){.appbtn{padding:7px 5px 6px;border-radius:12px;font-size:8px;letter-spacing:.06em}.appbtn svg{width:18px;height:18px}}
+
+/* ===== okno aplikacji ===== */
+.appwrap{display:grid;grid-template-columns:minmax(260px,330px) 1fr;gap:40px;align-items:center}
+@media (max-width:760px){.appwrap{grid-template-columns:1fr;gap:26px;justify-items:center}}
+.phone{position:relative;width:min(300px,78vw);aspect-ratio:9/19.2;border-radius:44px;background:#0b0d0c;padding:11px;box-shadow:0 0 0 2px #2a2f2b,0 0 0 9px #121513,0 40px 80px -20px rgba(0,0,0,.8),0 0 70px -10px var(--seg,#b9ff2e)}
+.phone::before{content:"";position:absolute;left:50%;top:18px;width:86px;height:24px;border-radius:14px;background:#000;transform:translateX(-50%);z-index:5}
+.scr{position:relative;width:100%;height:100%;border-radius:34px;overflow:hidden;background:#f6f3ec;color:#1b1714;font-family:var(--body)}
+.sb{position:absolute;top:0;left:0;right:0;height:44px;display:flex;justify-content:space-between;align-items:center;padding:6px 26px 0;font:700 12px/1 var(--body);color:#fff;z-index:4}
+.ah{position:relative;height:42%;background:#222 center/cover no-repeat}
+.ah::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.05) 40%,rgba(0,0,0,.65))}
+.ah b{position:absolute;left:16px;bottom:30px;z-index:2;color:#fff;font:900 20px/1.05 var(--display);letter-spacing:-.01em;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.ah small{position:absolute;left:16px;bottom:13px;z-index:2;color:rgba(255,255,255,.85);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.loy{position:relative;margin:-18px 12px 0;background:#fff;border-radius:18px;padding:12px 12px 10px;box-shadow:0 10px 24px -10px rgba(0,0,0,.35);z-index:3}
+.loy .t{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;font-weight:700;color:#6b625a;text-transform:uppercase;letter-spacing:.08em}
+.loy .t b{font-size:13px;color:#1b1714;letter-spacing:0;text-transform:none}
+.st{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:10px 0 8px}
+.st i{aspect-ratio:1;border-radius:50%;border:2px dashed #d9d1c6;display:grid;place-items:center;font-style:normal;font-size:14px;transition:all .35s cubic-bezier(.3,1.6,.5,1)}
+.st i.on{border:0;background:var(--seg);color:#fff;transform:scale(1);box-shadow:0 4px 10px -3px var(--seg)}
+.st i.pop{transform:scale(1.3)}
+.loy .rw{font-size:11.5px;color:#6b625a}
+.loy .rw b{color:#1b1714}
+.pts{display:flex;gap:8px;margin:10px 12px 0}
+.pts div{flex:1;background:#fff;border-radius:14px;padding:9px 10px;font-size:10.5px;color:#6b625a;font-weight:700;box-shadow:0 6px 16px -10px rgba(0,0,0,.3)}
+.pts div b{display:block;font:900 17px/1.1 var(--display);color:#1b1714;margin-top:3px}
+.abtn{margin:10px 12px 0;height:42px;border-radius:14px;background:var(--seg);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13.5px;box-shadow:0 8px 18px -8px var(--seg)}
+.ref{margin:8px 12px 0;height:36px;border-radius:12px;border:1.5px solid #e4ddd2;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:800;color:#1b1714}
+.nf{position:absolute;left:8px;right:8px;top:46px;z-index:6;display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:18px;background:rgba(245,245,245,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 12px 30px -8px rgba(0,0,0,.45);transform:translateY(-140%);opacity:0;transition:transform .55s cubic-bezier(.2,1.2,.4,1),opacity .4s;color:#111}
+.nf.on{transform:none;opacity:1}
+.nf .ic{width:34px;height:34px;flex:none;border-radius:9px;background:var(--seg);display:grid;place-items:center;font-size:17px}
+.nf .tx{font-size:12px;line-height:1.3}.nf .tx b{display:block;font-size:12px}.nf .tx small{float:right;color:#777;font-size:10.5px;font-weight:500}
+.ainfo .seg-tag{display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(185,255,46,.14);color:var(--lime);font:700 12px/1 var(--body);letter-spacing:.16em;text-transform:uppercase}
+.ainfo h2{font:900 clamp(28px,4.6vw,46px)/1.05 var(--display);margin:14px 0 10px;letter-spacing:-.02em}
+.ainfo p{color:#cfd9c4;line-height:1.55;margin:0 0 18px;font-size:16px}
+.afe{list-style:none;margin:0 0 24px;padding:0;display:grid;gap:10px}
+.afe li{display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.4}
+.afe li span{flex:none;width:30px;height:30px;border-radius:10px;background:rgba(242,247,234,.07);display:grid;place-items:center;font-size:15px}
+.afe li b{display:block;color:var(--paper)}.afe li small{color:#a9b79c;font-size:13.5px}
+.aact{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.qr{display:flex;gap:12px;align-items:center;padding:10px 14px 10px 10px;border-radius:16px;background:rgba(242,247,234,.05);box-shadow:inset 0 0 0 1px rgba(242,247,234,.12)}
+.qr .q{width:84px;height:84px;background:#fff;border-radius:8px;padding:6px;box-sizing:border-box}
+.qr .q img,.qr .q canvas{width:100%!important;height:100%!important}
+.qr span{font-size:13px;color:#b9c6ad;max-width:150px;line-height:1.35}
+@media (max-width:760px){.qr{display:none}}
+.segs .sl{display:block;font-size:13px;font-weight:700;letter-spacing:.04em;color:#cfd9c4;margin-bottom:8px}.segs .sl em{font-style:normal;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative;cursor:pointer}.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip span{display:inline-block;padding:10px 14px;border-radius:999px;background:rgba(242,247,234,.06);box-shadow:inset 0 0 0 1px rgba(242,247,234,.16);font-size:14px;font-weight:700;color:var(--paper);transition:all .2s}
+.chip input:checked+span{background:var(--lime);color:var(--ink);box-shadow:0 0 18px rgba(185,255,46,.35)}
+.chip input:focus-visible+span{box-shadow:inset 0 0 0 2px var(--lime)}
+.multi{margin:6px 0 24px;padding:22px;border-radius:22px;background:linear-gradient(135deg,rgba(60,240,180,.12),rgba(185,255,46,.06));box-shadow:inset 0 0 0 1px rgba(60,240,180,.45);display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+.multi .ic{font-size:40px;line-height:1}
+.multi h3{margin:0 0 6px;font:900 22px/1.15 var(--display);color:var(--paper)}
+.multi p{margin:0;color:#cfd9c4;line-height:1.5;font-size:15px}
+.multi .btn{margin-top:14px}
+@media(max-width:640px){.multi{grid-template-columns:1fr}}
 /* ===== panele ===== */
 .ov{position:fixed;inset:0;z-index:30;background:rgba(5,7,6,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .ov.on{opacity:1;visibility:visible}
@@ -136,16 +204,45 @@ form{grid-template-columns:1fr}
 <a href="#kontakt" class="cta">Kontakt</a>
 </nav>
 <main class="wall">
-<a class="p" href="kebab/" aria-label="Kebab"><div class="scene"><video muted loop autoplay playsinline preload="auto" poster="kebab/assets/spit.jpg" data-src="kebab/assets/spitvid.mp4"></video></div><div class="tag"><b>Kebab</b><i>Działa</i></div></a>
-<a class="p" href="pizza/" aria-label="Pizza"><div class="scene"><video muted loop autoplay playsinline preload="auto" poster="pizza/assets/oven_tall.jpg" data-src="pizza/assets/vid_tall.mp4"></video></div><div class="tag"><b>Pizza</b><i>Działa</i></div></a>
-<a class="p" href="dym-burger/" aria-label="Burger"><div class="scene"><video muted loop autoplay playsinline poster="dym-burger/assets/p_fire.jpg" data-src="dym-burger/assets/v_fire.mp4"></video></div><div class="tag"><b>Burger</b><i>Działa</i></div></a>
-<a class="p" href="obiady-domowe/" aria-label="Obiady domowe"><div class="scene s-stew"><img class="kb kb1" src="selll-szkic/obiady.jpg" alt=""></div><div class="tag"><b>Obiady domowe</b><i>Działa</i></div></a>
+<div class="p live" data-seg="kebab"><a class="cover" href="kebab/" aria-label="Kebab"></a><div class="scene"><video muted loop autoplay playsinline preload="auto" poster="kebab/assets/spit.jpg" data-src="kebab/assets/spitvid.mp4"></video></div><div class="tag"><b>Kebab</b><i>Działa</i></div><button class="appbtn" type="button" data-seg="kebab" aria-label="Zobacz aplikację: Kebab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg><span>Apka</span></button></div>
+<div class="p live" data-seg="pizza"><a class="cover" href="pizza/" aria-label="Pizza"></a><div class="scene"><video muted loop autoplay playsinline preload="auto" poster="pizza/assets/oven_tall.jpg" data-src="pizza/assets/vid_tall.mp4"></video></div><div class="tag"><b>Pizza</b><i>Działa</i></div><button class="appbtn" type="button" data-seg="pizza" aria-label="Zobacz aplikację: Pizza"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg><span>Apka</span></button></div>
+<div class="p live" data-seg="burger"><a class="cover" href="dym-burger/" aria-label="Burger"></a><div class="scene"><video muted loop autoplay playsinline poster="dym-burger/assets/p_fire.jpg" data-src="dym-burger/assets/v_fire.mp4"></video></div><div class="tag"><b>Burger</b><i>Działa</i></div><button class="appbtn" type="button" data-seg="burger" aria-label="Zobacz aplikację: Burger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg><span>Apka</span></button></div>
+<div class="p live" data-seg="obiady"><a class="cover" href="obiady-domowe/" aria-label="Obiady domowe"></a><div class="scene s-stew"><img class="kb kb1" src="selll-szkic/obiady.jpg" alt=""></div><div class="tag"><b>Obiady domowe</b><i>Działa</i></div><button class="appbtn" type="button" data-seg="obiady" aria-label="Zobacz aplikację: Obiady domowe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg><span>Apka</span></button></div>
 <div class="p soon"><div class="scene s-sushi"><img class="kb kb2" src="selll-szkic/sushi.jpg" alt=""></div><div class="tag"><b>Sushi</b><i>Wkrótce</i></div></div>
 <div class="p soon"><div class="scene s-boba"><img class="kb kb3 fa" src="selll-szkic/boba.jpg" alt=""><img class="kb kb6 fb" src="selll-szkic/matcha.jpg" alt=""></div><div class="tag"><b>Bubble tea &amp; matcha</b><i>Wkrótce</i></div></div>
 <div class="p soon"><div class="scene s-ice"><img class="kb kb4 fa" src="selll-szkic/lody.jpg" alt=""><img class="kb kb5 fb" src="selll-szkic/gofry.jpg" alt=""></div><div class="tag"><b>Lody &amp; gofry</b><i>Wkrótce</i></div></div>
-<a class="p" href="bulkaikromka/" aria-label="Piekarnie – Bułka i Kromka"><div class="scene s-bread"><img class="kb kb6" src="selll-szkic/piekarnie.jpg" alt=""></div><div class="tag"><b>Piekarnie</b><i>Działa</i></div></a>
+<div class="p live" data-seg="piekarnie"><a class="cover" href="bulkaikromka/" aria-label="Piekarnie – Bułka i Kromka"></a><div class="scene s-bread"><img class="kb kb6" src="selll-szkic/piekarnie.jpg" alt=""></div><div class="tag"><b>Piekarnie</b><i>Działa</i></div><button class="appbtn" type="button" data-seg="piekarnie" aria-label="Zobacz aplikację: Piekarnie – Bułka i Kromka"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg><span>Apka</span></button></div>
 </main>
 <div class="mark" aria-label="sell-up, sprzedajemy więcej"><div class="word" id="word" aria-hidden="true"></div><div class="sub">sprzedajemy więcej</div></div>
+
+<!-- ===== APLIKACJA BRANŻY ===== -->
+<section class="ov" id="ov-app" role="dialog" aria-modal="true" aria-labelledby="h-app">
+<button class="x" data-close aria-label="Zamknij">✕</button>
+<div class="panel"><div class="appwrap">
+<div class="phone" id="aphone"><div class="scr">
+<div class="sb"><span id="atime">12:41</span><span>●●● 5G ▮</span></div>
+<div class="nf" id="anf"><div class="ic" id="anfi"></div><div class="tx"><b id="anft"></b><span id="anfb"></span></div></div>
+<div class="ah" id="ahero"><b id="abrand"></b><small id="asub"></small></div>
+<div class="loy"><div class="t">Karta lojalnościowa <b id="acount">0/10</b></div><div class="st" id="astamps"></div><div class="rw" id="areward"></div></div>
+<div class="pts"><div>Twoje punkty<b id="apts">340</b></div><div>Dziś dla Ciebie<b id="adeal">−15%</b></div></div>
+<div class="abtn" id="aorder">Zamów online</div>
+<div class="ref">🎁 Poleć znajomemu · +50 pkt dla obojga</div>
+</div></div>
+<div class="ainfo">
+<span class="seg-tag" id="aseg"></span>
+<h2 id="h-app">Twoja aplikacja</h2>
+<p id="alead"></p>
+<ul class="afe">
+<li><span>🎟️</span><div><b>Karta pieczątek</b><small id="frew"></small></div></li>
+<li><span>🔔</span><div><b>Powiadomienia PUSH</b><small>Promocje, danie dnia i zmiany w menu prosto na telefony Twoich klientów.</small></div></li>
+<li><span>📍</span><div><b>PUSH w promieniu 100 m</b><small>Klient przechodzi obok lokalu i dostaje zaproszenie z rabatem.</small></div></li>
+<li><span>🤝</span><div><b>Polecenia +50 pkt</b><small>Klienci zapraszają znajomych, obie osoby dostają punkty.</small></div></li>
+<li><span>🛒</span><div><b>Zamawianie online</b><small>Bez prowizji portali (w pakiecie PRO i PRO AI).</small></div></li>
+</ul>
+<div class="aact"><a class="btn lime" id="ademo" href="#">Otwórz demo</a><a class="btn ghost" href="#kontakt" id="aask">Chcę taką aplikację</a><div class="qr"><div class="q" id="aqr"></div><span>Zeskanuj telefonem i zobacz demo na swoim ekranie</span></div></div>
+</div>
+</div></div>
+</section>
 
 <!-- ===== JAK TO DZIAŁA ===== -->
 <section class="ov" id="ov-jak" role="dialog" aria-modal="true" aria-labelledby="h-jak">
@@ -187,6 +284,7 @@ form{grid-template-columns:1fr}
 <div class="panel">
 <div class="ey">Pakiety</div>
 <h2 class="h" id="h-pak">Wybierz, ile chcesz sprzedawać</h2>
+<div class="multi"><div class="ic">🍕🥙</div><div><h3>Masz kilka konceptów? Połącz je w jednej aplikacji</h3><p>Pizzeria i kebab, burgerownia i obiady domowe? Twoi klienci mają jedną aplikację z kilkoma menu i jednym koszykiem, wspólną kartę lojalnościową i jeden panel kuchni. Za każdą kolejną branżę płacisz mniej.</p><a class="btn lime" href="#kontakt">Zapytaj o połączenie</a></div></div>
 <div class="pk">
 <div class="card">
 <h3>Start</h3><p class="for">Twoja aplikacja, która ściąga klientów z powrotem.</p>
@@ -227,7 +325,8 @@ form{grid-template-columns:1fr}
 <label class="f">Telefon *<input name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="20" placeholder="np. 600 100 200"></label>
 <label class="f">E-mail<input name="email" type="email" inputmode="email" autocomplete="email" maxlength="120"></label>
 <label class="f">Miasto<input name="city" autocomplete="address-level2" maxlength="80"></label>
-<label class="f">Branża<select name="segment"><option value="">Wybierz</option><option>Kebab</option><option>Pizza</option><option>Burger</option><option>Obiady domowe</option><option>Sushi</option><option>Bubble tea / matcha</option><option>Lody / gofry</option><option>Piekarnia</option><option>Inna</option></select></label>
+
+<div class="f full segs"><span class="sl">Branże w Twoim lokalu <em>możesz zaznaczyć kilka, np. pizza + kebab</em></span><div class="chips"><label class="chip"><input type="checkbox" name="segs" value="Kebab"><span>Kebab</span></label><label class="chip"><input type="checkbox" name="segs" value="Pizza"><span>Pizza</span></label><label class="chip"><input type="checkbox" name="segs" value="Burger"><span>Burger</span></label><label class="chip"><input type="checkbox" name="segs" value="Obiady domowe"><span>Obiady domowe</span></label><label class="chip"><input type="checkbox" name="segs" value="Piekarnia"><span>Piekarnia</span></label><label class="chip"><input type="checkbox" name="segs" value="Sushi"><span>Sushi</span></label><label class="chip"><input type="checkbox" name="segs" value="Bubble tea / matcha"><span>Bubble tea / matcha</span></label><label class="chip"><input type="checkbox" name="segs" value="Lody / gofry"><span>Lody / gofry</span></label><label class="chip"><input type="checkbox" name="segs" value="Inna"><span>Inna</span></label></div></div>
 <label class="f full">Pakiet<select name="package"><option value="">Jeszcze nie wiem</option><option>Start</option><option>PRO</option><option>PRO AI</option></select></label>
 <label class="f full">Wiadomość<textarea name="message" maxlength="1000" placeholder="Np. kiedy najlepiej zadzwonić, co chcesz sprzedawać online"></textarea></label>
 <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -250,9 +349,9 @@ document.querySelectorAll('.wall video').forEach(function(v){if(!slow){v.src=v.d
 (function(){
 var MAP={'jak-to-dziala':'ov-jak','pakiety':'ov-pak','kontakt':'ov-kon'};
 var SB='https://medldonrwgoxfryandbp.supabase.co',KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZGxkb25yd2dveGZyeWFuZGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MjQ5OTYsImV4cCI6MjExMDAwMDk5Nn0.F4S0Wv3PXhb3ii5IQWsOuNZwSYq84Dnf3diAvfTcY20';
-function show(){var h=location.hash.replace('#','');document.querySelectorAll('.ov').forEach(function(o){o.classList.toggle('on',o.id===MAP[h])});var o=document.getElementById(MAP[h]);if(o){o.scrollTop=0;}}
+function show(){var h=location.hash.replace('#','');document.querySelectorAll('.ov:not(#ov-app)').forEach(function(o){o.classList.toggle('on',o.id===MAP[h])});var o=document.getElementById(MAP[h]);if(o){o.scrollTop=0;}}
 addEventListener('hashchange',show);show();
-function close(){history.pushState('',document.title,location.pathname+location.search);show();}
+function close(){history.pushState('',document.title,location.pathname+location.search);dispatchEvent(new HashChangeEvent('hashchange'));}
 document.querySelectorAll('[data-close]').forEach(function(b){b.onclick=close});
 document.querySelectorAll('.ov').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)close()})});
 addEventListener('keydown',function(e){if(e.key==='Escape'&&document.querySelector('.ov.on'))close()});
@@ -276,13 +375,67 @@ f.addEventListener('submit',async function(e){
  btn.disabled=true;btn.textContent='Wysyłam zdjęcie…';
  try{
   var path=await uploadPhoto(f.photo.files[0]);btn.textContent='Wysyłam…';
-  var r=await fetch(SB+'/rest/v1/rpc/submit_lead',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_name:d.name||null,p_venue:d.venue||null,p_city:d.city||null,p_phone:ph,p_email:d.email||null,p_segment:d.segment||null,p_package:d.package||null,p_message:d.message||null,p_source:'sell-up.pl'+(location.hash?' '+location.hash:''),p_consent:true,p_consent_text:document.getElementById('ctext').textContent,p_nip:(d.nip||'').replace(/\D/g,''),p_photo:path})});
+  var r=await fetch(SB+'/rest/v1/rpc/submit_lead',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_name:d.name||null,p_venue:d.venue||null,p_city:d.city||null,p_phone:ph,p_email:d.email||null,p_segment:[...f.querySelectorAll('input[name=segs]:checked')].map(function(x){return x.value}).join(', ')||null,p_package:d.package||null,p_message:d.message||null,p_source:'sell-up.pl'+(location.hash?' '+location.hash:''),p_consent:true,p_consent_text:document.getElementById('ctext').textContent,p_nip:(d.nip||'').replace(/\D/g,''),p_photo:path})});
   var j=await r.json();
   if(!r.ok){throw new Error(j&&j.message?j.message:'Nie udało się wysłać.');}
   fetch(SB+'/functions/v1/lead-mail',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({id:j})}).catch(function(){});
   f.style.display='none';document.getElementById('lok').style.display='block';
  }catch(ex){err.textContent=ex.message||'Nie udało się wysłać. Spróbuj ponownie.';btn.disabled=false;btn.textContent='Wyślij zgłoszenie';}
 });
+})();
+</script>
+<script>
+(function(){
+var APP={
+ kebab:{seg:'Kebab',brand:'Kebab & Grill',sub:'Rożen na ogniu od 10:00',href:'kebab/',color:'#ff6a2b',img:'kebab/assets/spit.jpg',stamps:10,have:7,icon:'🥙',reward:'Za <b>10 pieczątek</b> kebab w bułce gratis',deal:'−15%',
+  lead:'Klienci z kebabem w telefonie wracają częściej. Każdy zakup to pieczątka, a Ty jednym kliknięciem wysyłasz im promocję na pusty wtorek.',
+  push:[['🔥','Rożen się kręci!','Dziś boxy −15% do 15:00. Zamów w apce.'],['📍','Jesteś 80 m od nas','Wpadnij teraz, frytki do kebaba gratis przez 30 min.'],['🎁','Ania dołączyła z Twojego polecenia','+50 pkt dla Ciebie i dla niej.']]},
+ pizza:{seg:'Pizza',brand:'Forno 450',sub:'Piec opalany drewnem',href:'pizza/',color:'#e8423a',img:'pizza/assets/oven_tall.jpg',stamps:8,have:5,icon:'🍕',reward:'Co <b>8. pizza</b> gratis',deal:'2. pizza −50%',
+  lead:'Pizzeria żyje ze stałych klientów. Aplikacja przypomina o Tobie w piątkowy wieczór i nagradza za każdą pizzę.',
+  push:[['🍕','Piec rozgrzany do 450°C','Piątek: druga pizza −50%. Zamów w apce.'],['📍','Jesteś tuż obok','Wejdź, a dostaniesz lemoniadę gratis do pizzy.'],['🎁','Tomek dołączył z Twojego polecenia','+50 pkt dla Ciebie i dla niego.']]},
+ burger:{seg:'Burger',brand:'DYM Burger',sub:'Smash & ogień',href:'dym-burger/',color:'#f5a400',img:'dym-burger/assets/p_fire.jpg',stamps:10,have:6,icon:'🍔',reward:'Za <b>10 pieczątek</b> burger gratis',deal:'Double = Single',
+  lead:'Burger wraca do Ciebie, a nie do portalu. Pieczątki, punkty i powiadomienie w porze lunchu robią swoje.',
+  push:[['🍔','Smash Tuesday','Double w cenie single tylko dziś w aplikacji.'],['📍','Czujesz zapach grilla?','Jesteś obok nas. Shake gratis do burgera przez 30 min.'],['🎁','Kasia dołączyła z Twojego polecenia','+50 pkt dla Ciebie i dla niej.']]},
+ obiady:{seg:'Obiady domowe',brand:'Obiady Domowe',sub:'Gotowane jak u mamy',href:'obiady-domowe/',color:'#2f7a52',img:'selll-szkic/obiady.jpg',stamps:10,have:8,icon:'🥣',reward:'Co <b>10. obiad</b> gratis',deal:'Zestaw 29 zł',
+  lead:'Codziennie rano Twoi klienci dostają powiadomienie z zestawem dnia. Zanim pomyślą o portalu, już zamówili u Ciebie.',
+  push:[['🥣','Dziś: żurek + schabowy','Zestaw dnia 29 zł. Zostało 18 porcji.'],['📍','Pora obiadu, a Ty obok nas','Wpadnij, kompot do zestawu gratis.'],['🎁','Pan Marek dołączył z polecenia','+50 pkt dla Ciebie i dla niego.']]},
+ piekarnie:{seg:'Piekarnie',brand:'Bułka i Kromka',sub:'Piekarnia rzemieślnicza',href:'bulkaikromka/',color:'#c47a2c',img:'selll-szkic/piekarnie.jpg',stamps:6,have:4,icon:'🥐',reward:'Co <b>6. kawa</b> gratis',deal:'Rogal −20%',
+  lead:'Świeże pieczywo sprzedaje się samo, gdy klient wie, że właśnie wyszło z pieca. Aplikacja mu o tym powie.',
+  push:[['🥐','Prosto z pieca!','Ciepłe rogale właśnie wyszły. Odbierz w 10 minut.'],['📍','Jesteś obok piekarni','Kawa −20% do zakupów przez 30 minut.'],['🎁','Ola dołączyła z Twojego polecenia','+50 pkt dla Ciebie i dla niej.']]}
+};
+var T=[],cur=null,qrLoaded=false;
+function $(i){return document.getElementById(i)}
+function clearT(){T.forEach(clearTimeout);T=[];}
+function loadQR(cb){if(window.QRCode)return cb();if(qrLoaded)return;qrLoaded=true;var s=document.createElement('script');s.src='bulkaikromka/qrcode.min.js';s.onload=cb;document.head.appendChild(s);}
+function play(a){
+ clearT();var st=$('astamps');st.innerHTML='';for(var i=0;i<a.stamps;i++){var e=document.createElement('i');st.appendChild(e);}
+ st.style.gridTemplateColumns='repeat('+(a.stamps>8?5:a.stamps>6?4:3)+',1fr)';
+ var items=st.children;$('acount').textContent='0/'+a.stamps;$('anf').classList.remove('on');
+ var pts=340;$('apts').textContent=pts;
+ for(var k=0;k<a.have;k++)(function(k){T.push(setTimeout(function(){items[k].classList.add('on','pop');items[k].textContent=a.icon;$('acount').textContent=(k+1)+'/'+a.stamps;setTimeout(function(){items[k].classList.remove('pop')},300)},500+k*260))})(k);
+ var t0=700+a.have*260;
+ a.push.forEach(function(p,j){
+  T.push(setTimeout(function(){$('anfi').textContent=p[0];$('anft').innerHTML=p[1]+'<small>teraz</small>';$('anfb').textContent=p[2];$('anf').classList.add('on');if(j===2){var n=pts,end=pts+50;var iv=setInterval(function(){n+=5;$('apts').textContent=n;if(n>=end)clearInterval(iv)},40);pts=end;}},t0+j*3800));
+  T.push(setTimeout(function(){$('anf').classList.remove('on')},t0+j*3800+3000));
+ });
+ T.push(setTimeout(function(){if(cur===a)play(a)},t0+3*3800+800));
+}
+function openApp(k){
+ var a=APP[k];if(!a)return;cur=a;
+ $('aphone').style.setProperty('--seg',a.color);
+ $('ahero').style.backgroundImage='url('+a.img+')';$('abrand').textContent=a.brand;$('asub').textContent=a.sub;
+ $('areward').innerHTML=a.reward;$('adeal').textContent=a.deal;$('frew').innerHTML=a.reward.replace(/<\/?b>/g,'')+'. Bez papierowych kart.';
+ $('aseg').textContent='Aplikacja · '+a.seg;$('h-app').textContent='Tak wygląda aplikacja dla '+({kebab:'kebaba',pizza:'pizzerii',burger:'burgerowni',obiady:'obiadów domowych',piekarnie:'piekarni'})[k];
+ $('alead').textContent=a.lead;$('ademo').href=a.href;
+ var d=new Date();$('atime').textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
+ var url=new URL(a.href,location.href).href;
+ loadQR(function(){var q=$('aqr');q.innerHTML='';try{new QRCode(q,{text:url,width:144,height:144,colorDark:'#070908',colorLight:'#ffffff'});}catch(e){}});
+ play(a);
+}
+document.querySelectorAll('.appbtn').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();location.hash='aplikacja-'+b.dataset.seg;})});
+function route(){var m=location.hash.match(/^#aplikacja-(\w+)/),o=$('ov-app');if(m&&APP[m[1]]){o.classList.add('on');o.scrollTop=0;openApp(m[1]);}else{o.classList.remove('on');clearT();cur=null;}}
+addEventListener('hashchange',route);route();
+$('aask').addEventListener('click',function(){var k=Object.keys(APP).find(function(x){return APP[x]===cur});if(k){var c=document.querySelector('#lf input[name=segs][value="'+APP[k].seg+'"]');if(c)c.checked=true;}});
 })();
 </script>
 </body></html>
