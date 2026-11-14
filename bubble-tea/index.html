@@ -195,9 +195,7 @@ const zl = n => n + ' zł';
 /* ===== Intro ===== */
 const intro = $('#intro'), iv = $('#introV');
 let ended = false; const endIntro = () => { if (ended) return; ended = true; intro.classList.add('out'); setTimeout(() => intro.remove(), 800); };
-let seen = false; try { seen = sessionStorage.getItem('bt-intro') === '1'; sessionStorage.setItem('bt-intro', '1'); } catch (e) {}
-if (seen) intro.remove();
-else { setTimeout(() => intro.classList.add('logo'), 2600); iv.addEventListener('ended', () => setTimeout(endIntro, 500));
+{ setTimeout(() => intro.classList.add('logo'), 2600); iv.addEventListener('ended', () => setTimeout(endIntro, 500));
   iv.addEventListener('error', () => { intro.classList.add('logo'); setTimeout(endIntro, 1600); }); setTimeout(endIntro, 6500); intro.addEventListener('click', endIntro); }
 
 /* ===== Warstwy: klient wybiera każdą sam. [obraz, nazwa, dopłata, kubek] ===== */
