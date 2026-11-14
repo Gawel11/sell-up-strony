@@ -1610,8 +1610,8 @@ SellUpOrder.isOpen(SLUG).then(o => SellUpOrder.closedBar(!o));
   a.onclick = e => { e.preventDefault(); const ov = $('#oven'); $('#ocNo').textContent = '#' + l.no; $('#ocLoy').hidden = true; ov.hidden = false; void ov.offsetWidth; ov.classList.add('show'); $('#ovCard').classList.add('show'); document.body.style.overflow = 'hidden'; if (TRK) TRK(); TRK = SellUpOrder.track(l.id, l.t, ocSteps); }; })();
 </script>
 
-<script src="../lib/sellup-lead.js?v=6" defer></script>
+<script src="../lib/sellup-lead.js?v=7" defer></script>
 <script src="../lib/sellup-app.js?v=3" defer></script>
-<script src="../lib/sellup-kitchen.js?v=1" defer></script>
+<script src="../lib/sellup-kitchen.js?v=2" defer></script>
 </body>
 </html>
