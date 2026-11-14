@@ -293,7 +293,7 @@ const save = () => { try { localStorage.setItem('bt-karta', JSON.stringify(S)); 
 const cupSvg = '<svg viewBox="0 0 24 30"><path d="M3 8h18l-2 20H5z" fill="#ff8ab9"/><path d="M2 8q0-5 10-5t10 5z" fill="#c9b6ff"/><rect x="13" y="0" width="3" height="10" rx="1.5" fill="#8c6cff"/><circle cx="8" cy="24" r="2" fill="#3b2418"/><circle cx="12" cy="25" r="2" fill="#3b2418"/><circle cx="16" cy="24" r="2" fill="#3b2418"/></svg>';
 function renderCard(pop){
   $('#cups').innerHTML = Array.from({ length: N }, (_, i) => `<div class="cup${i < S.st ? ' on' : ''}${pop && i === S.st - 1 ? ' pop' : ''}">${cupSvg}</div>`).join('');
-  $('#stN').textContent = S.st + '/' + N; $('#pillN').textContent = S.st + '/' + N + (S.free ? ' · 🎁' : '');
+  $('#stN').textContent = S.st + '/' + N; $('#pillN').textContent = S.free ? 'Masz darmową herbatę 🎁' : 'Masz już ' + S.st + '/' + N;
   $('#stTxt').innerHTML = S.free ? '<b>Masz darmową herbatę!</b> Odbierz ją w Nagrodach.' : `Jeszcze ${N - S.st} i dowolna herbata L gratis.`;
   if (pop) setTimeout(() => { const p = document.querySelector('.cup.pop'); if (p) p.classList.remove('pop'); }, 400);
   const R = [['🧋', 'Dowolna herbata L gratis', `za ${N} pieczątek`, S.free > 0, 'free'], ['⬆️', 'Rozmiar L w cenie M', 'za 4 pieczątki', S.st >= 4, 'up'], ['🎂', 'Dodatek gratis w urodziny', 'pianka albo syrop', true, 'bday']];
