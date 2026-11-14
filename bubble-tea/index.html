@@ -242,8 +242,8 @@ function build(){
       if (i < n || i >= 2 * n) car.scrollTo({ left: (n + v) * w, behavior: 'auto' });
       if (sel()[el.dataset.l] !== v){ sel()[el.dataset.l] = v; keep(); paint(); } }, 90); }, { passive: true }); });
 }
-$('#layers').addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (!b) return; const el = b.closest('.lay'), car = el.querySelector('.car'), w = car.clientWidth;
-  car.scrollTo({ left: (Math.round(car.scrollLeft / w) + +b.dataset.d) * w, behavior: 'smooth' }); });
+$('#layers').addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (!b) return; const el = b.closest('.lay'), car = el.querySelector('.car'), w = car.clientWidth, n = LAYERS.find(x => x.id === el.dataset.l).o.length, v = sel()[el.dataset.l];
+  car.scrollLeft = (n + v) * w; requestAnimationFrame(() => car.scrollTo({ left: (n + v + +b.dataset.d) * w, behavior: 'smooth' })); });
 function jump(smooth){ document.querySelectorAll('.lay').forEach(el => { const car = el.querySelector('.car'), n = LAYERS.find(x => x.id === el.dataset.l).o.length; car.scrollTo({ left: (n + sel()[el.dataset.l]) * car.clientWidth, behavior: smooth ? 'smooth' : 'auto' }); }); }
 function paint(){
   const d = sel();
@@ -326,7 +326,7 @@ function confetti(){
   let t = 0; (function f(){ x.clearRect(0, 0, c.width, c.height); P.forEach(p => { p.vy += .35; p.x += p.vx; p.y += p.vy; x.fillStyle = p.c; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 7); x.fill(); }); if (++t < 120) requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height); })();
 }
 
-build(); renderCard(); paint(); requestAnimationFrame(() => jump());
+build(); renderCard(); paint(); jump(); setTimeout(jump, 120); setTimeout(jump, 600); addEventListener('load', () => jump());
 addEventListener('resize', () => jump());
 </script>
 <script src="../lib/sellup-lead.js?v=11" defer></script>
