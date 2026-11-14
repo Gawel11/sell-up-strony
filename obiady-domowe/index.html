@@ -366,6 +366,7 @@ footer .pasiak{position:absolute;left:0;right:0;top:0}
 .card .dish img{position:relative}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
+.odf{display:grid;gap:8px;margin:6px 0 10px}.odf input{font:inherit;font-size:16px;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(42,33,24,.18);background:#fffaf2;color:inherit}.odf input:focus{outline:none;border-color:#c0392b}
 </style>
 </head>
 <body class="locked">
@@ -721,9 +722,21 @@ function openZestaw(wd){
    <div class="sheet-act"><button class="btn btn-primary" id="za">Dodaj zestaw · ${zl(w[2])}</button></div>`);
   $('#za').onclick=()=>{addZestaw(wd,sheet.querySelector('.det-img img'));setTimeout(closeSheet,250);};
 }
+const SB='https://medldonrwgoxfryandbp.supabase.co',SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZGxkb25yd2dveGZyeWFuZGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MjQ5OTYsImV4cCI6MjExMDAwMDk5Nn0.F4S0Wv3PXhb3ii5IQWsOuNZwSYq84Dnf3diAvfTcY20';
+function rpc(fn,body){return fetch(SB+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:SBK,Authorization:'Bearer '+SBK,'Content-Type':'application/json'},body:JSON.stringify(body)}).then(async r=>{const j=await r.json().catch(()=>null);if(!r.ok)throw new Error((j&&j.message)||'Nie udało się wysłać zamówienia');return j;});}
+const escH=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STN={new:'Przyjęte przez kuchnię',cooking:'Gotujemy',ready:'Gotowe',delivering:'Kierowca w drodze',done:'Wydane. Smacznego!',cancelled:'Anulowane, zadzwoń do nas'};
+let trackT=null;
+function showDone(no,m,s,id,tok){
+  openSheet(`<div class="done"><div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></div><h3>Zamówienie nr ${no}</h3><div class="d" style="margin-top:8px">${m==='odbior'?`Obiad będzie gotowy do odbioru o <b>${s}</b>.`:`Dowieziemy ok. <b>${s}</b>.`}</div><div class="d" style="margin-top:12px;font-weight:700" id="ostat">Wysłane do kuchni…</div><div class="sheet-act"><button class="btn btn-primary" style="width:100%" id="sx2">Super</button></div></div>`);$('#sx2').onclick=closeSheet;
+  clearInterval(trackT);let last='';const tick=()=>rpc('track_order',{p_id:id,p_token:tok}).then(d=>{if(!d)return;const el=$('#ostat');if(el&&d.status!==last){last=d.status;el.textContent='Status: '+(STN[d.status]||d.status);}if(['done','cancelled'].includes(d.status))clearInterval(trackT);}).catch(()=>{});
+  tick();trackT=setInterval(tick,5000);
+}
 function openCart(){
   if(!cart.length){toast('Koszyk jest pusty');return;}
-  let mode='odbior',slot=null;
+  let mode='odbior',slot=null,busy=false,err='';
+  let dane={};try{dane=JSON.parse(localStorage.getItem('od-dane')||'{}')}catch(e){}
+  let fn=dane.n||'',fp=dane.p||'',fa=dane.a||'';
   const slots=[];const st=new Date();st.setMinutes(Math.ceil((st.getMinutes()+30)/15)*15,0,0);for(let i=0;i<10;i++){const s=new Date(st.getTime()+i*15*60000);slots.push(s.toTimeString().slice(0,5));}
   const draw=()=>{
     const sum=cart.reduce((s,c)=>s+c.q*c.p,0),del=mode==='dostawa'?8:0;
@@ -732,17 +745,31 @@ function openCart(){
     <div class="seg"><button class="${mode==='odbior'?'on':''}" data-mode="odbior">Odbiór osobisty</button><button class="${mode==='dostawa'?'on':''}" data-mode="dostawa">Dostawa</button></div>
     <div class="lbl2">${mode==='odbior'?'Godzina odbioru':'Godzina dostawy'}</div>
     <div class="slots">${slots.map(s=>`<button class="${s===slot?'on':''}" data-slot="${s}">${s}</button>`).join('')}</div>
+    <div class="lbl2">Twoje dane</div>
+    <div class="odf"><input id="fN" placeholder="Imię" maxlength="80" autocomplete="given-name" value="${escH(fn)}"><input id="fP" type="tel" inputmode="tel" placeholder="Telefon" maxlength="20" autocomplete="tel" value="${escH(fp)}">${mode==='dostawa'?`<input id="fA" placeholder="Adres: ulica, numer, miasto" maxlength="200" autocomplete="street-address" value="${escH(fa)}">`:''}</div>
     ${del?`<div class="sum" style="font-weight:600;font-size:15px"><span>Dostawa</span><span>${zl(del)}</span></div>`:''}
     <div class="sum"><span>Razem</span><span>${zl(sum+del)}</span></div>
-    <div class="sheet-act"><button class="btn btn-primary" id="pay" style="width:100%">Zapłać BLIK · ${zl(sum+del)}</button></div>
-    <p style="text-align:center;font-size:12px;color:rgba(42,33,24,.5);margin-top:10px">Wersja pokazowa: płatność nie zostanie pobrana.</p>`);
+    ${err?`<p style="color:#c0392b;font-weight:700;font-size:14px;margin:8px 0 0">${escH(err)}</p>`:''}
+    <div class="sheet-act"><button class="btn btn-primary" id="pay" style="width:100%" ${busy?'disabled':''}>${busy?'Wysyłam…':'Zamawiam · '+zl(sum+del)}</button></div>
+    <p style="text-align:center;font-size:12px;color:rgba(42,33,24,.5);margin-top:10px">Płacisz przy odbiorze. Zamówienie trafia od razu do kuchni.</p>`);
+    sheet.oninput=e=>{if(e.target.id==='fN')fn=e.target.value;if(e.target.id==='fP')fp=e.target.value;if(e.target.id==='fA')fa=e.target.value;};
     sheet.onclick=e=>{const t=e.target;
       if(t.dataset.m!==undefined){const c=cart[+t.dataset.m];c.q--;if(c.q<=0)cart.splice(+t.dataset.m,1);updCart();if(!cart.length){closeSheet();return;}draw();}
       if(t.dataset.p!==undefined){cart[+t.dataset.p].q++;updCart();draw();}
       if(t.dataset.mode){mode=t.dataset.mode;draw();}
       if(t.dataset.slot){slot=t.dataset.slot;draw();}
-      if(t.id==='pay'){if(!slot){toast('Wybierz godzinę');return;}const s=slot,m=mode;cart=[];updCart();sheet.onclick=null;
-        openSheet(`<div class="done"><div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></div><h3>Dziękujemy!</h3><div class="d" style="margin-top:8px">Zamówienie przyjęte. ${m==='odbior'?`Obiad będzie gotowy do odbioru o <b>${s}</b>.`:`Dowieziemy ok. <b>${s}</b>.`}<br>Smacznego!</div><div class="sheet-act"><button class="btn btn-primary" style="width:100%" id="sx2">Super</button></div></div>`);$('#sx2').onclick=closeSheet;}
+      if(t.id==='pay'&&!busy){
+        if(!slot){toast('Wybierz godzinę');return;}
+        if(!fn.trim()){err='Podaj imię';draw();return;}
+        if(!/^[0-9 +()-]{9,20}$/.test(fp.trim())){err='Podaj poprawny numer telefonu';draw();return;}
+        if(mode==='dostawa'&&fa.trim().length<5){err='Podaj adres dostawy';draw();return;}
+        err='';busy=true;draw();
+        const items=cart.map(c=>{const z=c.z!==undefined,w=z?WEEK[c.z]:null;return{code:z?'zestaw'+c.z:c.k,qty:c.q,label:z?`${D[w[0]].n} + ${D[w[1]].n.toLowerCase()} + kompot`:'',note:c.when?'na '+c.when:''};});
+        const s=slot,m=mode;
+        rpc('place_order',{p_restaurant:'obiady-domowe',p_items:items,p_mode:m==='odbior'?'pickup':'delivery',p_name:fn.trim(),p_phone:fp.trim(),p_address:m==='dostawa'?fa.trim():null,p_note:(m==='odbior'?'Odbiór o ':'Dostawa ok. ')+s,p_payment:'cash'})
+          .then(d=>{try{localStorage.setItem('od-dane',JSON.stringify({n:fn.trim(),p:fp.trim(),a:fa.trim()}))}catch(e){}cart=[];updCart();sheet.onclick=null;sheet.oninput=null;showDone(d.number,m,s,d.id,d.track_token);})
+          .catch(e2=>{busy=false;err=e2.message+'. Możesz też zadzwonić: 500 600 700';draw();});
+      }
     };
   };draw();
 }
@@ -759,5 +786,8 @@ addEventListener('scroll',()=>{$('#hdr').classList.toggle('solid',scrollY>40);
   const gs=CATS.map(c=>$('#g-'+c[0]));let a=0;gs.forEach((g,i)=>{if(g.getBoundingClientRect().top<180)a=i});document.querySelectorAll('.cat').forEach((c,i)=>c.classList.toggle('on',i===a));},{passive:true});
 addEventListener('resize',()=>layout());
 </script>
+<script src="../lib/sellup-lead.js?v=6" defer></script>
+<script src="../lib/sellup-app.js?v=3" defer></script>
+<script src="../lib/sellup-kitchen.js?v=1" defer></script>
 </body>
 </html>
