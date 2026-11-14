@@ -1,6 +1,6 @@
 {
- "name": "Forno 450",
- "short_name": "Forno 450",
+ "name": "Pizzeria",
+ "short_name": "Pizzeria",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
