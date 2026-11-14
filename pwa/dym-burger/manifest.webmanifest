@@ -1,6 +1,6 @@
 {
- "name": "DYM Burger",
- "short_name": "DYM Burger",
+ "name": "Burger",
+ "short_name": "Burger",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
