@@ -249,7 +249,8 @@ $('#more').onclick = () => { ORDER.push(fresh()); CUR = ORDER.length - 1; keep()
 /* ===== Ekran dla obsługi z kodem QR zamówienia ===== */
 $('#go').onclick = () => {
   const tot = ORDER.reduce((s, x) => s + price(x), 0), no = String(Math.floor(100 + Math.random() * 900)), w = document.createElement('div'); w.className = 'show';
-  const txt = 'BUBBLE TEA · zamówienie ' + no + '\n' + ORDER.map((x, i) => (i + 1) + '. ' + desc(x).join(', ') + ' — ' + zl(price(x))).join('\n') + '\nRAZEM: ' + zl(tot);
+  const ascii = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/Ł/g, 'L');
+  const txt = ascii('BUBBLE TEA nr ' + no + '\n' + ORDER.map((x, i) => (i + 1) + '. ' + desc(x).join(', ') + ' = ' + price(x) + ' zl').join('\n') + '\nRAZEM ' + tot + ' zl');
   w.innerHTML = `<div class="in"><h3>Zamówienie przy ladzie · nr ${no}</h3><div class="big">Poproszę ${ORDER.length === 1 ? 'herbatę' : ORDER.length + ' herbaty'}:</div>
     <div class="qr"><div id="oqr"></div><div><b>Obsługa skanuje ten kod</b><span>i od razu widzi cały skład ${ORDER.length === 1 ? 'herbaty' : 'wszystkich herbat'}. Nie trzeba niczego dyktować.</span></div></div>
     ${ORDER.map((x, i) => `<div class="ord"><img src="img/${cupOf(x)}.webp" alt=""><div><b>${i + 1}. ${opt('base', x)[1]}</b><span>${desc(x).join('<br>')}</span></div><div class="p">${zl(price(x))}</div></div>`).join('')}
