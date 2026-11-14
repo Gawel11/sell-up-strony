@@ -57,14 +57,14 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
 .favs button{background:rgba(255,181,71,.12);color:#ffd9a0;box-shadow:inset 0 0 0 1px rgba(255,181,71,.35)}
 .favs .lab{flex:none;align-self:center;color:var(--mut);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 /* ===== Warstwy ===== */
-.lay{position:relative;display:grid;grid-template-columns:62% 38%;align-items:center;margin:0 -18px;min-height:112px}
+.lay{position:relative;display:grid;grid-template-columns:62% 38%;align-items:center;margin:0 -18px;min-height:136px}
 .car{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}.car::-webkit-scrollbar{display:none}
-.car>div{flex:0 0 100%;scroll-snap-align:center;display:grid;place-items:center;min-height:112px;position:relative}
-.car img{width:auto;max-width:84%;height:104px;-webkit-mask-image:radial-gradient(closest-side,#000 55%,transparent 92%);mask-image:radial-gradient(closest-side,#000 55%,transparent 92%);animation:bob 4s ease-in-out infinite;pointer-events:none;user-select:none}
+.car>div{flex:0 0 100%;scroll-snap-align:center;display:grid;place-items:center;min-height:136px;position:relative}
+.car img{width:auto;max-width:92%;height:130px;-webkit-mask-image:radial-gradient(closest-side,#000 55%,transparent 92%);mask-image:radial-gradient(closest-side,#000 55%,transparent 92%);animation:bob 4s ease-in-out infinite;pointer-events:none;user-select:none}
 .car .none{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#8a8494;border:1.5px dashed #4a4852;border-radius:14px;padding:12px 16px}
 .car .size{display:flex;align-items:flex-end;gap:4px}.car .size img{max-width:none}.car .size svg{fill:none;stroke:#fff;stroke-width:2.2;opacity:.9}
 .car .size b{font-size:34px;font-weight:900;line-height:1}.car .size small{display:block;color:var(--mut);font-weight:700;font-size:12px}
-.car .cubes{display:flex;align-items:center;justify-content:center}.car .cubes img{height:46px;max-width:none;margin:0 -2px;animation:none}
+.car .cubes{display:flex;align-items:center;justify-content:center}.car .cubes img{height:56px;max-width:none;margin:0 -2px;animation:none}
 @keyframes bob{50%{transform:translateY(-5px)}}
 .lay:nth-child(2n) .car img{animation-delay:-1.3s}.lay:nth-child(3n) .car img{animation-delay:-2.4s}
 .arw{position:absolute;top:50%;margin-top:-17px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.07);color:#fff;font-size:18px;display:grid;place-items:center;z-index:2}
@@ -227,28 +227,30 @@ const desc = d => [opt('size', d)[1].split(' · ')[0] + ', ' + opt('base', d)[1]
 function item(o){
   const k = o[0];
   if (!k) return `<span class="none">${o[1]}</span>`;
-  if (k[0] === '@') return `<div class="size"><img src="img/kubek.webp" alt="" draggable="false" style="height:${k === '@M' ? 78 : 104}px"><div><b>${k.slice(1)}</b><small>${k === '@M' ? '500 ml' : '700 ml'}</small></div></div>`;
+  if (k[0] === '@') return `<div class="size"><img src="img/kubek.webp" alt="" draggable="false" style="height:${k === '@M' ? 100 : 128}px"><div><b>${k.slice(1)}</b><small>${k === '@M' ? '500 ml' : '700 ml'}</small></div></div>`;
   if (k[0] === '#') { const n = +k.slice(1); return n ? `<div class="cubes">${'<img src="img/l_cukier.webp" alt="">'.repeat(n)}</div>` : '<span class="none">Bez cukru</span>'; }
-  if (k.endsWith('~')) return `<img src="img/${k.slice(0, -1)}.webp" alt="" draggable="false" style="height:64px">`;
-  return `<img src="img/${k}.webp" alt="" draggable="false" loading="lazy">`;
+  if (k.endsWith('~')) return `<img src="img/${k.slice(0, -1)}.webp" alt="" draggable="false" style="height:84px">`;
+  return `<img src="img/${k}.webp" alt="" draggable="false" >`;
 }
 function build(){
-  $('#layers').innerHTML = LAYERS.map(L => `<div class="lay" data-l="${L.id}"><div class="car">${L.o.map(o => `<div>${item(o)}</div>`).join('')}</div>
+  $('#layers').innerHTML = LAYERS.map(L => `<div class="lay" data-l="${L.id}"><div class="car">${[0, 1, 2].map(() => L.o.map(o => `<div>${item(o)}</div>`).join('')).join('')}</div>
     <button class="arw l" data-d="-1" aria-label="Poprzedni">‹</button><button class="arw r" data-d="1" aria-label="Następny">›</button>
     <div class="lbl"><small>${L.t}</small><b></b><em></em><div class="dots">${L.o.map(() => '<i></i>').join('')}</div></div></div>`).join('');
   $('#cup').innerHTML = [...new Set(LAYERS[1].o.map(o => o[3]).concat('c_tiger'))].map(c => `<img src="img/${c}.webp" alt="" class="off" data-c="${c}">`).join('');
-  document.querySelectorAll('.lay').forEach(el => { const car = el.querySelector('.car'); let t;
-    car.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(() => { const i = Math.round(car.scrollLeft / car.clientWidth); if (sel()[el.dataset.l] !== i){ sel()[el.dataset.l] = i; keep(); paint(); } }, 60); }, { passive: true }); });
+  document.querySelectorAll('.lay').forEach(el => { const car = el.querySelector('.car'), n = LAYERS.find(x => x.id === el.dataset.l).o.length; let t;
+    car.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(() => { const w = car.clientWidth; if (!w) return; const i = Math.round(car.scrollLeft / w), v = ((i % n) + n) % n;
+      if (i < n || i >= 2 * n) car.scrollTo({ left: (n + v) * w, behavior: 'auto' });
+      if (sel()[el.dataset.l] !== v){ sel()[el.dataset.l] = v; keep(); paint(); } }, 90); }, { passive: true }); });
 }
-$('#layers').addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (!b) return; const el = b.closest('.lay'), L = LAYERS.find(x => x.id === el.dataset.l);
-  const i = Math.max(0, Math.min(L.o.length - 1, sel()[L.id] + +b.dataset.d)); sel()[L.id] = i; keep(); el.querySelector('.car').scrollTo({ left: i * el.querySelector('.car').clientWidth, behavior: 'smooth' }); paint(); });
-function jump(smooth){ document.querySelectorAll('.lay').forEach(el => { const car = el.querySelector('.car'); car.scrollTo({ left: sel()[el.dataset.l] * car.clientWidth, behavior: smooth ? 'smooth' : 'auto' }); }); }
+$('#layers').addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (!b) return; const el = b.closest('.lay'), car = el.querySelector('.car'), w = car.clientWidth;
+  car.scrollTo({ left: (Math.round(car.scrollLeft / w) + +b.dataset.d) * w, behavior: 'smooth' }); });
+function jump(smooth){ document.querySelectorAll('.lay').forEach(el => { const car = el.querySelector('.car'), n = LAYERS.find(x => x.id === el.dataset.l).o.length; car.scrollTo({ left: (n + sel()[el.dataset.l]) * car.clientWidth, behavior: smooth ? 'smooth' : 'auto' }); }); }
 function paint(){
   const d = sel();
   document.querySelectorAll('.lay').forEach(el => { const L = LAYERS.find(x => x.id === el.dataset.l), i = d[L.id], o = L.o[i];
     el.querySelector('.lbl b').textContent = o[1]; el.querySelector('.lbl em').textContent = o[2] ? '+' + zl(o[2]) : '';
     el.querySelectorAll('.dots i').forEach((x, k) => x.classList.toggle('on', k === i));
-    el.querySelector('.arw.l').style.visibility = i ? '' : 'hidden'; el.querySelector('.arw.r').style.visibility = i < L.o.length - 1 ? '' : 'hidden'; });
+    });
   const c = cupOf(d);
   document.querySelectorAll('#cup img').forEach(im => { im.classList.toggle('off', im.dataset.c !== c); im.style.setProperty('--k', d.size ? 1.08 : .9); });
   $('#cupNo').textContent = ORDER.length > 1 ? 'Herbata ' + (CUR + 1) + ' z ' + ORDER.length : 'Twoja herbata';
