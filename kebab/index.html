@@ -575,7 +575,7 @@ window.SELLUP = {
   key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZGxkb25yd2dveGZyeWFuZGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MjQ5OTYsImV4cCI6MjExMDAwMDk5Nn0.F4S0Wv3PXhb3ii5IQWsOuNZwSYq84Dnf3diAvfTcY20'
 };
 </script>
-<script src="../lib/sellup-order.js?v=7"></script>
+<script src="../lib/sellup-order.js?v=8"></script>
 <script>
 /* ===== Szablon: dane lokalu z bazy (nazwa, kolory, menu, ceny, zestawy) ===== */
 const SLUG = new URLSearchParams(location.search).get('l') || 'zar';
@@ -1003,8 +1003,8 @@ SellUpOrder.isOpen(SLUG).then(o => SellUpOrder.closedBar(!o));
   a.onclick = e => { e.preventDefault(); FMODE = l.mode; $('#fNo').textContent = '#' + l.no; const fin = $('#fin'); fin.hidden = false; void fin.offsetWidth; fin.classList.add('show'); document.body.style.overflow = 'hidden'; if (TRK) TRK(); TRK = SellUpOrder.track(l.id, l.t, fSteps); }; })();
 </script>
 
-<script src="../lib/sellup-lead.js?v=7" defer></script>
-<script src="../lib/sellup-app.js?v=3" defer></script>
-<script src="../lib/sellup-kitchen.js?v=2" defer></script>
+<script src="../lib/sellup-lead.js?v=8" defer></script>
+<script src="../lib/sellup-app.js?v=4" defer></script>
+<script src="../lib/sellup-kitchen.js?v=3" defer></script>
 </body>
 </html>

@@ -120,7 +120,7 @@ window.SELLUP = {
   key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZGxkb25yd2dveGZyeWFuZGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MjQ5OTYsImV4cCI6MjExMDAwMDk5Nn0.F4S0Wv3PXhb3ii5IQWsOuNZwSYq84Dnf3diAvfTcY20'
 };
 </script>
-<script src="../lib/sellup-order.js?v=7"></script>
+<script src="../lib/sellup-order.js?v=8"></script>
 <script>
 const GROUP = 'pizza-kebab';
 const sb = supabase.createClient(SELLUP.url, SELLUP.key);
@@ -250,7 +250,8 @@ function showTrack(gid, tok, no){
 let tT; function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(tT); tT = setTimeout(() => el.classList.remove('on'), 1800); }
 boot();
 </script>
-<script src="../lib/sellup-lead.js?v=7" defer></script>
-<script src="../lib/sellup-app.js?v=3" defer></script>
+<script src="../lib/sellup-lead.js?v=8" defer></script>
+<script src="../lib/sellup-app.js?v=4" defer></script>
+<script src="../lib/sellup-kitchen.js?v=3" defer></script>
 </body>
 </html>
