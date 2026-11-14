@@ -34,7 +34,10 @@ img{display:block;max-width:100%}
 .top{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(12px + env(safe-area-inset-top,0px)) 18px 10px;background:rgba(26,16,10,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .logo{font-weight:900;font-size:22px;letter-spacing:-.02em;color:#ffb547;white-space:nowrap}
 .pill{display:flex;align-items:center;gap:6px;padding:7px 11px;border-radius:99px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px var(--line);font-weight:800;font-size:13px;white-space:nowrap}
-.pill i{width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--lil))}
+.pill{color:#fff;cursor:pointer}.pill .hh{color:#ff9a3c;font-size:15px;line-height:1}.pill b{min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:linear-gradient(135deg,#ffc46b,#ff8a2a);color:#2a160a;font-size:12px;display:grid;place-items:center}.pill b:empty{display:none}.pill.on{background:#fff;color:#202125}
+.fv{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:rgba(26,16,10,.6);backdrop-filter:blur(8px);box-shadow:inset 0 0 0 1px rgba(255,190,110,.2);border-radius:20px;padding:10px 12px;margin:0 0 10px}
+.fv img{width:64px;height:80px;object-fit:contain}.fv b{display:block;font-size:15px}.fv span{display:block;color:var(--mut);font-size:12px;margin-top:3px;line-height:1.35}.fv .p{color:#ffd08a;font-weight:800;font-size:14px;margin-top:5px}
+.fv .act{display:flex;flex-direction:column;gap:6px;align-items:stretch}.fv .act button{padding:9px 12px;border-radius:99px;font-weight:800;font-size:12.5px;background:linear-gradient(135deg,#ffc46b,#ff8a2a);color:#2a160a}.fv .act button.rm{background:rgba(255,255,255,.08);color:#ccc;box-shadow:inset 0 0 0 1px var(--line)}
 .scr{padding:0 18px 10px;animation:scr .35s ease}
 @keyframes scr{from{opacity:0;transform:translateY(8px)}}
 h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Georgia,serif;letter-spacing:-.01em;text-shadow:0 4px 24px rgba(0,0,0,.4)}.sub{margin:0 0 6px;color:var(--mut);font-size:13.5px}
@@ -67,8 +70,11 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
 .car .cubes{display:flex;align-items:center;justify-content:center}.car .cubes img{height:56px;max-width:none;margin:0 -2px;animation:none}
 @keyframes bob{50%{transform:translateY(-5px)}}
 .lay:nth-child(2n) .car img{animation-delay:-1.3s}.lay:nth-child(3n) .car img{animation-delay:-2.4s}
-.arw{position:absolute;top:50%;margin-top:-17px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.07);color:#fff;font-size:18px;display:grid;place-items:center;z-index:2}
-.arw.l{left:8px}.arw.r{left:calc(62% - 42px)}
+.arw{position:absolute;top:50%;margin-top:-21px;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#ffc46b,#ff8a2a);color:#2a160a;display:grid;place-items:center;z-index:2;box-shadow:0 6px 18px -4px rgba(255,122,26,.7),inset 0 1px 0 rgba(255,255,255,.5)}
+.arw svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.arw:active{transform:scale(.9)}
+.arw.l{left:6px}.arw.r{left:calc(62% - 48px)}
+.arw.r{animation:nud 2.4s ease-in-out infinite}@keyframes nud{0%,70%,100%{translate:0}80%{translate:4px}90%{translate:0}}
 .lbl{position:relative;padding-left:22px;padding-right:34px;font-size:14px;line-height:1.2;font-weight:700;overflow-wrap:anywhere}
 .lbl:before{content:"";position:absolute;left:-40px;top:50%;width:56px;height:1px;background:rgba(255,255,255,.5)}
 .lbl:after{content:"";position:absolute;left:12px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:#fff}
@@ -149,15 +155,20 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
 
 <div class="bgp" aria-hidden="true"><video src="img/bgloop.mp4" poster="img/bg2.jpg" muted loop playsinline autoplay preload="auto"></video></div>
 <div class="app">
-  <header class="top"><div class="logo">bubble tea</div><div class="pill"><i></i><span id="pillN">0/8</span></div></header>
+  <header class="top"><div class="logo">bubble tea</div><button class="pill" id="favBtn" type="button"><span class="hh">♥</span>Ulubione<b id="favN"></b></button></header>
 
   <!-- SKOMPONUJ -->
   <section class="scr" id="s-make">
     <div class="hero"><div class="eb">Bubble tea · warstwa po warstwie</div><h2>Skomponuj<br><em>po swojemu.</em></h2><p><i>⇆</i> Przesuń każdą warstwę w bok</p></div>
-    <div class="tabs favs" id="favs"></div>
     <div class="tabs" id="tabs"></div>
     <div class="glass"><div id="layers"></div>
     <div class="cupw"><div class="cupbox" id="cup"></div><div class="lbl"><small id="cupNo">Twoja herbata</small><b id="cupName"></b><div class="price" id="cupPrice"></div><button class="heart" id="heart" type="button">♡ Do ulubionych</button></div></div></div>
+  </section>
+
+  <!-- ULUBIONE -->
+  <section class="scr" id="s-fav" hidden>
+    <h2>Twoje ulubione</h2><p class="sub">Zapisane składy. Dotknij „Wybierz”, a herbata ustawi się sama.</p>
+    <div id="favL"></div>
   </section>
 
   <!-- KARTA -->
@@ -234,7 +245,7 @@ function item(o){
 }
 function build(){
   $('#layers').innerHTML = LAYERS.map(L => `<div class="lay" data-l="${L.id}"><div class="car">${[0, 1, 2].map(() => L.o.map(o => `<div>${item(o)}</div>`).join('')).join('')}</div>
-    <button class="arw l" data-d="-1" aria-label="Poprzedni">‹</button><button class="arw r" data-d="1" aria-label="Następny">›</button>
+    <button class="arw l" data-d="-1" aria-label="Poprzedni"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button class="arw r" data-d="1" aria-label="Następny"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     <div class="lbl"><small>${L.t}</small><b></b><em></em><div class="dots">${L.o.map(() => '<i></i>').join('')}</div></div></div>`).join('');
   $('#cup').innerHTML = [...new Set(LAYERS[1].o.map(o => o[3]).concat('c_tiger'))].map(c => `<img src="img/${c}.webp" alt="" class="off" data-c="${c}">`).join('');
   document.querySelectorAll('.lay').forEach(el => { const car = el.querySelector('.car'), n = LAYERS.find(x => x.id === el.dataset.l).o.length; let t;
@@ -258,14 +269,20 @@ function paint(){
   $('#cupPrice').textContent = zl(price(d));
   const isFav = FAV.some(f => same(f, d)); $('#heart').classList.toggle('on', isFav); $('#heart').textContent = isFav ? '♥ W ulubionych' : '♡ Do ulubionych';
   $('#tabs').innerHTML = ORDER.length > 1 ? ORDER.map((x, i) => `<button class="${i === CUR ? 'on' : ''}" data-t="${i}">🧋 ${i + 1}. ${opt('base', x)[1]}<span class="x" data-rm="${i}">✕</span></button>`).join('') : '';
-  $('#favs').innerHTML = FAV.length ? '<span class="lab">Ulubione</span>' + FAV.map((f, i) => `<button data-f="${i}">♥ ${name(f)}</button>`).join('') : '';
+  renderFav();
   const tot = ORDER.reduce((s, x) => s + price(x), 0);
   $('#goSum').textContent = ORDER.length + ' ' + (ORDER.length === 1 ? 'herbata' : ORDER.length < 5 ? 'herbaty' : 'herbat') + ' · ' + zl(tot);
 }
 $('#tabs').addEventListener('click', e => { const rm = e.target.closest('[data-rm]');
   if (rm){ ORDER.splice(+rm.dataset.rm, 1); CUR = Math.min(CUR, ORDER.length - 1); keep(); paint(); jump(); return; }
   const b = e.target.closest('[data-t]'); if (b){ CUR = +b.dataset.t; paint(); jump(true); } });
-$('#favs').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; Object.assign(sel(), FAV[+b.dataset.f]); keep(); paint(); jump(true); notify('♥ Twoja ulubiona', name(sel())); });
+function renderFav(){ $('#favN').textContent = FAV.length || '';
+  $('#favL').innerHTML = FAV.length ? FAV.map((f, i) => `<div class="fv"><img src="img/${cupOf(f)}.webp" alt=""><div><b>${name(f)}</b><span>${desc(f).join(' · ')}</span><div class="p">${zl(price(f))}</div></div><div class="act"><button data-f="${i}" type="button">Wybierz</button><button class="rm" data-fr="${i}" type="button">Usuń</button></div></div>`).join('')
+    : '<div class="box"><b>Nie masz jeszcze ulubionych</b><span>Skomponuj herbatę i dotknij „♡ Do ulubionych” pod kubkiem. Następnym razem wybierzesz ją tutaj jednym dotknięciem.</span><button class="btn" data-s="make" type="button">Skomponuj herbatę</button></div>'; }
+$('#favL').addEventListener('click', e => { const r = e.target.closest('[data-fr]'); if (r){ FAV.splice(+r.dataset.fr, 1); keepFav(); paint(); return; }
+  const m = e.target.closest('[data-s]'); if (m){ go('make'); return; }
+  const b = e.target.closest('[data-f]'); if (!b) return; Object.assign(sel(), FAV[+b.dataset.f]); keep(); paint(); go('make'); notify('♥ Twoja ulubiona', name(sel())); });
+$('#favBtn').onclick = () => go(document.querySelector('#s-fav').hidden ? 'fav' : 'make');
 $('#heart').onclick = () => { const d = sel(), i = FAV.findIndex(f => same(f, d));
   if (i >= 0){ FAV.splice(i, 1); notify('Usunięto z ulubionych', name(d)); } else { FAV.unshift(Object.assign({}, d)); FAV = FAV.slice(0, 8); notify('♥ Zapisano w ulubionych', 'Następnym razem wybierzesz ją jednym dotknięciem.'); }
   keepFav(); paint(); };
@@ -293,7 +310,7 @@ const save = () => { try { localStorage.setItem('bt-karta', JSON.stringify(S)); 
 const cupSvg = '<svg viewBox="0 0 24 30"><path d="M3 8h18l-2 20H5z" fill="#ff8ab9"/><path d="M2 8q0-5 10-5t10 5z" fill="#c9b6ff"/><rect x="13" y="0" width="3" height="10" rx="1.5" fill="#8c6cff"/><circle cx="8" cy="24" r="2" fill="#3b2418"/><circle cx="12" cy="25" r="2" fill="#3b2418"/><circle cx="16" cy="24" r="2" fill="#3b2418"/></svg>';
 function renderCard(pop){
   $('#cups').innerHTML = Array.from({ length: N }, (_, i) => `<div class="cup${i < S.st ? ' on' : ''}${pop && i === S.st - 1 ? ' pop' : ''}">${cupSvg}</div>`).join('');
-  $('#stN').textContent = S.st + '/' + N; $('#pillN').textContent = S.free ? 'Masz darmową herbatę 🎁' : 'Masz już ' + S.st + '/' + N;
+  $('#stN').textContent = S.free ? 'Masz darmową 🎁' : 'Masz już ' + S.st + '/' + N;
   $('#stTxt').innerHTML = S.free ? '<b>Masz darmową herbatę!</b> Odbierz ją w Nagrodach.' : `Jeszcze ${N - S.st} i dowolna herbata L gratis.`;
   if (pop) setTimeout(() => { const p = document.querySelector('.cup.pop'); if (p) p.classList.remove('pop'); }, 400);
   const R = [['🧋', 'Dowolna herbata L gratis', `za ${N} pieczątek`, S.free > 0, 'free'], ['⬆️', 'Rozmiar L w cenie M', 'za 4 pieczątki', S.st >= 4, 'up'], ['🎂', 'Dodatek gratis w urodziny', 'pianka albo syrop', true, 'bday']];
@@ -314,7 +331,7 @@ $('#ref').onclick = () => { const url = location.origin + location.pathname + '?
 /* ===== Nawigacja ===== */
 function go(s){
   document.querySelectorAll('.scr').forEach(x => x.hidden = x.id !== 's-' + s);
-  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.s === s)); $('#favBtn').classList.toggle('on', s === 'fav');
   $('#dock').hidden = s !== 'make'; if (s === 'card') qr(); if (s === 'make') setTimeout(jump, 30); scrollTo({ top: 0 });
 }
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if (b) go(b.dataset.s); });
