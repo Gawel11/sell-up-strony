@@ -347,6 +347,6 @@ build(); renderCard(); paint(); jump(); setTimeout(jump, 120); setTimeout(jump, 
 addEventListener('resize', () => jump());
 </script>
 <script src="../lib/sellup-lead.js?v=11" defer></script>
-<script src="../lib/sellup-app.js?v=4" defer></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});</script>
 </body>
 </html>
