@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7ecf4">
+<title>Perła · bubble tea</title>
+<meta name="description" content="Perła bubble tea: wszystkie smaki, karta pieczątek i nagrody w jednej aplikacji.">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#fbf4f8;--card:#fff;--ink:#2a1f2d;--mut:#8a7a8c;--pink:#ff5fa2;--lil:#8c6cff;--peach:#ffb37a;--line:rgba(42,31,45,.08);--r:22px;
+  --font:ui-rounded,"SF Pro Rounded","Nunito","Segoe UI Rounded","Segoe UI",system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}[hidden]{display:none!important}
+html,body{margin:0;background:linear-gradient(160deg,#ffe3f0 0%,#efe6ff 55%,#fff0e2 100%) fixed;color:var(--ink);font:16px/1.4 var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+img{display:block;max-width:100%}
+.app{position:relative;max-width:480px;min-height:100vh;margin:0 auto;background:var(--bg);padding-bottom:calc(92px + env(safe-area-inset-bottom,0px));box-shadow:0 0 60px rgba(140,108,255,.18)}
+@media(min-width:700px){.app{margin:24px auto;min-height:calc(100vh - 48px);border-radius:36px;overflow:hidden}}
+/* ===== Intro ===== */
+.intro{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:linear-gradient(160deg,#ffd6ea,#e3d6ff 60%,#ffe6cf);transition:opacity .6s,visibility .6s}
+.intro.out{opacity:0;visibility:hidden}
+.intro svg{width:min(46vw,210px);overflow:visible}
+.intro .tea{transform-origin:50% 100%;transform:scaleY(0);animation:fill 1.1s .35s cubic-bezier(.3,.9,.3,1) forwards}
+.intro .pearl{opacity:0;animation:drop .7s cubic-bezier(.3,1.6,.5,1) forwards}
+.intro .straw{transform:translateY(-140px);opacity:0;animation:straw .55s 1.25s cubic-bezier(.2,1.4,.4,1) forwards}
+.intro .lid{opacity:0;animation:fade .4s 1.15s forwards}
+.intro .bub{opacity:0;animation:rise 1.6s 1.4s ease-out infinite}
+.intro h1{margin:18px 0 0;text-align:center;font-size:46px;letter-spacing:-.02em;font-weight:900;opacity:0;transform:translateY(12px);animation:up .6s 1.55s forwards;background:linear-gradient(90deg,var(--pink),var(--lil));-webkit-background-clip:text;background-clip:text;color:transparent}
+.intro p{margin:2px 0 0;text-align:center;color:#7a5f80;font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:12px;opacity:0;animation:fade .6s 1.8s forwards}
+@keyframes fill{to{transform:scaleY(1)}}
+@keyframes drop{0%{opacity:0;transform:translateY(-150px)}60%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes straw{to{transform:none;opacity:1}}
+@keyframes fade{to{opacity:1}}
+@keyframes up{to{opacity:1;transform:none}}
+@keyframes rise{0%{opacity:0;transform:translateY(0)}20%{opacity:.8}100%{opacity:0;transform:translateY(-70px)}}
+/* ===== Góra ===== */
+.top{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top,0px)) 18px 10px;background:rgba(251,244,248,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.logo{font-weight:900;font-size:26px;letter-spacing:-.03em;background:linear-gradient(90deg,var(--pink),var(--lil));-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);-webkit-text-fill-color:var(--mut);font-weight:800;margin-top:-2px}
+.pill{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:99px;background:#fff;box-shadow:0 4px 14px rgba(140,108,255,.15);font-weight:800;font-size:14px}
+.pill i{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--lil))}
+.scr{padding:4px 18px 10px;animation:scr .35s ease}
+@keyframes scr{from{opacity:0;transform:translateY(8px)}}
+h2{margin:22px 0 10px;font-size:21px;letter-spacing:-.01em}
+.hi{margin:8px 0 14px;font-size:15px;color:var(--mut)}.hi b{color:var(--ink);font-size:24px;display:block;letter-spacing:-.02em}
+/* karta pieczątek */
+.stamp{position:relative;border-radius:26px;padding:18px;color:#fff;background:linear-gradient(135deg,#ff6aa8,#9a74ff);box-shadow:0 18px 40px -16px rgba(140,108,255,.7);overflow:hidden}
+.stamp:before{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.14)}
+.stamp .t{display:flex;justify-content:space-between;align-items:baseline;font-weight:800}.stamp .t span{font-size:13px;opacity:.85;letter-spacing:.1em;text-transform:uppercase}.stamp .t b{font-size:22px}
+.cups{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 12px}
+.cup{aspect-ratio:1;border-radius:18px;background:rgba(255,255,255,.18);display:grid;place-items:center;border:2px dashed rgba(255,255,255,.45);transition:all .4s cubic-bezier(.3,1.6,.5,1)}
+.cup svg{width:58%;opacity:.35}
+.cup.on{background:#fff;border:2px solid #fff}.cup.on svg{opacity:1}
+.cup.pop{transform:scale(1.18) rotate(-6deg)}
+.stamp p{margin:0;font-size:14px;opacity:.95}.stamp p b{font-weight:900}
+/* banner */
+.offer{position:relative;margin:16px 0 0;border-radius:24px;overflow:hidden;min-height:150px;display:flex;align-items:flex-end;background:#e7d7ff center/cover}
+.offer:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(42,31,45,0) 30%,rgba(42,31,45,.65))}
+.offer div{position:relative;z-index:1;padding:14px 16px;color:#fff}.offer small{font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:11px;opacity:.9}.offer b{display:block;font-size:19px}
+/* kafle smaków */
+.row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -18px;padding:2px 18px 8px;scrollbar-width:none}.row::-webkit-scrollbar{display:none}
+.mini{flex:none;width:136px;scroll-snap-align:start;background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 8px 22px -14px rgba(42,31,45,.4);text-align:left}
+.mini img{aspect-ratio:4/5;object-fit:cover;width:100%}.mini b{display:block;padding:8px 10px 10px;font-size:14px;line-height:1.2}
+.shop{margin:16px 0 0;background:var(--card);border-radius:22px;padding:14px 16px;display:grid;gap:4px;box-shadow:0 8px 22px -16px rgba(42,31,45,.4);font-size:14.5px}
+.shop b{font-size:16px}.shop span{color:var(--mut)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border-radius:16px;background:var(--ink);color:#fff;font-weight:800;margin-top:10px}
+.btn.l{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+/* menu */
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -18px;padding:4px 18px 6px;scrollbar-width:none;position:sticky;top:64px;z-index:5;background:var(--bg)}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:9px 15px;border-radius:99px;background:#fff;font-weight:800;font-size:14px;box-shadow:inset 0 0 0 1.5px var(--line)}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.tea{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;background:var(--card);border-radius:22px;padding:10px;margin:0 0 10px;box-shadow:0 8px 22px -16px rgba(42,31,45,.4)}
+.tea img{width:96px;height:116px;object-fit:cover;border-radius:16px}
+.tea b{font-size:16.5px;display:block}.tea p{margin:3px 0 8px;color:var(--mut);font-size:13.5px;line-height:1.35}
+.pr{display:flex;gap:6px;flex-wrap:wrap}.pr span{font-size:13px;font-weight:800;padding:4px 9px;border-radius:99px;background:#f4ecff;color:#5b3fd1}.pr span.p{background:#ffe9f2;color:#c2316f}
+.tag{display:inline-block;font-size:10.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:6px;background:#ffefd9;color:#b0631d;margin-left:6px;vertical-align:2px}
+.list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.it{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:11px 12px;font-weight:700;font-size:14px;box-shadow:0 6px 16px -12px rgba(42,31,45,.4)}
+.it i{flex:none;width:22px;height:22px;border-radius:50%;box-shadow:inset -3px -3px 0 rgba(0,0,0,.12),inset 2px 2px 0 rgba(255,255,255,.5)}
+.it small{display:block;font-weight:600;color:var(--mut);font-size:11.5px}
+.lv{display:flex;gap:6px;flex-wrap:wrap}.lv span{padding:8px 12px;border-radius:12px;background:#fff;font-weight:800;font-size:13.5px;box-shadow:inset 0 0 0 1.5px var(--line)}
+.ban{width:100%;border-radius:22px;margin:4px 0 8px;aspect-ratio:16/10;object-fit:cover}
+.note{font-size:13px;color:var(--mut);text-align:center;margin:18px 0 0}
+/* karta / QR */
+.card{background:var(--card);border-radius:28px;padding:22px;text-align:center;box-shadow:0 18px 40px -22px rgba(42,31,45,.5);margin-top:8px}
+.card .q{display:inline-block;padding:12px;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);margin:12px 0 6px}
+.card .num{font-weight:900;letter-spacing:.2em;font-size:15px}
+.card p{color:var(--mut);font-size:14px;margin:8px 0 0}
+/* nagrody */
+.rw{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--card);border-radius:20px;padding:14px;margin:0 0 10px;box-shadow:0 8px 22px -16px rgba(42,31,45,.4)}
+.rw .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:23px;background:#f4ecff}
+.rw b{display:block}.rw span{font-size:13px;color:var(--mut)}
+.rw button{padding:9px 13px;border-radius:12px;background:var(--ink);color:#fff;font-weight:800;font-size:13px}
+.rw button:disabled{background:#ece6ef;color:#a596a8}
+/* dolne menu */
+.nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:20;width:min(480px,100%);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line)}
+@media(min-width:700px){.nav{bottom:24px;border-radius:0 0 36px 36px}}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:11.5px;font-weight:800;color:var(--mut)}
+.nav svg{width:24px;height:24px}
+.nav button.on{color:var(--pink)}
+.nav .qr{color:#fff}.nav .qr span:first-child{width:50px;height:50px;margin-top:-26px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,var(--pink),var(--lil));box-shadow:0 10px 22px -8px rgba(255,95,162,.8)}
+.nav .qr span:last-child{color:var(--mut)}.nav .qr.on span:last-child{color:var(--pink)}
+/* powiadomienie */
+.nf{position:fixed;left:50%;top:max(10px,env(safe-area-inset-top,0px));z-index:60;width:min(440px,calc(100% - 20px));display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);box-shadow:0 14px 34px -10px rgba(42,31,45,.45);font-size:13.5px;transform:translate(-50%,-160%);transition:transform .55s cubic-bezier(.2,1.2,.4,1)}
+.nf.on{transform:translate(-50%,0)}.nf img{width:38px;height:38px;border-radius:10px;object-fit:cover}.nf b{display:block}
+.conf{position:fixed;inset:0;pointer-events:none;z-index:70}
+</style>
+</head>
+<body>
+<div class="intro" id="intro" aria-hidden="true">
+  <div>
+    <svg viewBox="0 0 120 180">
+      <defs><clipPath id="cl"><path d="M22 52 L98 52 L90 168 Q89 174 83 174 L37 174 Q31 174 30 168 Z"/></clipPath>
+        <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6c79d"/><stop offset="1" stop-color="#c98a5a"/></linearGradient></defs>
+      <rect class="straw" x="66" y="6" width="11" height="120" rx="5" fill="#ff5fa2" transform-origin="70 60"/>
+      <g clip-path="url(#cl)">
+        <rect class="tea" x="18" y="62" width="84" height="116" fill="url(#tg)"/>
+        <g fill="#3b2418">
+          <circle class="pearl" cx="40" cy="164" r="7" style="animation-delay:.25s"/><circle class="pearl" cx="56" cy="166" r="7" style="animation-delay:.35s"/>
+          <circle class="pearl" cx="72" cy="165" r="7" style="animation-delay:.3s"/><circle class="pearl" cx="84" cy="160" r="6" style="animation-delay:.45s"/>
+          <circle class="pearl" cx="48" cy="152" r="7" style="animation-delay:.5s"/><circle class="pearl" cx="64" cy="153" r="7" style="animation-delay:.55s"/>
+          <circle class="pearl" cx="78" cy="148" r="6" style="animation-delay:.6s"/><circle class="pearl" cx="36" cy="150" r="6" style="animation-delay:.65s"/>
+        </g>
+        <circle class="bub" cx="46" cy="120" r="3" fill="#fff"/><circle class="bub" cx="76" cy="130" r="2.5" fill="#fff" style="animation-delay:1.8s"/>
+      </g>
+      <path d="M22 52 L98 52 L90 168 Q89 174 83 174 L37 174 Q31 174 30 168 Z" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+      <path class="lid" d="M16 52 Q16 22 60 22 Q104 22 104 52 Z" fill="rgba(255,255,255,.55)" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+    </svg>
+    <h1>perła</h1><p>bubble tea</p>
+  </div>
+</div>
+
+<div class="app">
+  <header class="top"><div class="logo">perła<small>bubble tea</small></div><div class="pill"><i></i><span id="pillN">0/8</span></div></header>
+
+  <!-- START -->
+  <section class="scr" id="s-start">
+    <div class="hi">Cześć!<b>Na co masz dziś ochotę?</b></div>
+    <div class="stamp"><div class="t"><span>Karta Perły</span><b id="stN">0/8</b></div><div class="cups" id="cups"></div><p id="stTxt"></p></div>
+    <div class="offer" style="background-image:url(img/hero.webp)"><div><small>Happy hour · 14:00–16:00</small><b>Druga herbata −50%</b></div></div>
+    <h2>Nasze herbaty</h2>
+    <div class="row" id="rowTeas"></div>
+    <div class="shop"><b>Perła · Galeria Centrum, poziom 0</b><span>Codziennie 10:00–21:00 · obok kina</span><span>Zamawiasz przy ladzie, a pieczątkę zbierasz kodem z aplikacji.</span>
+      <button class="btn l" id="pushDemo" type="button">🔔 Pokaż przykładowe powiadomienie</button></div>
+  </section>
+
+  <!-- MENU -->
+  <section class="scr" id="s-menu" hidden>
+    <div class="chips" id="chips"></div>
+    <div id="menuBody"></div>
+    <p class="note">Ceny przykładowe. Zamawiasz przy ladzie, smak skomponujemy razem z Tobą.</p>
+  </section>
+
+  <!-- KARTA -->
+  <section class="scr" id="s-card" hidden>
+    <h2>Twoja karta</h2>
+    <div class="card"><b style="font-size:18px">Pokaż kod przy ladzie</b><div class="q" id="qr"></div><div class="num" id="cardNo"></div><p>Obsługa skanuje kod, a pieczątka wpada od razu na kartę. Za każdą herbatę jedna pieczątka.</p>
+      <button class="btn" id="addStamp" type="button">＋ Symuluj pieczątkę (demo)</button></div>
+  </section>
+
+  <!-- NAGRODY -->
+  <section class="scr" id="s-rewards" hidden>
+    <h2>Nagrody</h2>
+    <div id="rws"></div>
+    <h2>Poleć znajomemu</h2>
+    <div class="shop"><b>Ty i znajomy dostajecie po pieczątce</b><span>Wyślij link. Gdy znajomy kupi pierwszą herbatę, oboje macie +1 na karcie.</span><button class="btn" id="ref" type="button">Wyślij zaproszenie</button></div>
+  </section>
+</div>
+
+<nav class="nav" id="nav">
+  <button data-s="start" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Start</span></button>
+  <button data-s="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l-1 18H8z"/><path d="M6 7h12"/><path d="M13 3l2-2"/></svg><span>Smaki</span></button>
+  <button data-s="card" class="qr"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg></span><span>Karta</span></button>
+  <button data-s="rewards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8c-2-4-6-4-6-1s6 1 6 1 6 2 6-1-4-3-6 1"/></svg><span>Nagrody</span></button>
+</nav>
+<div class="nf" id="nf"><img src="img/mango.webp" alt=""><div><b id="nfT"></b><span id="nfB"></span></div></div>
+<canvas class="conf" id="conf"></canvas>
+
+<script src="../bulkaikromka/qrcode.min.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const N = 8;
+const TEAS = [
+  { k: 'mleczne', img: 'klasyczna', n: 'Klasyczna mleczna', d: 'Czarna herbata z mlekiem i tapioką. Od tego się zaczyna.', m: 16, l: 19, tag: 'Hit' },
+  { k: 'mleczne', img: 'tiger', n: 'Brown Sugar Tiger', d: 'Świeże mleko, pręgi karmelizowanego cukru trzcinowego i ciepła tapioka.', m: 19, l: 22, tag: 'Nr 1' },
+  { k: 'mleczne', img: 'taro', n: 'Taro', d: 'Kremowy, lekko orzechowy fiolet z korzenia taro.', m: 18, l: 21 },
+  { k: 'mleczne', img: 'thai', n: 'Thai Tea', d: 'Pomarańczowa tajska herbata z warstwą słodkiej śmietanki.', m: 18, l: 21 },
+  { k: 'matcha', img: 'matcha', n: 'Matcha Latte', d: 'Japońska matcha ceremonialna na zimnym mleku.', m: 19, l: 22, tag: 'Nowość' },
+  { k: 'owocowe', img: 'mango', n: 'Mango Passion', d: 'Zielona herbata, mango i kulki popping o smaku mango.', m: 17, l: 20 },
+  { k: 'owocowe', img: 'truskawka', n: 'Truskawkowe mleko', d: 'Mleko z truskawkowym puree i czerwonymi kulkami popping.', m: 18, l: 21 },
+  { k: 'owocowe', img: 'liczi', n: 'Liczi z jaśminem', d: 'Jaśminowa zielona herbata, liczi i galaretka liczi.', m: 17, l: 20 }
+];
+const PEARLS = [['Tapioka klasyczna', '#2f1d16', 'gotowana co 2 godziny'], ['Tapioka brown sugar', '#7a4a22', 'w syropie z trzciny'], ['Popping mango', '#ffc533', 'pęka w ustach'], ['Popping truskawka', '#ff3d5e', ''], ['Popping marakuja', '#ff9a3c', ''], ['Popping liczi', '#f4f1e4', ''], ['Popping jagoda', '#5b4bd6', ''], ['Popping brzoskwinia', '#ffb38a', '']];
+const JELLY = [['Galaretka liczi', '#f6f1df', ''], ['Galaretka kokosowa', '#ffffff', ''], ['Galaretka matcha', '#7fae4f', ''], ['Aloes', '#cfe9b3', '']];
+const EXTRAS = [['Pianka serowa', '#fff4d6', '+3 zł'], ['Pudding jajeczny', '#f3c95e', '+3 zł'], ['Bita śmietana', '#ffffff', '+2 zł'], ['Mleko roślinne', '#efe4d2', 'owsiane / kokosowe']];
+const CATS = [['all', 'Wszystkie'], ['mleczne', 'Mleczne'], ['matcha', 'Matcha'], ['owocowe', 'Owocowe'], ['kulki', 'Kulki i dodatki']];
+
+/* ===== Intro ===== */
+const intro = $('#intro'), endIntro = () => { intro.classList.add('out'); setTimeout(() => intro.remove(), 700); };
+setTimeout(endIntro, 2900); intro.addEventListener('click', endIntro);
+
+/* ===== Stan karty (demo w przeglądarce) ===== */
+let S; try { S = JSON.parse(localStorage.getItem('perla')) || null; } catch (e) {}
+if (!S) S = { st: 5, free: 0, no: String(Math.floor(1e7 + Math.random() * 9e7)) };
+const save = () => { try { localStorage.setItem('perla', JSON.stringify(S)); } catch (e) {} };
+const cupSvg = '<svg viewBox="0 0 24 30"><path d="M3 8h18l-2 20H5z" fill="#ff8ab9"/><path d="M2 8q0-5 10-5t10 5z" fill="#c9b6ff"/><rect x="13" y="0" width="3" height="10" rx="1.5" fill="#8c6cff"/><circle cx="8" cy="24" r="2" fill="#3b2418"/><circle cx="12" cy="25" r="2" fill="#3b2418"/><circle cx="16" cy="24" r="2" fill="#3b2418"/></svg>';
+function renderCard(pop){
+  $('#cups').innerHTML = Array.from({ length: N }, (_, i) => `<div class="cup${i < S.st ? ' on' : ''}${pop && i === S.st - 1 ? ' pop' : ''}">${cupSvg}</div>`).join('');
+  $('#stN').textContent = S.st + '/' + N; $('#pillN').textContent = S.st + '/' + N + (S.free ? ' · 🎁' : '');
+  $('#stTxt').innerHTML = S.free ? '<b>Masz darmową herbatę!</b> Odbierz ją w zakładce Nagrody.' : `Jeszcze <b>${N - S.st}</b> ${N - S.st === 1 ? 'herbata' : 'herbaty'} i dowolna herbata L gratis.`;
+  if (pop) setTimeout(() => { const p = document.querySelector('.cup.pop'); if (p) p.classList.remove('pop'); }, 400);
+  renderRewards();
+}
+function renderRewards(){
+  const R = [['🧋', 'Dowolna herbata L gratis', `za ${N} pieczątek`, S.free > 0, 'free'], ['⬆️', 'Rozmiar L w cenie M', 'za 4 pieczątki', S.st >= 4, 'up'], ['🎂', 'Dodatek gratis w urodziny', 'ustaw datę urodzin', true, 'bday']];
+  $('#rws').innerHTML = R.map(r => `<div class="rw"><div class="ic">${r[0]}</div><div><b>${r[1]}</b><span>${r[2]}</span></div><button data-rw="${r[4]}" ${r[3] ? '' : 'disabled'}>${r[3] ? 'Odbierz' : 'Zbieraj'}</button></div>`).join('');
+}
+$('#rws').addEventListener('click', e => { const b = e.target.closest('[data-rw]'); if (!b) return;
+  if (b.dataset.rw === 'free'){ S.free--; save(); renderCard(); notify('🎁 Nagroda odebrana', 'Pokaż ten ekran przy ladzie: herbata L gratis.'); }
+  else if (b.dataset.rw === 'up'){ S.st -= 4; save(); renderCard(); notify('⬆️ Rozmiar L w cenie M', 'Pokaż ten ekran przy ladzie.'); }
+  else notify('🎂 Zapisane', 'W dniu urodzin dostaniesz dodatek gratis.'); });
+
+/* ===== Start: kafelki ===== */
+$('#rowTeas').innerHTML = TEAS.map((t, i) => `<button class="mini" data-i="${i}"><img src="img/${t.img}.webp" alt="" loading="lazy"><b>${t.n}</b></button>`).join('');
+$('#rowTeas').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) go('menu', TEAS[b.dataset.i].k); });
+
+/* ===== Smaki ===== */
+let cat = 'all';
+function renderMenu(){
+  $('#chips').innerHTML = CATS.map(c => `<button class="chip${c[0] === cat ? ' on' : ''}" data-c="${c[0]}">${c[1]}</button>`).join('');
+  const teas = TEAS.filter(t => cat === 'all' || t.k === cat);
+  const tea = t => `<div class="tea"><img src="img/${t.img}.webp" alt="" loading="lazy"><div><b>${t.n}${t.tag ? `<span class="tag">${t.tag}</span>` : ''}</b><p>${t.d}</p><div class="pr"><span>M ${t.m} zł</span><span class="p">L ${t.l} zł</span></div></div></div>`;
+  const items = a => `<div class="list">${a.map(x => `<div class="it"><i style="background:${x[1]}"></i><span>${x[0]}${x[2] ? `<small>${x[2]}</small>` : ''}</span></div>`).join('')}</div>`;
+  let h = '';
+  if (cat !== 'kulki') h += (cat === 'all' ? '<h2>Herbaty</h2>' : '<div style="height:10px"></div>') + teas.map(tea).join('');
+  if (cat === 'all' || cat === 'kulki') h += '<h2>Kulki</h2><img class="ban" src="img/dodatki.webp" alt="" loading="lazy">' + items(PEARLS) + '<h2>Galaretki</h2>' + items(JELLY) + '<h2>Dodatki</h2>' + items(EXTRAS) +
+    '<h2>Słodkość</h2><div class="lv"><span>0%</span><span>30%</span><span>50%</span><span>70%</span><span>100%</span></div><h2>Lód</h2><div class="lv"><span>Bez lodu</span><span>Mało</span><span>Normalnie</span><span>Na ciepło</span></div>';
+  $('#menuBody').innerHTML = h;
+}
+$('#chips').addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (!b) return; cat = b.dataset.c; renderMenu(); scrollTo({ top: 0, behavior: 'smooth' }); });
+
+/* ===== Nawigacja ===== */
+function go(s, c){
+  document.querySelectorAll('.scr').forEach(x => x.hidden = x.id !== 's-' + s);
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+  if (s === 'menu'){ cat = c || cat; renderMenu(); }
+  if (s === 'card') qr();
+  scrollTo({ top: 0 });
+}
+$('#nav').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if (b) go(b.dataset.s); });
+
+/* ===== Karta: kod i pieczątka ===== */
+function qr(){ const box = $('#qr'); if (box.childNodes.length) return; $('#cardNo').textContent = S.no.replace(/(\d{4})(?=\d)/g, '$1 ');
+  try { new QRCode(box, { text: 'PERLA-' + S.no, width: 170, height: 170, colorDark: '#2a1f2d', colorLight: '#ffffff' }); } catch (e) {} }
+$('#addStamp').onclick = () => {
+  S.st++; let won = false; if (S.st >= N){ S.st = 0; S.free++; won = true; }
+  save(); go('start'); renderCard(!won);
+  if (won){ confetti(); notify('🎉 Pełna karta!', 'Dowolna herbata L gratis czeka w Nagrodach.'); }
+  else notify('🧋 +1 pieczątka', `Masz ${S.st}/${N}. Do darmowej herbaty brakuje ${N - S.st}.`);
+};
+
+/* ===== Polecenie, powiadomienia ===== */
+$('#ref').onclick = () => { const url = location.origin + location.pathname + '?od=' + S.no.slice(-5);
+  const done = () => notify('💌 Zaproszenie gotowe', 'Gdy znajomy kupi herbatę, oboje dostaniecie pieczątkę.');
+  if (navigator.share) navigator.share({ title: 'Perła bubble tea', text: 'Wpadnij do Perły, dostaniesz pieczątkę na start:', url }).then(done, () => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, done); else done(); };
+let nT; function notify(t, b){ $('#nfT').textContent = t; $('#nfB').textContent = b; $('#nf').classList.add('on'); clearTimeout(nT); nT = setTimeout(() => $('#nf').classList.remove('on'), 3800); }
+$('#pushDemo').onclick = () => setTimeout(() => notify('Perła · nowy smak', 'Mango Passion z kulkami popping. Dziś do 16:00 druga herbata −50%.'), 500);
+
+/* ===== Konfetti ===== */
+function confetti(){
+  const c = $('#conf'), x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
+  const cols = ['#ff5fa2', '#8c6cff', '#ffb37a', '#ffd84d', '#3b2418'], P = Array.from({ length: 110 }, () => ({ x: innerWidth / 2, y: innerHeight / 3, vx: (Math.random() - .5) * 14, vy: Math.random() * -12 - 4, r: 4 + Math.random() * 6, c: cols[Math.random() * 5 | 0] }));
+  let t = 0; (function f(){ x.clearRect(0, 0, c.width, c.height); P.forEach(p => { p.vy += .35; p.x += p.vx; p.y += p.vy; x.fillStyle = p.c; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 7); x.fill(); }); if (++t < 120) requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height); })();
+}
+
+renderCard(); renderMenu();
+</script>
+<script src="../lib/sellup-lead.js?v=11" defer></script>
+<script src="../lib/sellup-app.js?v=4" defer></script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 const fs = require('fs'), path = require('path');
 const O = require('javascript-obfuscator'), csso = require('csso');
 const SRC = '/home/claude/sell-up-strony', OUT = SRC + '/dist';
-const PAGES = ['index.html', 'kebab/index.html', 'pizza/index.html', 'dym-burger/index.html', 'obiady-domowe/index.html', 'razem/index.html', 'bulkaikromka/index.html'];
+const PAGES = ['index.html', 'kebab/index.html', 'pizza/index.html', 'dym-burger/index.html', 'obiady-domowe/index.html', 'razem/index.html', 'bulkaikromka/index.html', 'bubble-tea/index.html'];
 const NOINDEX = PAGES.filter(p => p !== 'index.html');
 const LIBS = ['lib/sellup-order.js', 'lib/sellup-lead.js', 'lib/sellup-kitchen.js', 'lib/sellup-app.js'];
 const OPT = { compact: true, simplify: true, stringArray: true, stringArrayThreshold: 0.75, stringArrayEncoding: ['base64'], stringArrayWrappersCount: 1,
