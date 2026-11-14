@@ -62,6 +62,8 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .acts button{flex:1;padding:13px;border-radius:10px;font-weight:800;font-size:15px;background:var(--cook);color:#1a0d05}
 .acts .go-new{background:var(--new)}.acts .go-ready{background:var(--ready);color:#0b1a0a}.acts .go-road{background:var(--road);color:#04121f}
 .acts .x{flex:none;width:46px;background:var(--s3);color:var(--mut)}
+.grp{background:#2b2140;color:#d9c8ff;border-radius:8px;padding:6px 9px;font-size:13.5px;font-weight:600}.grp b{color:#fff}
+.kit{background:#3b3b3b;color:#fff;font-weight:700}
 .tot{display:flex;justify-content:space-between;font-size:13.5px;color:var(--mut)}.tot b{color:var(--fg)}
 /* Okno potwierdzenia, start dźwięku */
 .modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:20px}
@@ -148,10 +150,12 @@ async function boot(){
   RS = staff.map(s => s.restaurants);
   const saved = (() => { try { return localStorage.getItem('sellup-r'); } catch(e) { return null; } })();
   R = RS.find(r => r.id === saved) || RS[0];
+  const ALL = { id: 'all', name: 'Wszystkie kuchnie', module: null, all: true };
+  if (RS.length > 1 && saved === 'all') R = ALL;
   $('#rSel').hidden = RS.length < 2;
-  $('#rSel').innerHTML = RS.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join('');
+  $('#rSel').innerHTML = RS.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join('') + (RS.length > 1 ? '<option value="all">Wszystkie kuchnie</option>' : '');
   $('#rSel').value = R.id;
-  $('#rSel').onchange = () => { R = RS.find(r => r.id === $('#rSel').value); try { localStorage.setItem('sellup-r', R.id); } catch(e) {} openRestaurant(); };
+  $('#rSel').onchange = () => { R = $('#rSel').value === 'all' ? ALL : RS.find(r => r.id === $('#rSel').value); try { localStorage.setItem('sellup-r', R.id); } catch(e) {} openRestaurant(); };
   $('#loginView').hidden = true; $('#appView').hidden = false;
   $('#startModal').hidden = false;
   openRestaurant();
@@ -164,14 +168,15 @@ $('#startBtn').onclick = async () => {
 document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible'){ try { if ('wakeLock' in navigator && $('#startModal').hidden && R) wake = await navigator.wakeLock.request('screen'); } catch(e) {} if (R) load(); } });
 
 async function openRestaurant(){
-  $('#rName').innerHTML = `${esc(R.name)} <small>kuchnia</small>`;
-  renderOpen();
+  $('#rName').innerHTML = R.all ? 'Wszystkie kuchnie' : `${esc(R.name)} <small>kuchnia</small>`;
+  $('#openBtn').hidden = !!R.all; $('#testBtn').hidden = !!R.all;
+  if (!R.all) renderOpen();
   await load();
   subscribe();
 }
 async function load(){
   const since = new Date(); since.setHours(0, 0, 0, 0);
-  const { data, error } = await sb.from('orders').select('*').eq('restaurant_id', R.id)
+  const { data, error } = await sb.from('orders').select('*').in('restaurant_id', ids())
     .or(`status.in.(new,cooking,ready,delivering),created_at.gte.${since.toISOString()}`).order('created_at', { ascending: true }).limit(300);
   if (error){ toast('Błąd pobierania zamówień'); return; }
   orders = data.filter(o => ['new', 'cooking', 'ready', 'delivering'].includes(o.status));
@@ -182,7 +187,7 @@ function subscribe(){
   if (chan) sb.removeChannel(chan);
   setLive('wait');
   chan = sb.channel('orders-' + R.id)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${R.id}` }, p => {
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: R.all ? `restaurant_id=in.(${ids().join(',')})` : `restaurant_id=eq.${R.id}` }, p => {
       if (p.eventType === 'INSERT'){ const o = p.new; o._flash = true; orders.push(o); render(); ding(); notify(o); }
       else if (p.eventType === 'UPDATE'){ const o = p.new, i = orders.findIndex(x => x.id === o.id);
         if (['done', 'cancelled'].includes(o.status)){ if (i >= 0) orders.splice(i, 1); if (o.status === 'done') doneToday++; }
@@ -194,6 +199,11 @@ function subscribe(){
 function setLive(s){ const el = $('#live'); el.className = 'live ' + (s === 'ok' ? 'ok' : s === 'bad' ? 'bad' : ''); el.querySelector('span').textContent = s === 'ok' ? 'na żywo' : s === 'bad' ? 'brak połączenia' : 'łączę…'; if (s === 'bad') setTimeout(() => { if ($('#live').classList.contains('bad')) { load(); subscribe(); } }, 5000); }
 
 /* ===== Widok ===== */
+function ids(){ return R.all ? RS.map(r => r.id) : [R.id]; }
+const rname = id => (RS.find(r => r.id === id) || {}).name || '';
+const rmod = o => (RS.find(r => r.id === o.restaurant_id) || R).module;
+function grp(o){ if (!o.group_order_id) return ''; const others = (o.group_parts || []).filter(p => p.id !== o.id).map(p => `${esc(p.name)} #${p.number}`);
+  return `🔗 Wspólne zamówienie <b>W${o.group_number}</b>${others.length ? ' · razem z: <b>' + others.join(', ') + '</b>' : ''}${o.mode === 'delivery' ? ' · wydać razem' : ''}`; }
 const mins = t => Math.max(0, Math.floor((Date.now() - new Date(t)) / 60000));
 function cols(){ return [['new', 'Nowe'], ['cooking', COOK[R.module] || 'W przygotowaniu'], ['ready', 'Gotowe do wydania'], ['delivering', 'W drodze']]; }
 function card(o){
@@ -203,14 +213,16 @@ function card(o){
     const sub = [i.variant ? esc(i.variant) : '', i.label ? `<i>${esc(i.label)}</i>` : '', opts.join(', '), sauce.join(', '), i.note ? '„' + esc(i.note) + '”' : ''].filter(Boolean).join(' · ');
     return `<li><b>${i.qty}×</b><span>${esc(i.name)}${sub ? `<small>${sub}</small>` : ''}</span></li>`; }).join('');
   let act = '';
-  if (o.status === 'new') act = `<button class="go-new" data-id="${o.id}" data-to="cooking">${R.module === 'pizza' ? 'Do pieca' : R.module === 'kebab' ? 'Kroimy' : 'Na grill'}</button>`;
+  const md = rmod(o);
+  if (o.status === 'new') act = `<button class="go-new" data-id="${o.id}" data-to="cooking">${md === 'pizza' ? 'Do pieca' : md === 'kebab' ? 'Kroimy' : md === 'burger' ? 'Na grill' : 'Przyjmij'}</button>`;
   if (o.status === 'cooking') act = `<button class="go-ready" data-id="${o.id}" data-to="ready">Gotowe, pakuj</button>`;
   if (o.status === 'ready') act = o.mode === 'delivery' ? `<button class="go-road" data-id="${o.id}" data-to="delivering">Kierowca wziął</button>` : `<button class="go-ready" data-id="${o.id}" data-to="done">Wydane klientowi</button>`;
   if (o.status === 'delivering') act = `<button class="go-ready" data-id="${o.id}" data-to="done">Dostarczone</button>`;
   const late = (o.status === 'new' && mins(o.created_at) >= 5) || mins(o.created_at) >= 40;
   return `<div class="card${o._flash ? ' flash' : ''}${late ? ' late' : ''}" data-st="${o.status}">
     <div class="h"><b class="num">#${o.number}</b><span class="age num" data-t="${o.created_at}">${mins(o.created_at)} min</span></div>
-    <div class="meta"><span class="${o.mode === 'delivery' ? 'dl' : 'pk'}">${o.mode === 'delivery' ? 'Dostawa' : 'Odbiór'}</span><span>${esc(o.customer_name)}</span><a href="tel:${esc(o.customer_phone.replace(/\s/g, ''))}">${esc(o.customer_phone)}</a><span class="pay">${o.paid ? 'zapłacone' : o.payment === 'cash' ? 'gotówka' : o.payment === 'card_on_delivery' ? 'karta przy odbiorze' : 'online'}</span></div>
+    <div class="meta">${R.all ? `<span class="kit">${esc(rname(o.restaurant_id))}</span>` : ''}<span class="${o.mode === 'delivery' ? 'dl' : 'pk'}">${o.mode === 'delivery' ? 'Dostawa' : 'Odbiór'}</span><span>${esc(o.customer_name)}</span><a href="tel:${esc(o.customer_phone.replace(/\s/g, ''))}">${esc(o.customer_phone)}</a><span class="pay">${o.paid ? 'zapłacone' : o.payment === 'cash' ? 'gotówka' : o.payment === 'card_on_delivery' ? 'karta przy odbiorze' : 'online'}</span></div>
+    ${o.group_order_id ? `<div class="grp">${grp(o)}</div>` : ''}
     ${o.mode === 'delivery' && o.address ? `<div class="addr">📍 ${esc(o.address)}${o.zone_name ? ' · ' + esc(o.zone_name) : ''}</div>` : ''}
     <ul class="items">${items}</ul>
     ${o.note ? `<div class="note">${esc(o.note)}</div>` : ''}
@@ -239,7 +251,7 @@ function printOrder(o){
     return `<div class="l"><b>${i.qty}x ${esc(i.name)}</b>${i.variant ? '<br>' + esc(i.variant) : ''}${i.label ? '<br><i>' + esc(i.label) + '</i>' : ''}${opts ? '<br>' + opts : ''}${i.note ? '<br>„' + esc(i.note) + '”' : ''}</div>`; }).join('');
   const t = new Date(o.created_at).toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   const html = `<!doctype html><meta charset="utf-8"><title>#${o.number}</title><style>@page{margin:4mm}body{font:13px/1.35 monospace;width:72mm;margin:0}h1{font-size:26px;margin:0}hr{border:0;border-top:1px dashed #000;margin:6px 0}.l{margin:5px 0}.r{display:flex;justify-content:space-between}</style>
-    <h1>#${o.number} ${o.mode === 'delivery' ? 'DOSTAWA' : 'ODBIÓR'}</h1><div>${esc(R.name)} · ${t}</div><hr>
+    <h1>#${o.number} ${o.mode === 'delivery' ? 'DOSTAWA' : 'ODBIÓR'}</h1><div>${esc(rname(o.restaurant_id) || R.name)} · ${t}</div>${o.group_order_id ? '<div><b>WSPÓLNE W' + o.group_number + '</b> ' + (o.group_parts || []).filter(p => p.id !== o.id).map(p => 'razem z ' + esc(p.name) + ' #' + p.number).join(', ') + '</div>' : ''}<hr>
     <div><b>${esc(o.customer_name)}</b><br>${esc(o.customer_phone)}${o.mode === 'delivery' && o.address ? '<br>' + esc(o.address) + (o.zone_name ? ' (' + esc(o.zone_name) + ')' : '') : ''}</div><hr>${lines}<hr>
     ${o.note ? '<div>UWAGI: ' + esc(o.note) + '</div><hr>' : ''}
     ${Number(o.delivery_fee) > 0 ? `<div class="r"><span>Dostawa</span><span>${zl(o.delivery_fee)}</span></div>` : ''}${Number(o.discount) > 0 ? `<div class="r"><span>Rabat ${esc(o.promo_code || '')}</span><span>-${zl(o.discount)}</span></div>` : ''}
