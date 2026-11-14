@@ -1069,7 +1069,7 @@ $('#lodyBtn').onclick = () => {
       <div class="code">${CODE}</div>
       <div class="row2"><button class="act" id="invShare">Udostępnij link</button><button class="ghostbtn" id="invCopy">Kopiuj link</button></div>
       <button class="ghostbtn" id="invSim">Symuluj: znajomy zrobił zakupy (prototyp)</button>
-      <small>Punkty za polecenie przyznajemy po pierwszych zakupach znajomego. Maksymalnie 10 poleceń w miesiącu.</small>
+      <small>Punkty za polecenie przyznajemy po pierwszych zakupach znajomego. Maksymalnie 3 polecenia w miesiącu.</small>
       <button class="act" style="width:100%" id="sheetOk">Zamknij</button></div>`);
     qr($('#invQr'), link, 150);
     const copy = async () => { try { await navigator.clipboard.writeText(link); toast('✓', 'Link skopiowany', link); } catch (e) { toast('!', 'Skopiuj ręcznie', link); } };
@@ -1128,7 +1128,7 @@ const BASE = {
  "Znajomy skanuje Twój kod albo otwiera Twój link.":"Your friend scans your code or opens your link.",
  "Instaluje aplikację i robi pierwsze zakupy od 10 zł.":"They install the app and make a first purchase of 10 zł or more.",
  "Oboje dostajecie":"You both get","Udostępnij link":"Share link","Kopiuj link":"Copy link","Symuluj: znajomy zrobił zakupy (prototyp)":"Simulate: friend made a purchase (prototype)",
- "Punkty za polecenie przyznajemy po pierwszych zakupach znajomego. Maksymalnie 10 poleceń w miesiącu.":"Referral points are added after your friend's first purchase. Up to 10 referrals a month.",
+ "Punkty za polecenie przyznajemy po pierwszych zakupach znajomego. Maksymalnie 3 polecenia w miesiącu.":"Referral points are added after your friend's first purchase. Up to 3 referrals a month.",
  "Link skopiowany":"Link copied","Skopiuj ręcznie":"Copy it manually","Twój znajomy zrobił pierwsze zakupy. Dziękujemy!":"Your friend made their first purchase. Thank you!",
  "Masz zaproszenie od znajomego":"You've been invited by a friend","Po pierwszych zakupach od 10 zł oboje dostaniecie po 50 pkt.":"After a first purchase of 10 zł or more, you'll both get 50 pts."
 };
