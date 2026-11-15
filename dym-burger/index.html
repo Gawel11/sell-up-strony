@@ -578,7 +578,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
             </div>
           </section>
           <section class="blk zone" data-z="extras" data-now="Teraz dodatki">
-            <h3 class="bh"><b>2</b>Dodatki z lady<button class="allin" id="allIn">Klasycznie: sałata, pomidor, cebula, ogórek</button></h3>
+            <h3 class="bh"><b>2</b>Dodaj, co lubisz<button class="allin" id="allIn">Klasycznie: sałata, pomidor, cebula, ogórek</button></h3>
             <div class="gns" id="gns"></div>
             <button class="nextb" data-next="sauce" type="button">Dalej: sos <svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
           </section>
@@ -1353,7 +1353,7 @@ document.querySelectorAll('.nextb').forEach(b => b.onclick = () => goZone(b.data
 function curZone(){ if (!B.p) return 'meat'; if (!Object.keys(B.t).length && !B.sauce) return 'extras'; if (!B.sauce) return 'sauce'; return 'close'; }
 let hintT;
 function hint(h){ const el = $('#shint'); el.innerHTML = h; el.style.opacity = 1; clearTimeout(hintT); hintT = setTimeout(stepHint, 2400); }
-function stepHint(){ const z = curZone(); $('#shint').innerHTML = { meat: `Krok 1 · <b>${M === 'fire' ? 'zdejmij kotlet z rusztu' : 'zdejmij smash z płyty'}</b>`, extras: 'Krok 2 · <b>dodatki z lady</b>', sauce: 'Krok 3 · <b>wybierz sos</b>', close: 'Krok 4 · <b>zakończ składanie</b>' }[z]; }
+function stepHint(){ const z = curZone(); $('#shint').innerHTML = { meat: `Krok 1 · <b>${M === 'fire' ? 'zdejmij kotlet z rusztu' : 'zdejmij smash z płyty'}</b>`, extras: 'Krok 2 · <b>dodaj, co lubisz</b>', sauce: 'Krok 3 · <b>wybierz sos</b>', close: 'Krok 4 · <b>zakończ składanie</b>' }[z]; }
 function renderAll(delta){
   const d = MD(), z = curZone();
   document.querySelectorAll('.station .zone').forEach(el => { el.classList.toggle('now', el.dataset.z === z); });
