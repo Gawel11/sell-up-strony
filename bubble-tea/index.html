@@ -224,7 +224,7 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
 <canvas class="conf" id="conf"></canvas>
 
 <script src="../bulkaikromka/qrcode.min.js"></script>
-<script src="../lib/sellup-account.js?v=5"></script>
+<script src="../lib/sellup-account.js?v=6"></script>
 <script>
 const $ = s => document.querySelector(s);
 const zl = n => n + ' zł';
@@ -466,7 +466,7 @@ $('#addStamp').onclick = () => {
     return; }
   S.st++; let won = false; if (S.st >= N){ S.st = 0; S.free++; won = true; } save(); renderCard(!won);
   if (won){ confetti(); notify('🎉 Pełna karta!', 'Dowolna herbata L gratis czeka w Nagrodach.'); } else notify('🧋 +1 pieczątka', `Masz ${S.st}/${N}.`); };
-$('#ref').onclick = () => { const url = location.origin + location.pathname + '?od=' + S.no.slice(-5); const done = () => notify('💌 Zaproszenie gotowe', 'Gdy znajomy kupi herbatę, oboje dostaniecie pieczątkę.');
+$('#ref').onclick = () => { if (ACC) { ACC.inviteSheet({ slug: SLUG, venue: 'Bubble tea' }); return; } const url = location.origin + location.pathname + '?od=' + S.no.slice(-5); const done = () => notify('💌 Zaproszenie gotowe', 'Gdy znajomy kupi herbatę, oboje dostaniecie pieczątkę.');
   if (navigator.share) navigator.share({ title: 'Bubble tea', text: 'Skomponuj swoją bubble tea, dostaniesz pieczątkę na start:', url }).then(done, () => {});
   else if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, done); else done(); };
 
