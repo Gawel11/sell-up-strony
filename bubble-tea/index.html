@@ -99,6 +99,16 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
 /* ekran dla obsługi */
 .show{position:fixed;inset:0;z-index:80;background:#1a100a;color:#fff;overflow:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 20px 30px}
 .show .in{max-width:520px;margin:0 auto}
+.show .send{display:block;width:100%;min-height:56px;border-radius:18px;background:linear-gradient(135deg,#ffc46b,#ff8a2a);color:#2a160a;font-weight:900;font-size:17px;margin-top:14px}.show .send:disabled{opacity:.6}
+.show .err{color:#ff9a9a;font-weight:700;min-height:1em;margin:10px 0 0}
+.trk .num{font-size:96px;font-weight:900;line-height:1;background:linear-gradient(135deg,#ffd27a,#ff8a2a);-webkit-background-clip:text;background-clip:text;color:transparent;margin:6px 0}
+.trk .hint{color:var(--mut);margin:0 0 18px}
+.stp{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;margin:0 0 8px;background:rgba(255,255,255,.04);opacity:.5}
+.stp i{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;background:rgba(255,255,255,.1)}
+.stp b{display:block}.stp span{font-size:13px;color:var(--mut)}
+.stp.ok{opacity:.8}.stp.ok i{background:#3d8a4a}
+.stp.on{opacity:1;background:rgba(255,170,80,.14);box-shadow:inset 0 0 0 1.5px rgba(255,170,80,.5)}.stp.on i{background:linear-gradient(135deg,#ffc46b,#ff8a2a);color:#2a160a;animation:pul 1.6s ease-in-out infinite}
+@keyframes pul{50%{box-shadow:0 0 0 8px rgba(255,160,60,.18)}}
 .show h3{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin:0 0 4px}.show .big{font-size:30px;font-weight:900;margin:0 0 14px}
 .show .qr{background:#fff;border-radius:22px;padding:14px;display:flex;gap:14px;align-items:center;color:#202125;margin:0 0 14px}
 .show .qr div:first-child{flex:none}.show .qr b{display:block;font-size:16px}.show .qr span{display:block;font-size:13px;color:#6f6878;margin-top:3px}
@@ -190,7 +200,7 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
   </section>
 </div>
 
-<div class="dock" id="dock"><button class="more" id="more" type="button">＋ Dodaj kolejną herbatę</button><button class="go" id="go" type="button">Pokaż przy ladzie<small id="goSum"></small></button></div>
+<div class="dock" id="dock"><button class="more" id="more" type="button">＋ Dodaj kolejną herbatę</button><button class="go" id="go" type="button">Zamów przy ladzie<small id="goSum"></small></button></div>
 
 <nav class="nav" id="nav">
   <button data-s="make" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-1.4 14H8.4z"/><path d="M5.5 7h13"/><path d="M13 7l2-5"/><circle cx="10" cy="17" r=".8"/><circle cx="13" cy="18" r=".8"/></svg><span>Skomponuj</span></button>
@@ -201,7 +211,7 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
 <canvas class="conf" id="conf"></canvas>
 
 <script src="../bulkaikromka/qrcode.min.js"></script>
-<script src="../lib/sellup-account.js?v=2"></script>
+<script src="../lib/sellup-account.js?v=3"></script>
 <script>
 const $ = s => document.querySelector(s);
 const zl = n => n + ' zł';
@@ -300,19 +310,71 @@ $('#heart').onclick = async () => { const d = sel(), i = FAV.findIndex(f => same
   keepFav(); paint(); };
 $('#more').onclick = () => { ORDER.push(fresh()); CUR = ORDER.length - 1; keep(); paint(); jump(); scrollTo({ top: 0, behavior: 'smooth' }); notify('🧋 Herbata ' + ORDER.length, 'Skomponuj ją dla kolejnej osoby.'); };
 
-/* ===== Ekran dla obsługi z kodem QR zamówienia ===== */
-$('#go').onclick = () => {
-  const tot = ORDER.reduce((s, x) => s + price(x), 0), no = String(Math.floor(100 + Math.random() * 900)), w = document.createElement('div'); w.className = 'show';
-  const ascii = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/Ł/g, 'L');
-  const txt = ascii('BUBBLE TEA nr ' + no + '\n' + ORDER.map((x, i) => (i + 1) + '. ' + desc(x).join(', ') + ' = ' + price(x) + ' zl').join('\n') + '\nRAZEM ' + tot + ' zl' + (S.srv ? '\nKARTA ' + S.no : ''));
-  w.innerHTML = `<div class="in"><h3>Zamówienie przy ladzie · nr ${no}</h3><div class="big">Poproszę ${ORDER.length === 1 ? 'herbatę' : ORDER.length + ' herbaty'}:</div>
-    <div class="qr"><div id="oqr"></div><div><b>Obsługa skanuje ten kod</b><span>i od razu widzi cały skład ${ORDER.length === 1 ? 'herbaty' : 'wszystkich herbat'}. Nie trzeba niczego dyktować.</span></div></div>
+/* ===== Zamówienie przy ladzie: trafia do panelu lokalu, status na żywo ===== */
+const OPT = {
+  base: ['base_czarna', 'base_jasmin', 'base_matcha', 'base_taro', 'base_thai', 'base_mango', 'base_truskawka'],
+  milk: ['milk_krowie', 'milk_owsiane', 'milk_kokos', 'milk_none'], sweet: ['sweet_0', 'sweet_30', 'sweet_50', 'sweet_70', 'sweet_100'],
+  pearl: ['pearl_tapioka', 'pearl_brownsugar', 'pearl_popmango', 'pearl_poptrusk', 'pearl_liczi', 'pearl_none'],
+  top: [null, 'top_pianka', 'top_syrop'], ice: ['ice_normal', 'ice_malo', 'ice_none'] };
+const toItem = d => ({ code: 'bt', variant: d.size ? 'L' : 'M', qty: 1, label: name(d),
+  options: ['base', 'milk', 'sweet', 'pearl', 'top', 'ice'].map(k => OPT[k][d[k]]).filter(Boolean).map(code => ({ code, qty: 1 })) });
+const plS = n => n === 1 ? 'pieczątkę' : n < 5 ? 'pieczątki' : 'pieczątek';
+const STEPS = [['new', 'Przyjęte', 'Obsługa widzi Twoje zamówienie'], ['cooking', 'Przygotowujemy', 'Twoja herbata powstaje'], ['ready', 'Gotowe do odbioru', 'Podejdź do lady i podaj numer'], ['done', 'Odebrane', 'Smacznego!']];
+let TRK = null, trkT = null;
+function orderScreen(){
+  const tot = ORDER.reduce((s, x) => s + price(x), 0), w = document.createElement('div'); w.className = 'show'; w.id = 'orderScr';
+  const logged = ACC && ACC.logged();
+  w.innerHTML = `<div class="in"><h3>Twoje zamówienie</h3><div class="big">${ORDER.length === 1 ? 'Jedna herbata' : ORDER.length + ' herbaty'}</div>
     ${ORDER.map((x, i) => `<div class="ord"><img src="img/${cupOf(x)}.webp" alt=""><div><b>${i + 1}. ${opt('base', x)[1]}</b><span>${desc(x).join('<br>')}</span></div><div class="p">${zl(price(x))}</div></div>`).join('')}
-    <div class="tot"><span>Razem</span><span>${zl(tot)}</span></div><p class="note">Na karcie zbierzesz ${ORDER.length} ${ORDER.length === 1 ? 'pieczątkę' : ORDER.length < 5 ? 'pieczątki' : 'pieczątek'}.</p>
+    <div class="tot"><span>Razem</span><span>${zl(tot)}</span></div>
+    <p class="note">Zamówienie od razu trafi do obsługi. Płacisz przy odbiorze. ${logged ? `Na kartę dostaniesz ${ORDER.length} ${plS(ORDER.length)}.` : 'Zaloguj się numerem telefonu, żeby obsługa wiedziała, czyje to zamówienie, i żeby pieczątki wpadły na kartę.'}</p>
+    <button class="send" type="button">${logged ? 'Zamów · ' + zl(tot) : 'Zaloguj się i zamów'}</button><p class="err"></p>
     <button class="close" type="button">Wróć</button></div>`;
   document.body.appendChild(w); w.querySelector('.close').onclick = () => w.remove();
-  try { new QRCode(w.querySelector('#oqr'), { text: txt, width: 132, height: 132, colorDark: '#202125', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.L }); } catch (e) {}
-};
+  const btn = w.querySelector('.send'), err = w.querySelector('.err');
+  btn.onclick = async () => {
+    err.textContent = '';
+    try {
+      if (!ACC.logged()) { await ACC.login({ venue: 'Bubble tea', title: 'Zaloguj się, żeby zamówić', text: 'Podaj numer telefonu. Wyślemy SMS z kodem. Obsługa zobaczy Twoje zamówienie, a pieczątki trafią na kartę.' }); syncMe(true); }
+    } catch (e) { return; }
+    btn.disabled = true; btn.textContent = 'Wysyłam…';
+    try {
+      const r = await ACC.placeOrder(SLUG, ORDER.map(toItem));
+      TRK = { id: r.id, t: r.track_token, no: r.number, n: ORDER.length, total: r.total };
+      try { localStorage.setItem('bt-trk', JSON.stringify(Object.assign({ at: Date.now() }, TRK))); } catch (e) {}
+      ORDER = [fresh()]; CUR = 0; keep(); paint(); w.remove(); trackScreen('new');
+    } catch (e) { err.textContent = e.message; btn.disabled = false; btn.textContent = 'Spróbuj ponownie'; }
+  };
+}
+function trackScreen(status){
+  let w = $('#trkScr'); if (!w) { w = document.createElement('div'); w.className = 'show'; w.id = 'trkScr'; document.body.appendChild(w); }
+  const idx = Math.max(0, STEPS.findIndex(x => x[0] === status)), cancelled = status === 'cancelled';
+  w.innerHTML = `<div class="in trk"><h3>Twoje zamówienie</h3><div class="num">${TRK.no}</div><p class="hint">Twój numer. Podaj go przy odbiorze.</p>
+    ${cancelled ? '<div class="stp on"><i>✕</i><div><b>Zamówienie anulowane</b><span>Zapytaj obsługę przy ladzie.</span></div></div>'
+      : STEPS.map((x, i) => `<div class="stp${i < idx ? ' ok' : i === idx ? ' on' : ''}"><i>${i < idx ? '✓' : i + 1}</i><div><b>${x[1]}</b><span>${x[2]}</span></div></div>`).join('')}
+    <div class="tot"><span>Do zapłaty przy odbiorze</span><span>${zl(TRK.total)}</span></div>
+    ${status === 'done' ? `<p class="note">🧋 +${TRK.n} ${plS(TRK.n)} na Twojej karcie.</p>` : ''}
+    <button class="close" type="button">${status === 'done' || cancelled ? 'Gotowe' : 'Schowaj (status zobaczysz w Karcie)'}</button></div>`;
+  w.querySelector('.close').onclick = () => { w.remove(); if (status === 'done' || cancelled) { TRK = null; try { localStorage.removeItem('bt-trk'); } catch (e) {} clearTimeout(trkT); } };
+}
+async function pollTrk(){
+  clearTimeout(trkT); if (!TRK) return;
+  try {
+    const r = await ACC.track(TRK.id, TRK.t);
+    if (r && r.status !== TRK.last) {
+      const prev = TRK.last; TRK.last = r.status;
+      if ($('#trkScr') || prev) trackScreen(r.status);
+      if (prev && r.status === 'ready') { notify('🧋 Gotowe do odbioru!', 'Podejdź do lady z numerem ' + TRK.no + '.'); try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch (e) {} }
+      if (r.status === 'done') { confetti(); syncMe(); }
+    }
+    if (r && (r.status === 'done' || r.status === 'cancelled')) return;
+  } catch (e) {}
+  trkT = setTimeout(pollTrk, 4000);
+}
+$('#go').onclick = () => { if (TRK && TRK.last !== 'done' && TRK.last !== 'cancelled') { trackScreen(TRK.last || 'new'); return; } orderScreen(); };
+const _origTrack = trackScreen;
+trackScreen = function (st) { _origTrack(st); if (!trkT) pollTrk(); };
+try { const t = JSON.parse(localStorage.getItem('bt-trk')); if (t && Date.now() - t.at < 3 * 3600e3) { TRK = t; pollTrk(); } } catch (e) {}
 
 /* ===== Karta pieczątek: konto klienta (baza) albo demo w telefonie ===== */
 const SLUG = 'bubble-tea', ACC = window.SellUpAccount; let ME = null;
