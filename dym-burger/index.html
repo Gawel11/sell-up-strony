@@ -470,6 +470,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
 .loading b{color:var(--accent);font-weight:400}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<script src="../lib/sellup-account.js?v=2"></script>
 </head>
 <body>
 <div class="loading" id="loading"><b>Burger</b></div>
@@ -722,6 +723,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
   <button class="x" data-close aria-label="Zamknij">✕</button>
   <div class="body">
     <h2 class="c-title" id="lTitle" style="text-align:center">Karta <span class="hl">stałego klienta</span></h2>
+    <div id="suStrip"></div>
     <div class="loy-big" id="loyBig"></div>
     <p class="loy-count"><b class="num" id="loyNum">2</b> <span class="num">z 10</span> pieczątek</p>
     <p class="loy-sub" id="loySub"></p>
@@ -730,7 +732,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
       <li><i>2</i><span>Na start dajemy Ci 2 pieczątki w prezencie.</span></li>
       <li><i>3</i><span>10 pieczątek to dowolny burger gratis, z ognia albo smash.</span></li>
     </ul>
-    <p class="p-desc" style="font-size:12.5px;text-align:center">Szkic: karta liczy pieczątki w tej przeglądarce. W wersji docelowej będzie przypięta do konta klienta.</p>
+    <p class="p-desc" style="font-size:12.5px;text-align:center">Bez logowania karta liczy pieczątki w tej przeglądarce. Po zalogowaniu jest na Twoim koncie.</p>
   </div>
 </div>
 
@@ -1411,6 +1413,7 @@ $('#orderForm').onsubmit = async e => {
   const { data, error } = await SB.rpc('place_order', { p_restaurant: SLUG, p_items: items, p_mode: mode, p_name: nm, p_phone: ph, p_address: mode === 'delivery' ? ad : null, p_note: nt || null, p_payment: PAY });
   sending = false; $('#fSend').disabled = false;
   if (error){ $('#fErr').textContent = (error.message || 'Nie udało się wysłać zamówienia').replace(/^.*?: /, '') + '. Spróbuj jeszcze raz albo zadzwoń: 500 600 700.'; return; }
+  if (window.SellUpAccount && SellUpAccount.logged()) SellUpAccount.attach(data.id, data.track_token).catch(() => {});
   try { localStorage.setItem('dym-dane', JSON.stringify({ n: nm, p: ph, a: ad })); localStorage.setItem('dym-last', JSON.stringify({ id: data.id, t: data.track_token, no: data.number, m: cart.find(c => c.kind === 'burger')?.mode || M, at: Date.now() })); } catch(e) {}
   closeSheet(); startDone(data);
 };
@@ -1534,7 +1537,8 @@ async function checkOpen(){
 /* ===== Karta lojalnościowa: 10 pieczątek, 2 na start ===== */
 const LOY_KEY = 'dym-loy', LOY_N = 10;
 let LOY = (() => { try { const v = JSON.parse(localStorage.getItem(LOY_KEY)); if (v && typeof v.s === 'number') return v; } catch(e) {} return { s:2, free:0 }; })();
-function saveLoy(){ try { localStorage.setItem(LOY_KEY, JSON.stringify(LOY)); } catch(e) {} }
+let SRV = false;
+function saveLoy(){ if (SRV) return; try { localStorage.setItem(LOY_KEY, JSON.stringify(LOY)); } catch(e) {} }
 function loySVG(filled, from = filled){
   let h = '';
   for (let i = 0; i < LOY_N; i++){
@@ -1552,13 +1556,18 @@ function renderLoy(){
   $('#phoneLoy').innerHTML = loySVG(LOY.s).replace('<svg', '<svg class="loy"');
   $('#phoneLoyTx').textContent = `${LOY.s} z ${LOY_N}`;
 }
-function openLoy(){
+function openLoy(){ fillLoy(); openSheet($('#loySheet')); acctSync(); }
+function acctSync(){ if (!window.SellUpAccount) return;
+  SellUpAccount.strip($('#suStrip'), { slug: SLUG, venue: 'Burger', onCard: c => {
+    if (c){ SRV = true; LOY.s = c.stamps; LOY.free = c.rewards; } else if (SRV){ SRV = false; try { LOY = JSON.parse(localStorage.getItem(LOY_KEY)) || { s: 2, free: 0 }; } catch(e) { LOY = { s: 2, free: 0 }; } }
+    renderLoy(); fillLoy(); } }); }
+function fillLoy(){
   $('#loyBig').innerHTML = loySVG(LOY.s); $('#loyNum').textContent = LOY.s;
   const miss = LOY_N - LOY.s;
   $('#loySub').textContent = (LOY.free ? `Masz ${LOY.free} darmowego burgera do odebrania. ` : '') + `Do darmowego burgera brakuje ${miss} ${plP(miss)}.`;
-  openSheet($('#loySheet'));
 }
 function addStamps(n){
+  if (SRV) return { srv: true, n: 1 };
   const before = LOY.s; let after = before + n, won = 0;
   while (after >= LOY_N){ after -= LOY_N; won++; }
   LOY.s = after; LOY.free += won; saveLoy(); renderLoy();
@@ -1568,11 +1577,13 @@ function renderOcLoy(r){
   const el = $('#ocLoy');
   if (!r.n){ el.hidden = true; return; }
   el.hidden = false;
+  if (r.srv){ el.innerHTML = `${loySVG(LOY.s)}<div><b>+1 pieczątka trafi na Twoją kartę</b><span>Gdy kuchnia wyda zamówienie. Karta jest na Twoim koncie.</span></div>`; return; }
   el.innerHTML = r.won
     ? `${loySVG(LOY_N, r.before)}<div><b>Pełna karta! Następny burger gratis</b><span>Karta zaczyna się od nowa: ${r.after} z ${LOY_N}.</span></div>`
     : `${loySVG(r.after, r.before)}<div><b>+${r.n} ${plP(r.n)} na karcie</b><span>${r.after} z ${LOY_N} · do darmowego burgera brakuje ${LOY_N - r.after}</span></div>`;
 }
 $('#loyChip').onclick = openLoy; $('#loyPromo').onclick = openLoy;
+if (window.SellUpAccount && SellUpAccount.logged()) acctSync();
 
 /* ===== Instalacja aplikacji ===== */
 const INST = {

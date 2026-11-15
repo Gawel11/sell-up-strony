@@ -11,6 +11,8 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Bułka i Kromka">
+<script src="../lib/sellup-account.js?v=2"></script>
+<style>#suStrip{--sua-accent:var(--accent);--sua-accent-fg:#fff;margin:4px 0 12px}</style>
 </head>
 <body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -432,6 +434,7 @@ html.pwa .toast{top:calc(10px + env(safe-area-inset-top,0px))}
               <div class="ptsbadge"><b id="ptsNum">64</b><span>pkt</span></div></div>
             <p class="nx" id="ptsNext"></p>
           </div>
+          <div id="suStrip"></div>
           <button class="howbtn invbtn" id="invBtn"><span class="q">+50</span><span class="tx"><b>Zaproś znajomych</b><small>Ty i znajomy dostajecie po 50 pkt</small></span><span class="arr">›</span></button>
           <div id="orderSlot"></div>
           <div class="offer2" id="offerPizza" role="button" tabindex="0" aria-label="Zobacz pizze i ceny"><img src="img/pizza.webp" alt="Kawałek pizzy"><span class="pill">Oferta dnia: pizza + kawa</span><div class="inset"><img src="img/kawa.webp" alt="Cappuccino"></div><p>Kawałek pizzy i cappuccino za 16 zł · do 16:00</p></div>
@@ -551,6 +554,7 @@ function greet(){
 
 /* ---------- state ---------- */
 const S = {points:64, order:null};
+let SRV = false, ME = null; const LOCAL_PTS = 64;
 const REWARDS = CFG.nagrody;
 
 /* ---------- illustrations ---------- */
@@ -612,7 +616,7 @@ function renderRewards(){
     const r = REWARDS.find(x=>x.id===b.dataset.r);
     sheet(`<img src="img/${r.art}.webp" alt="" style="width:150px;height:150px;border-radius:50%;object-fit:cover;box-shadow:0 12px 26px var(--shadow)"><h3>${r.name}</h3><div class="qr" id="rq"></div>
       <p class="muted">Pokaż ten kod przy ladzie. Ważny 5 minut. ${r.cost} pkt zejdzie, gdy obsługa wyda nagrodę.</p><button class="act" style="width:100%" id="sheetOk">Gotowe</button>`);
-    qr($('#rq'), 'BIKR:'+r.id+':482', 150);
+    qr($('#rq'), SRV && ME ? 'SU:'+ME.code : 'BIKR:'+r.id+':482', 150);
     $('#sheetOk').onclick = closeSheet;
   });
 }
@@ -627,7 +631,9 @@ function toast(ic,t,s){ $('#toastIc').textContent=ic; $('#toastT').textContent=t
 /* ---------- scan + success ---------- */
 qr($('#vfQr'), 'BIK:DEMO', 120);
 $('#simScan').onclick = async () => {
-  const gain = 12, before = S.points, nx0 = nextReward(before);
+  let gain = 12;
+  if (SRV && ME){ try { const m = await SellUpAccount.staff.stamp('bulkaikromka', ME.code, 1, 24.80); gain = m.card.points - S.points; } catch (e) { toast('!', 'Chwileczkę', e.message); return; } }
+  const before = S.points, nx0 = nextReward(before);
   const body = $('#succBody');
   body.innerHTML = `<div class="ptshero big"><div class="phw"><img src="img/kawa.webp" alt=""></div><svg class="ring" viewBox="0 0 100 100" id="cupSucc">${cupSVG('succ')}</svg></div><div class="big">+${gain} pkt</div><h3>Dziękujemy!</h3>
     <p class="muted" id="succMsg">Za zakupy 24,80 zł</p><button class="act" style="margin-top:10px;width:100%;max-width:280px" id="succBack">Wróć do startu</button>`;
@@ -642,6 +648,14 @@ $('#simScan').onclick = async () => {
   if (nx0 && S.points>=nx0.cost) $('#succMsg').innerHTML = `Za zakupy 24,80 zł. <b>${nx0.name} czeka na Ciebie!</b>`;
   $('#succBack').onclick = () => { $('#success').classList.remove('open'); go('start'); setTimeout(()=>renderPoints(before),350); };
 };
+
+/* ---------- konto klienta (punkty w bazie) ---------- */
+function acctSync(){ if (!window.SellUpAccount) return;
+  SellUpAccount.strip($('#suStrip'), { slug: 'bulkaikromka', venue: 'Bułka i Kromka', onCard: (c, m) => {
+    if (c){ SRV = true; ME = m; S.points = c.points; if (m.name) $('#greetH').textContent = 'Dzień dobry, ' + m.name; }
+    else if (SRV){ SRV = false; ME = null; S.points = LOCAL_PTS; }
+    renderPoints(); } }); }
+acctSync();
 
 /* ---------- shops / wallet / geo ---------- */
 const PINS = (() => {

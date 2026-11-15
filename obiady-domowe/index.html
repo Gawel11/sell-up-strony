@@ -368,6 +368,7 @@ footer .pasiak{position:absolute;left:0;right:0;top:0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
 .odf{display:grid;gap:8px;margin:6px 0 10px}.odf input{font:inherit;font-size:16px;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(42,33,24,.18);background:#fffaf2;color:inherit}.odf input:focus{outline:none;border-color:#c0392b}
 </style>
+<script src="../lib/sellup-account.js?v=2"></script>
 </head>
 <body class="locked">
 <div class="grain"></div>
@@ -387,6 +388,7 @@ footer .pasiak{position:absolute;left:0;right:0;top:0}
   <a class="brand" href="#hero"><svg viewBox="0 0 64 64" fill="none" stroke="#2b2119" stroke-width="3" stroke-linecap="round"><path d="M10 34h44c0 11-9.8 19-22 19S10 45 10 34z"/><path d="M6 34h52"/><path d="M24 26c-3-4 3-6 0-10M32 26c-3-4 3-6 0-11M40 26c-3-4 3-6 0-10" stroke="#c0562a"/></svg><span>Obiady <em>Domowe</em></span></a>
   <div class="hdr-actions">
     <button class="icon-btn" id="replay" aria-label="Powtórz intro"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></button>
+    <button class="icon-btn" id="acctBtn" aria-label="Moja karta" title="Moja karta"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/></svg></button>
     <button class="icon-btn" id="cartBtn" aria-label="Koszyk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.3 10.2a2 2 0 0 1-2 1.8H8.3a2 2 0 0 1-2-1.8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="badge" id="badge">0</span></button>
   </div>
   <div class="pasiak"></div>
@@ -767,7 +769,7 @@ function openCart(){
         const items=cart.map(c=>{const z=c.z!==undefined,w=z?WEEK[c.z]:null;return{code:z?'zestaw'+c.z:c.k,qty:c.q,label:z?`${D[w[0]].n} + ${D[w[1]].n.toLowerCase()} + kompot`:'',note:c.when?'na '+c.when:''};});
         const s=slot,m=mode;
         rpc('place_order',{p_restaurant:'obiady-domowe',p_items:items,p_mode:m==='odbior'?'pickup':'delivery',p_name:fn.trim(),p_phone:fp.trim(),p_address:m==='dostawa'?fa.trim():null,p_note:(m==='odbior'?'Odbiór o ':'Dostawa ok. ')+s,p_payment:'cash'})
-          .then(d=>{try{localStorage.setItem('od-dane',JSON.stringify({n:fn.trim(),p:fp.trim(),a:fa.trim()}))}catch(e){}cart=[];updCart();sheet.onclick=null;sheet.oninput=null;showDone(d.number,m,s,d.id,d.track_token);})
+          .then(d=>{if(window.SellUpAccount&&SellUpAccount.logged())SellUpAccount.attach(d.id,d.track_token).catch(()=>{});try{localStorage.setItem('od-dane',JSON.stringify({n:fn.trim(),p:fp.trim(),a:fa.trim()}))}catch(e){}cart=[];updCart();sheet.onclick=null;sheet.oninput=null;showDone(d.number,m,s,d.id,d.track_token);})
           .catch(e2=>{busy=false;err=e2.message+'. Możesz też zadzwonić: 500 600 700';draw();});
       }
     };
@@ -789,5 +791,6 @@ addEventListener('resize',()=>layout());
 <script src="../lib/sellup-lead.js?v=11" defer></script>
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});</script>
 <script src="../lib/sellup-kitchen.js?v=3" defer></script>
+<script>document.getElementById('acctBtn').onclick = () => window.SellUpAccount && SellUpAccount.open({ slug: 'obiady-domowe', venue: 'Obiady Domowe', title: 'Twoja karta' });</script>
 </body>
 </html>

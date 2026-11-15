@@ -445,7 +445,8 @@ footer{border-top:1px solid var(--line);padding-block:24px 110px;color:var(--mut
   <div class="wrap">
     <div class="logo"><span data-b="name">ŻAR</span><span class="dot">.</span><small data-b="sub">KEBAB &amp; GRILL</small></div>
     <div class="links"><button data-go="lada">Kreator</button><button data-go="gotowe">Menu</button></div>
-    <button class="cartb" id="cartBtn" aria-label="Koszyk" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="c num" id="cartN">0</span></button>
+    <button class="cartb" id="acctBtn" aria-label="Moja karta" title="Moja karta" style="margin-left:auto;background:rgba(255,255,255,.1)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/></svg><span>Karta</span></button>
+    <button class="cartb" id="cartBtn" aria-label="Koszyk" style="margin-left:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="c num" id="cartN">0</span></button>
   </div>
 </nav>
 
@@ -575,7 +576,8 @@ window.SELLUP = {
   key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZGxkb25yd2dveGZyeWFuZGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MjQ5OTYsImV4cCI6MjExMDAwMDk5Nn0.F4S0Wv3PXhb3ii5IQWsOuNZwSYq84Dnf3diAvfTcY20'
 };
 </script>
-<script src="../lib/sellup-order.js?v=8"></script>
+<script src="../lib/sellup-order.js?v=9"></script>
+<script src="../lib/sellup-account.js?v=2"></script>
 <script>
 /* ===== Szablon: dane lokalu z bazy (nazwa, kolory, menu, ceny, zestawy) ===== */
 const SLUG = new URLSearchParams(location.search).get('l') || 'zar';
@@ -1006,5 +1008,6 @@ SellUpOrder.isOpen(SLUG).then(o => SellUpOrder.closedBar(!o));
 <script src="../lib/sellup-lead.js?v=11" defer></script>
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});</script>
 <script src="../lib/sellup-kitchen.js?v=3" defer></script>
+<script>document.getElementById('acctBtn').onclick = () => window.SellUpAccount && SellUpAccount.open({ slug: SLUG, venue: 'Kebab', title: 'Twoja karta' });</script>
 </body>
 </html>

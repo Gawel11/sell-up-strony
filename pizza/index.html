@@ -770,6 +770,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
   <button class="x" data-close aria-label="Zamknij">✕</button>
   <div class="body">
     <h2 class="c-title" id="lTitle" style="text-align:center">Karta <em class="it">lojalnościowa</em></h2>
+    <div id="suStrip"></div>
     <div class="loy-big" id="loyBig"></div>
     <p class="loy-count"><b class="num" id="loyNum">2</b> <span class="num">z 12</span> kawałków</p>
     <p class="loy-sub" id="loySub"></p>
@@ -782,7 +783,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
       <button class="wallet" data-wallet><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg>Dodaj do Apple Wallet</button>
       <button class="wallet" data-wallet><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg>Dodaj do Google Wallet</button>
     </div>
-    <p class="p-desc" style="font-size:12.5px;text-align:center">Szkic: karta liczy kawałki w tej przeglądarce. W wersji docelowej będzie przypięta do konta klienta.</p>
+    <p class="p-desc" style="font-size:12.5px;text-align:center">Bez logowania karta liczy kawałki w tej przeglądarce. Po zalogowaniu jest na Twoim koncie.</p>
   </div>
 </div>
 
@@ -820,7 +821,8 @@ window.SELLUP = {
   key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZGxkb25yd2dveGZyeWFuZGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MjQ5OTYsImV4cCI6MjExMDAwMDk5Nn0.F4S0Wv3PXhb3ii5IQWsOuNZwSYq84Dnf3diAvfTcY20'
 };
 </script>
-<script src="../lib/sellup-order.js?v=8"></script>
+<script src="../lib/sellup-order.js?v=9"></script>
+<script src="../lib/sellup-account.js?v=2"></script>
 <script>
 /* ===== Szablon pizzerii: dane lokalu z bazy (nazwa, menu, ceny, składniki) ===== */
 const SLUG = new URLSearchParams(location.search).get('l') || 'forno450';
@@ -1472,7 +1474,8 @@ $('#shareCopy').onclick = () => {
 /* ===== Karta lojalnościowa: 12 kawałków, 2 na start ===== */
 const LOY_KEY = 'forno-loy', LOY_N = 12;
 let LOY = (() => { try { const v = JSON.parse(localStorage.getItem(LOY_KEY)); if (v && typeof v.slices === 'number') return v; } catch(e) {} return { slices: 2, free: 0 }; })();
-function saveLoy(){ try { localStorage.setItem(LOY_KEY, JSON.stringify(LOY)); } catch(e) {} }
+let SRV = false;
+function saveLoy(){ if (SRV) return; try { localStorage.setItem(LOY_KEY, JSON.stringify(LOY)); } catch(e) {} }
 let svgSeq = 0;
 function loySVG(filled, from = filled){
   const id = 'lp' + (++svgSeq), R = 100; let paths = '';
@@ -1492,14 +1495,19 @@ function renderLoy(){
   $('#phoneLoy').innerHTML = loySVG(LOY.slices).replace('<svg', '<svg class="loy"');
   $('#phoneLoyTx').textContent = `${LOY.slices} z ${LOY_N}`;
 }
-function openLoy(){
+function openLoy(){ fillLoy(); openSheet($('#loySheet')); acctSync(); }
+function acctSync(){ if (!window.SellUpAccount) return;
+  SellUpAccount.strip($('#suStrip'), { slug: SLUG, venue: 'Pizza', onCard: c => {
+    if (c){ SRV = true; LOY.slices = c.stamps; LOY.free = c.rewards; } else if (SRV){ SRV = false; try { LOY = JSON.parse(localStorage.getItem(LOY_KEY)) || { slices: 2, free: 0 }; } catch(e) { LOY = { slices: 2, free: 0 }; } }
+    renderLoy(); fillLoy(); } }); }
+function fillLoy(){
   $('#loyBig').innerHTML = loySVG(LOY.slices);
   $('#loyNum').textContent = LOY.slices;
   const miss = LOY_N - LOY.slices;
   $('#loySub').textContent = (LOY.free ? `Masz ${LOY.free} darmową pizzę do odebrania. ` : '') + `Do darmowej pizzy brakuje ${miss} ${plKaw(miss)}.`;
-  openSheet($('#loySheet'));
 }
 function addSlices(n){
+  if (SRV) return { srv: true, n };
   const before = LOY.slices; let after = before + n, won = 0;
   while (after >= LOY_N){ after -= LOY_N; won++; }
   LOY.slices = after; LOY.free += won; saveLoy(); renderLoy();
@@ -1509,6 +1517,7 @@ function renderOcLoy(r){
   const el = $('#ocLoy');
   if (!r.n){ el.hidden = true; return; }
   el.hidden = false;
+  if (r.srv){ el.innerHTML = `${loySVG(LOY.slices)}<div><b>+${r.n} ${plKaw(r.n)} trafi na Twoją kartę</b><span>Gdy kuchnia wyda zamówienie. Karta jest na Twoim koncie.</span></div>`; return; }
   if (r.won){
     el.innerHTML = `${loySVG(LOY_N, r.before)}<div><b>Pełna pizza! Następna jest gratis</b><span>Karta zaczyna się od nowa: ${r.after} z ${LOY_N}.</span></div>`;
   } else {
@@ -1517,7 +1526,7 @@ function renderOcLoy(r){
 }
 $('#loyChip').onclick = openLoy; $('#loyPromo').onclick = openLoy;
 document.querySelectorAll('[data-wallet]').forEach(b => b.onclick = () => toast('W wersji docelowej karta trafi do portfela w telefonie'));
-renderLoy();
+renderLoy(); if (window.SellUpAccount && SellUpAccount.logged()) acctSync();
 
 /* ===== Aplikacja na telefon (instalacja ze strony) ===== */
 const INST = {
