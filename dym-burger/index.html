@@ -135,7 +135,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);ou
 
 /* Stos warstw (burger z boku) */
 .stk{position:relative;flex:none}
-.stk>img{position:absolute;left:50%;max-width:none;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.stk>img{position:absolute;left:50%;max-width:none;pointer-events:none;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 4px 4px rgba(0,0,0,.38))}
 
 /* Karta lojalnościowa + sekcja aplikacji */
 .loy-promo{display:flex;align-items:center;gap:16px;background:var(--surface);border-radius:var(--r-lg);padding:14px 18px;margin:18px 0 6px;text-align:left;width:100%;border:1px solid var(--line)}
@@ -794,19 +794,19 @@ const SLUG = 'dym-burger';
 /* ===== Warstwy: zdjęcia z boku. w = szerokość względem sceny, sq = spłaszczenie w pionie,
    sink = ile wchodzi w warstwę pod spodem, top = gdzie (od góry obrazka) leży następna warstwa ===== */
 const A = 'assets/';
-const L = {
-  bun_b:      { img:'bun_b',       w:.78, sq:1,   sink:0,   top:.36 },
-  bun_t:      { img:'bun_t',       w:.80, sq:1,   sink:.20, top:0 },
-  patty_fire: { img:'patty_fire',  w:.80, sq:.62, sink:.30, top:.30 },
-  patty_smash:{ img:'patty_smash', w:.88, sq:.40, sink:.34, top:.46 },
-  cheddar:    { img:'cheddar',     w:.80, sq:.36, sink:.46, top:.54 },
-  bacon:      { img:'bacon',       w:.78, sq:.36, sink:.52, top:.42 },
-  lettuce:    { img:'lettuce',     w:.90, sq:.34, sink:.50, top:.46 },
-  tomato:     { img:'tomato',      w:.74, sq:.40, sink:.50, top:.45 },
-  onion:      { img:'onion',       w:.72, sq:.32, sink:.56, top:.50 },
-  pickles:    { img:'pickles',     w:.70, sq:.32, sink:.56, top:.50 },
-  jalapeno:   { img:'jalapeno',    w:.66, sq:.32, sink:.56, top:.50 },
-  egg:        { img:'egg',         w:.72, sq:.38, sink:.50, top:.42 },
+const L = { /* warstwy z boku (Higgsfield 15.11): sq 1 = bez spłaszczania; smash szerszy niż bułka */
+  bun_b:      { img:'n_bun_b',       w:.80, sq:1, sink:0,   top:.50 },
+  bun_t:      { img:'n_bun_t',       w:.80, sq:1, sink:.12, top:0 },
+  patty_fire: { img:'n_patty_fire',  w:.86, sq:1, sink:.18, top:.30 },
+  patty_smash:{ img:'n_patty_smash', w:1.14,sq:1, sink:.24, top:.40 },
+  cheddar:    { img:'n_cheddar',     w:.96, sq:1, sink:.55, top:.55 },
+  bacon:      { img:'n_bacon',       w:.94, sq:1, sink:.30, top:.42 },
+  lettuce:    { img:'n_lettuce',     w:1.02,sq:1, sink:.30, top:.48 },
+  tomato:     { img:'n_tomato',      w:.88, sq:1, sink:.25, top:.42 },
+  onion:      { img:'n_onion',       w:.88, sq:1, sink:.30, top:.45 },
+  pickles:    { img:'n_pickles',     w:.86, sq:1, sink:.30, top:.45 },
+  jalapeno:   { img:'n_jalapeno',    w:.86, sq:1, sink:.30, top:.45 },
+  egg:        { img:'n_egg',         w:.88, sq:1, sink:.30, top:.42 },
 };
 /* Dodatki do wyboru w kreatorze (kolejność na liście) i ich miejsce w burgerze */
 const TOPS = [
