@@ -222,7 +222,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
 .steps4 li b{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:rgba(255,255,255,.08);color:var(--muted);transition:all .3s}
 .steps4 li:not(:last-child)::after{content:"";position:absolute;right:-8px;top:50%;width:8px;height:2px;background:var(--line)}
 .steps4 li.now{background:var(--accent-soft);color:var(--fg)}.steps4 li.now b{background:var(--accent);color:var(--accent-fg);box-shadow:0 0 0 6px var(--accent-soft);animation:zglow 1.9s ease-in-out infinite}
-.steps4 li.done{color:#d9d2c6}.steps4 li.done b{background:var(--ok);color:#0b0907;font-size:0}.steps4 li.done b::after{content:"✓";font-size:20px}
+.steps4 li.sdone{color:#d9d2c6}.steps4 li.sdone b{background:var(--ok);color:#0b0907;font-size:0}.steps4 li.sdone b::after{content:"✓";font-size:20px}
 @media (max-width:700px){.steps4{gap:4px;padding:6px}.steps4 li{flex-direction:column;gap:4px;padding:6px 2px;font-size:10.5px;text-align:center}.steps4 li b{width:34px;height:34px;font-size:19px}}
 .grab-btn .arr,.nextb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .grab-btn .arr{margin-left:auto;animation:arrn 1.4s ease-in-out infinite}@keyframes arrn{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
@@ -1358,7 +1358,7 @@ function renderAll(delta){
   $('.blk[data-z="extras"]').classList.toggle('ok', Object.keys(B.t).length > 0);
   $('.blk[data-z="sauce"]').classList.toggle('ok', !!B.sauce);
   { const order = ['meat', 'extras', 'sauce', 'close'], zi = order.indexOf(z), done = { meat: B.p > 0, extras: Object.keys(B.t).length > 0, sauce: !!B.sauce, close: false };
-    document.querySelectorAll('#steps4 li').forEach((li, i) => { li.classList.toggle('now', i === zi); li.classList.toggle('done', done[order[i]] && i !== zi); });
+    document.querySelectorAll('#steps4 li').forEach((li, i) => { li.classList.toggle('now', i === zi); li.classList.toggle('sdone', done[order[i]] && i !== zi); });
     $('#st1').textContent = M === 'fire' ? 'Kotlet' : 'Smash'; }
   $('#pN').textContent = B.p + '/' + d.maxP;
   $('#pMinusS').disabled = !B.p; $('#pPlusS').disabled = B.p >= d.maxP; $('#grab').disabled = B.p >= d.maxP;
