@@ -510,6 +510,7 @@ em.it{font-family:var(--font-display);font-style:italic;color:var(--accent);font
 
 footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1px solid var(--line)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+html.su-start #cartBtnTop,html.su-start #cartbar{display:none!important}
 </style>
 </head>
 <body>
@@ -822,7 +823,7 @@ window.SELLUP = {
 };
 </script>
 <script src="../lib/sellup-order.js?v=12"></script>
-<script src="../lib/sellup-account.js?v=12"></script>
+<script src="../lib/sellup-account.js?v=13"></script>
 <script>
 /* ===== Szablon pizzerii: dane lokalu z bazy (nazwa, menu, ceny, składniki) ===== */
 const SLUG = new URLSearchParams(location.search).get('l') || 'forno450';
@@ -833,7 +834,8 @@ let SHOP = null;
   if (!r || r.module !== 'pizza'){ document.body.innerHTML = '<p style="padding:40px;font:18px system-ui;color:#fff;background:#111;min-height:100vh;margin:0">Nie znaleziono lokalu.</p>'; return; }
   const { data: menu } = await db.from('menu_items').select('kind, code, name, price, variants, data, sort').eq('active', true).eq('restaurant_id', r.id).order('sort');
   const st = r.settings || {}, b = st.brand || {};
-  SHOP = { phone: r.phone || '', fee: Number(r.delivery_fee), free: r.free_delivery_from == null ? 1e9 : Number(r.free_delivery_from), assets: st.assets || 'assets/', bn: b.name || r.name, bs: b.sub || '' };
+  SHOP = { phone: r.phone || '', fee: Number(r.delivery_fee), free: r.free_delivery_from == null ? 1e9 : Number(r.free_delivery_from), assets: st.assets || 'assets/', bn: b.name || r.name, bs: b.sub || '', start: (st.plan || 'start') === 'start' };
+  document.documentElement.classList.toggle('su-start', SHOP.start);
   const pr = m => Object.fromEntries((m.variants || []).map(v => [v.id, Number(v.price)]));
   const custom = menu.find(m => m.code === 'custom'), crust = menu.find(m => m.code === 'crust');
   const sizes = (custom ? custom.variants : []).map(v => ({ id: v.id, label: v.id.toUpperCase(), name: v.name }));
@@ -1262,7 +1264,9 @@ $('#bAdd').onclick = () => {
 /* ===== Koszyk ===== */
 const cart = []; let mode = 'delivery';
 const DELIVERY = SHOP.fee, FREE_FROM = SHOP.free;
+function startGuard(){ if (!SHOP || !SHOP.start) return false; if (window.SellUpAccount) SellUpAccount.startSheet({ slug: SLUG, venue: SHOP.bn, phone: SHOP.phone }); return true; }
 function addToCart(line, silent){
+  if (startGuard()) return;
   const key = [line.kind, line.name, line.size, line.extra, line.xid].join('|');
   const ex = cart.find(c => c.key === key);
   if (ex) ex.qty += line.qty; else cart.push({ ...line, key });
@@ -1445,6 +1449,7 @@ function renderUpsell(){
   setFreeBar($('#uFree'));
 }
 function addExtra(id, imgEl, target){
+  if (startGuard()) return;
   const x = XT[id];
   if (imgEl && target && !REDUCED){
     const from = center(imgEl.getBoundingClientRect()), to = center(target.getBoundingClientRect());

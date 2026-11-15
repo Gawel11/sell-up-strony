@@ -437,6 +437,7 @@ footer{border-top:1px solid var(--line);padding-block:24px 110px;color:var(--mut
 .panel .gn .ck,.panel .gn .mn{width:22px;height:22px;min-width:22px;font-size:11.5px}
 @media (max-width:1100px){.panel .gns,.panel .gns.sauces{grid-template-columns:repeat(5,minmax(0,64px));gap:10px 8px}.panel .gn .nm{font-size:11.5px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+html.su-start #cartBtn{display:none!important}
 </style>
 </head>
 <body>
@@ -577,7 +578,7 @@ window.SELLUP = {
 };
 </script>
 <script src="../lib/sellup-order.js?v=12"></script>
-<script src="../lib/sellup-account.js?v=12"></script>
+<script src="../lib/sellup-account.js?v=13"></script>
 <script>
 /* ===== Szablon: dane lokalu z bazy (nazwa, kolory, menu, ceny, zestawy) ===== */
 const SLUG = new URLSearchParams(location.search).get('l') || 'zar';
@@ -611,7 +612,8 @@ function fallbackImg(k){
   ]);
   if (!r || r.module !== 'kebab'){ document.body.innerHTML = '<p style="padding:40px;font:18px system-ui;color:#fff;background:#111;min-height:100vh;margin:0">Nie znaleziono lokalu.</p>'; return; }
   const st = r.settings || {}, b = st.brand || {}, by = c => menu.find(m => m.code === c);
-  SHOP = { phone: r.phone || '', fee: Number(r.delivery_fee), free: r.free_delivery_from == null ? 1e9 : Number(r.free_delivery_from), assets: st.assets || 'assets/' };
+  SHOP = { phone: r.phone || '', fee: Number(r.delivery_fee), free: r.free_delivery_from == null ? 1e9 : Number(r.free_delivery_from), assets: st.assets || 'assets/', start: (st.plan || 'start') === 'start', bn: b.name || r.name };
+  document.documentElement.classList.toggle('su-start', SHOP.start);
   const forms = {}, meats = {}, lada = [], extras = [], combos = [];
   menu.forEach(m => { const d = m.data || {};
     if (m.kind === 'product' && d.area) forms[m.code] = { name: d.short || m.name, price: Number(m.price), top: d.top, final: d.final, label: d.label || m.name.toLowerCase(), area: d.area };
@@ -879,7 +881,7 @@ function renderReady(){
       <div class="row"><b class="num">${zl(z.price)}</b><button data-cadd="${i}" aria-label="Dodaj ${z.name}">+</button></div></article>`).join('');
   $('#rgrid').onclick = e => {
     const ca = e.target.closest('[data-cadd]');
-    if (ca){ const z = KEBAB.combos[+ca.dataset.cadd], key = 'combo|' + z.code, ex = cart.find(x => x.key === key);
+    if (ca){ if (startGuard()) return; const z = KEBAB.combos[+ca.dataset.cadd], key = 'combo|' + z.code, ex = cart.find(x => x.key === key);
       if (ex) ex.qty++; else cart.push({ key, name: z.name, unit: z.price, qty: 1, img: z.img, desc: z.includes, api: { code: z.code, options: [], label: z.name, note: '' } });
       renderCart(); toast(z.name + ' w koszyku'); return; }
     const a = e.target.closest('[data-add]'), ed = e.target.closest('[data-ed]');
@@ -900,7 +902,9 @@ function kebabApi(c, name){
   if (extra) opts.push({ code: 'extra_portion', qty: extra });
   return { code: c.form, options: opts, label: name, note: '' };
 }
+function startGuard(){ if (!SHOP || !SHOP.start) return false; if (window.SellUpAccount) SellUpAccount.startSheet({ slug: SLUG, venue: SHOP.bn, phone: SHOP.phone }); return true; }
 function addToCart(c, name, srcImg, quiet){
+  if (startGuard()) return;
   const key = [name, c.form, c.meat, c.mp, JSON.stringify(Object.keys(c.lada).sort().map(k => [k, c.lada[k]]))].join('|');
   const ex = cart.find(x => x.key === key);
   if (ex) ex.qty++; else cart.push({ key, name, unit: priceOf(c), qty: 1, img: KEBAB.forms[c.form].final, desc: descOf(c), api: kebabApi(c, name) });
@@ -943,6 +947,7 @@ function renderUps(){
   $('#uTot').textContent = zl(t.it + t.del);
 }
 function addExtra(id, imgEl, target){
+  if (startGuard()) return;
   const x = XT[id], before = totals().it;
   if (imgEl && target && !REDUCED){ const f = document.createElement('img'); f.src = IMG[x.img]; f.className = 'flyer'; f.style.width = '64px'; document.body.appendChild(f);
     f.animate(arc(center(imgEl.getBoundingClientRect()), center(target.getBoundingClientRect()), 0, 360, 1, .35, 150), { duration: 650, easing: 'cubic-bezier(.4,0,.3,1)', fill: 'both' }).onfinish = () => { f.remove(); target.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'scale(1)' }], { duration: 300 }); }; }

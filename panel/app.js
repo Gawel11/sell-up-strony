@@ -64,12 +64,13 @@ async function load(){
 }
 async function pick(id){
   cur = shops.find(s => s.id === id); try { localStorage.setItem('panel-shop', id); } catch (e) {}
-  $('#seeSite').href = '../' + cur.slug + '/';
+  $('#seeSite').href = siteUrl(cur);
   await load();
   try { const { data: pl } = await sb.rpc('staff_plan', { p_restaurant: cur.id }); cur.plan = (pl && pl.plan) || 'pro'; cur.admin = !!(pl && pl.admin); } catch (e) { cur.plan = 'pro'; cur.admin = false; }
   const PN = { start: 'Start', pro: 'PRO', pro_ai: 'PRO AI' };
   let pb = $('#planBox'); if (!pb) { pb = document.createElement('div'); pb.id = 'planBox'; pb.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut)'; $('#rs').after(pb); }
   pb.innerHTML = cur.admin ? `Pakiet <select class="in" id="planSel" style="width:auto;padding:6px 8px;margin:0">${Object.entries(PN).map(([k, v]) => `<option value="${k}"${k === cur.plan ? ' selected' : ''}>${v}</option>`).join('')}</select>` : `<span class="chip" style="cursor:default">Pakiet ${PN[cur.plan] || cur.plan}</span>`;
+  if (cur.admin) { pb.insertAdjacentHTML('beforeend', '<button class="btn s" id="newVenue" type="button">＋ Nowy lokal</button>'); $('#newVenue').onclick = openNewVenue; }
   if (cur.admin) $('#planSel').onchange = async e => { const v = e.target.value; const { error } = await sb.rpc('admin_set_plan', { p_restaurant: cur.id, p_plan: v }); if (error) { toast(error.message, true); return; } cur.info.settings = Object.assign({}, cur.info.settings, { plan: v }); toast('Pakiet: ' + PN[v] + ' ✓'); pick(cur.id); };
   const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['crm', cur.plan === 'start' ? 'Karta i PUSH' : 'Klienci i PUSH'], ['promo', 'Promocje'], ['stats', 'Statystyki'], ['qr', 'QR i link'], ['shop', 'Dane lokalu']); if (cur.admin) tabs.push(['leads', 'Leady']);
   if (!tabs.some(t => t[0] === tab)) tab = 'menu';
@@ -600,4 +601,51 @@ function drawLeads(){
       const { error } = await sb.rpc('admin_lead_delete', { p_id: id }); if (error) { toast(error.message, true); return; } LEADS = LEADS.filter(x => x.id !== id); toast('Usunięto ✓'); drawLeads(); }; });
   $('#l_csv').onclick = () => { const rows = [['Data', 'Imię', 'Telefon', 'Lokal (pytanie)', 'Zgoda na telefon', 'Nazwa lokalu', 'Miasto', 'NIP', 'E-mail', 'Pakiet', 'Źródło', 'Wiadomość', 'Status', 'Notatka']].concat(list.map(l => [new Date(l.created_at).toLocaleString('pl-PL'), l.name || '', tel(l.phone), hv(l), l.consent ? 'tak' : 'nie', l.venue || '', l.city || '', l.nip || '', l.email || '', l.package || '', l.source || '', l.message || '', l.status, l.note || '']));
     const csv = '﻿' + rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(';')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'leady-sell-up.csv'; a.click(); };
+}
+
+/* ===== Nowy lokal (admin) ===== */
+const OWN_PAGES = ['zar', 'forno450', 'rozen24', 'dym-burger', 'obiady-domowe', 'bubble-tea', 'bulkaikromka'];
+function siteUrl(r){ if (OWN_PAGES.includes(r.slug)) return '../' + r.slug + '/'; if (r.module === 'kebab') return '../kebab/?l=' + r.slug; if (r.module === 'pizza') return '../pizza/?l=' + r.slug; return '../' + r.slug + '/'; }
+function openNewVenue(){
+  const BR = [['kebab', 'Kebab'], ['pizza', 'Pizza'], ['burger', 'Burger'], ['obiady', 'Obiady domowe'], ['piekarnia', 'Piekarnia / cukiernia'], ['inne', 'Kawiarnia / bubble tea / inne']];
+  const o = modal(`<h4>Nowy lokal</h4><p class="hint" style="margin:0 0 10px">Tworzy lokal z menu i wyglądem skopiowanym z dema wybranej branży oraz konto właściciela do panelu i kuchni. Menu i ceny właściciel zmienia potem sam.</p>
+    <label class="f">Nazwa lokalu</label><input class="in" id="nv_name" maxlength="80" placeholder="np. Kebab u Ahmeda">
+    <label class="f">Adres strony</label><div style="display:flex;align-items:center;gap:6px"><span class="hint" style="margin:0;white-space:nowrap">sell-up.pl/…</span><input class="in" id="nv_slug" maxlength="40" placeholder="kebab-u-ahmeda" style="margin:0"></div>
+    <label class="f">Branża</label><select class="in" id="nv_mod">${BR.map(([k, t]) => `<option value="${k}">${t}</option>`).join('')}</select>
+    <label class="f">Pakiet</label><select class="in" id="nv_plan"><option value="start">Start</option><option value="pro" selected>PRO</option><option value="pro_ai">PRO AI</option></select>
+    <div class="flex"><div><label class="f">Telefon lokalu</label><input class="in" id="nv_tel" inputmode="tel" maxlength="20" placeholder="500 600 700"></div><div><label class="f">Miasto</label><input class="in" id="nv_city" maxlength="60"></div></div>
+    <label class="f">Adres lokalu</label><input class="in" id="nv_addr" maxlength="200" placeholder="ulica i numer">
+    <label class="f">E-mail właściciela (login do panelu)</label><input class="in" id="nv_mail" type="email" maxlength="120" placeholder="wlasciciel@gmail.com">
+    <label class="f">Hasło (puste = wygeneruję)</label><input class="in" id="nv_pw" maxlength="40" autocomplete="off">
+    <p class="err" id="nv_err"></p>
+    <div class="flex" style="margin-top:6px"><button class="btn g" id="nv_x" type="button">Anuluj</button><button class="btn" id="nv_go" type="button">Utwórz lokal</button></div>`);
+  const q = s => o.querySelector(s);
+  const PLc = { 'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n', 'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z' };
+  const sl = v => v.toLowerCase().replace(/[ąćęłńóśźż]/g, c => PLc[c]).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+  let slTouched = false;
+  q('#nv_name').oninput = () => { if (!slTouched) q('#nv_slug').value = sl(q('#nv_name').value); };
+  q('#nv_slug').oninput = () => { slTouched = true; };
+  q('#nv_x').onclick = () => o.remove();
+  setTimeout(() => q('#nv_name').focus(), 50);
+  q('#nv_go').onclick = async () => {
+    const b = q('#nv_go'); b.disabled = true; b.textContent = 'Tworzę…'; q('#nv_err').textContent = '';
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const r = await fetch(SELLUP.url + '/functions/v1/admin-venue', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SELLUP.key, Authorization: 'Bearer ' + session.access_token },
+        body: JSON.stringify({ name: q('#nv_name').value, slug: q('#nv_slug').value, module: q('#nv_mod').value, plan: q('#nv_plan').value, phone: q('#nv_tel').value, city: q('#nv_city').value, address: q('#nv_addr').value, email: q('#nv_mail').value, password: q('#nv_pw').value }) });
+      const j = await r.json(); if (!r.ok || !j.ok) throw new Error(j.error || j.msg || 'Błąd');
+      const base = location.origin, page = j.page ? base + j.page : null;
+      const txt = `Dane do Sell-UP dla ${q('#nv_name').value}\n` + (page ? `Strona: ${page}\n` : '') + `Panel (menu, ceny, klienci): ${base}/panel/\nKuchnia (tablet): ${base}/kuchnia/\nLogin: ${j.email}\n` + (j.password ? `Hasło: ${j.password}\n` : '(konto już istniało – hasło bez zmian)\n');
+      o.querySelector('.md').innerHTML = `<h4>✓ Lokal utworzony</h4><p class="hint" style="margin:0 0 10px">Skopiowano ${j.menu} pozycji menu. ${page ? '' : 'Strona tej branży będzie gotowa razem z uniwersalnym szablonem; panel i kuchnia działają już teraz.'}</p>
+        <textarea class="in" id="nv_txt" rows="7" readonly style="font-family:ui-monospace,monospace;font-size:13px">${esc(txt)}</textarea>
+        <div class="flex" style="margin-top:10px"><button class="btn g" id="nv_cp" type="button">Kopiuj dane dla właściciela</button>${page ? `<a class="btn g" href="${esc(page)}" target="_blank" rel="noopener">Zobacz stronę</a>` : ''}<button class="btn" id="nv_open" type="button">Przejdź do lokalu</button></div>`;
+      o.querySelector('#nv_cp').onclick = () => { navigator.clipboard.writeText(txt).then(() => toast('Skopiowano ✓')); };
+      o.querySelector('#nv_open').onclick = async () => {
+        const { data: staff } = await sb.from('restaurant_staff').select('role, restaurants(id, slug, name, module)').in('role', ['owner', 'manager']);
+        shops = (staff || []).map(s => s.restaurants).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+        $('#rs').innerHTML = shops.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+        o.remove(); tab = 'menu'; await pick(j.id); $('#rs').value = j.id;
+      };
+    } catch (e) { q('#nv_err').textContent = e.message; b.disabled = false; b.textContent = 'Utwórz lokal'; }
+  };
 }
