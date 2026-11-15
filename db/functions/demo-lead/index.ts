@@ -42,7 +42,8 @@ Deno.serve(async (req) => {
     if (["tak", "planuje"].includes(lead.has_venue) && !lead.alert_at) {
       const { data: sec } = await db.from("app_secrets").select("value").eq("name", "lead_phone").maybeSingle();
       if (sec?.value) {
-        const ok = await sms(sec.value, `Nowy lead z dema (${slug}): ${lead.name || "bez imienia"}, tel. ${String(lead.phone).replace(/^48/, "")}, ${lead.has_venue === "tak" ? "MA LOKAL" : "planuje lokal"}, zgoda na telefon: ${lead.consent ? "TAK" : "nie"}.`);
+        const DN: Record<string, string> = { zar: "kebab", "dym-burger": "burger", forno450: "pizza", "obiady-domowe": "obiady domowe", "bubble-tea": "bubble tea", bulkaikromka: "piekarnia", rozen24: "kebab" };
+        const ok = await sms(sec.value, `LEAD Z SELL-UP: ${lead.name || "bez imienia"}, tel. ${String(lead.phone).replace(/^48/, "").replace(/(\d{3})(?=\d)/g, "$1 ")}, ${lead.has_venue === "tak" ? "MA LOKAL" : "planuje lokal"}, zgoda na telefon: ${lead.consent ? "TAK" : "nie"}. Testowal demo: ${DN[slug] || slug}. Lista: sell-up.pl/panel`);
         if (ok) await db.from("leads").update({ alert_at: new Date().toISOString() }).eq("id", lead.id);
         done.alert = ok;
       }
