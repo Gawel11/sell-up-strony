@@ -438,6 +438,11 @@ function drawCRM(){
   if (crmF === 'best') list = list.slice().sort((a, b) => b.spent - a.spent || b.orders - a.orders);
   const active = CRM.filter(c => c.last_at && now - new Date(c.last_at) < d30).length, toPick = CRM.reduce((a, c) => a + (c.card ? c.card.rewards : 0), 0), refs = CRM.reduce((a, c) => a + c.invited, 0);
   $('#main').innerHTML = `<div class="g2" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">${[['Klienci z kontem', CRM.length], ['Aktywni (30 dni)', active], ['Nagrody do odbioru', toPick], ['Udane polecenia', refs]].map(([k, v]) => `<div class="card" style="margin:0"><div class="hint" style="margin:0">${k}</div><div style="font-size:28px;font-weight:800">${v}</div></div>`).join('')}</div>
+  <div class="card" style="margin-top:12px"><h4 style="margin:0 0 4px">📣 Wiadomość do klientów</h4><p class="hint" style="margin:0 0 10px" id="pu_info">Liczę urządzenia…</p>
+    <input class="in" id="pu_t" maxlength="60" placeholder="Tytuł, np. Dziś -20% na drugą pizzę">
+    <textarea class="in" id="pu_b" maxlength="180" rows="2" placeholder="Treść, np. Tylko do 20:00. Zamów w aplikacji 🍕" style="margin-top:8px;resize:vertical"></textarea>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><button class="btn" id="pu_send">Wyślij powiadomienie</button><span class="hint" id="pu_res"></span></div>
+    <div id="pu_last"></div></div>
   <details class="card" style="margin-top:12px"><summary style="cursor:pointer;font-weight:800">⚙️ Program lojalnościowy i polecenia</summary>
     <div class="grid" style="margin-top:12px">
       <label class="f">Karta włączona<select class="in" id="l_en"><option value="1"${L.enabled ? ' selected' : ''}>Tak</option><option value="0"${L.enabled ? '' : ' selected'}>Nie</option></select></label>
@@ -463,6 +468,23 @@ function drawCRM(){
   const q = $('#c_q'); q.oninput = () => { crmQ = q.value; clearTimeout(drawCRM.t); drawCRM.t = setTimeout(() => { const pos = q.selectionStart; drawCRM(); const n = $('#c_q'); n.focus(); n.setSelectionRange(pos, pos); }, 250); };
   $('#c_csv').onclick = () => { const rows = [['Imię', 'Telefon', 'Kod karty', 'Zamówienia', 'Wydane zł', 'Wizyty przy ladzie', 'Ostatnio', 'Pieczątki/punkty', 'Nagrody do odbioru', 'Polecenia', 'Polecił(a)']].concat(list.map(c => [c.name || '', tel(c.phone), c.code, c.orders, String(c.spent).replace('.', ','), c.visits, c.last_at ? new Date(c.last_at).toLocaleDateString('pl-PL') : '', c.card ? (L.mode === 'points' ? c.card.points : c.card.stamps) : '', c.card ? c.card.rewards : '', c.invited, c.invited_by || '']));
     const csv = '﻿' + rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(';')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'klienci-' + cur.slug + '.csv'; a.click(); };
+  sb.rpc('staff_push_stats', { p_restaurant: cur.id }).then(({ data }) => {
+    if (!data || !$('#pu_info')) return; const d = data.devices;
+    $('#pu_info').textContent = d ? `Dotrze do ${d} ${d === 1 ? 'telefonu' : 'telefonów'} klientów, którzy włączyli powiadomienia. Maks. 1 wiadomość na 10 minut.` : 'Nikt jeszcze nie włączył powiadomień. Klienci dostają pytanie po pierwszym zamówieniu w aplikacji.';
+    $('#pu_last').innerHTML = (data.last || []).map(c => `<div class="hint" style="border-top:1px solid var(--line);padding-top:6px;margin-top:6px"><b style="color:var(--fg)">${esc(c.title)}</b> · ${esc(c.body)} <span style="float:right">${new Date(c.at).toLocaleString('pl-PL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${c.sent} dostarczono</span></div>`).join('');
+  });
+  $('#pu_send').onclick = async () => {
+    const t = $('#pu_t').value.trim(), b = $('#pu_b').value.trim(); if (t.length < 2 || b.length < 2) { toast('Wpisz tytuł i treść', true); return; }
+    if (!confirm('Wysłać powiadomienie do klientów lokalu ' + cur.name + '?')) return;
+    $('#pu_send').disabled = true; $('#pu_res').textContent = 'Wysyłam…';
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const r = await fetch(SELLUP.url + '/functions/v1/push-send', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SELLUP.key, Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify({ type: 'broadcast', restaurant_id: cur.id, title: t, body: b }) });
+      const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Błąd');
+      $('#pu_res').textContent = `Wysłano: ${j.sent} z ${j.total}`; toast('Wysłano ✓'); $('#pu_t').value = ''; $('#pu_b').value = '';
+    } catch (e) { $('#pu_res').textContent = e.message; }
+    $('#pu_send').disabled = false;
+  };
   $('#l_save').onclick = async () => {
     const old = (cur.info.settings || {}).loyalty || {}, num = (id, d) => { const e = $('#' + id); if (!e) return d; const v = parseFloat(String(e.value).replace(',', '.')); return isFinite(v) ? v : d; };
     const loy = Object.assign({}, old, { enabled: $('#l_en').value === '1', referral: { enabled: $('#r_en').value === '1', limit: Math.max(0, Math.round(num('r_lim', 3))), bonus: Math.max(1, Math.round(num('r_bon', 1))) } });

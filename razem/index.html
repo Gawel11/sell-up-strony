@@ -251,7 +251,7 @@ let tT; function toast(t){ const el = $('#toast'); el.textContent = t; el.classL
 boot();
 </script>
 <script src="../lib/sellup-lead.js?v=11" defer></script>
-<script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){var w=x.active||x.waiting||x.installing;if(!(w&&/sw-push\.js/.test(w.scriptURL)))x.unregister()})});</script>
 <script src="../lib/sellup-kitchen.js?v=3" defer></script>
 </body>
 </html>

@@ -368,7 +368,7 @@ footer .pasiak{position:absolute;left:0;right:0;top:0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
 .odf{display:grid;gap:8px;margin:6px 0 10px}.odf input{font:inherit;font-size:16px;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(42,33,24,.18);background:#fffaf2;color:inherit}.odf input:focus{outline:none;border-color:#c0392b}
 </style>
-<script src="../lib/sellup-account.js?v=6"></script>
+<script src="../lib/sellup-account.js?v=7"></script>
 </head>
 <body class="locked">
 <div class="grain"></div>
@@ -789,7 +789,7 @@ addEventListener('scroll',()=>{$('#hdr').classList.toggle('solid',scrollY>40);
 addEventListener('resize',()=>layout());
 </script>
 <script src="../lib/sellup-lead.js?v=11" defer></script>
-<script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){var w=x.active||x.waiting||x.installing;if(!(w&&/sw-push\.js/.test(w.scriptURL)))x.unregister()})});</script>
 <script src="../lib/sellup-kitchen.js?v=3" defer></script>
 <script>document.getElementById('acctBtn').onclick = () => window.SellUpAccount && SellUpAccount.open({ slug: 'obiady-domowe', venue: 'Obiady Domowe', title: 'Twoja karta' });</script>
 </body>

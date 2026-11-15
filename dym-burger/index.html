@@ -470,7 +470,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
 .loading b{color:var(--accent);font-weight:400}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-<script src="../lib/sellup-account.js?v=6"></script>
+<script src="../lib/sellup-account.js?v=7"></script>
 </head>
 <body>
 <div class="loading" id="loading"><b>Burger</b></div>
@@ -1678,7 +1678,7 @@ Promise.all([...new Set(preload)].map(k => new Promise(res => { const im = new I
   });
 </script>
 <script src="../lib/sellup-lead.js?v=11" defer></script>
-<script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){var w=x.active||x.waiting||x.installing;if(!(w&&/sw-push\.js/.test(w.scriptURL)))x.unregister()})});</script>
 <script src="../lib/sellup-kitchen.js?v=3" defer></script>
 </body>
 </html>

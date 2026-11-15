@@ -822,7 +822,7 @@ window.SELLUP = {
 };
 </script>
 <script src="../lib/sellup-order.js?v=9"></script>
-<script src="../lib/sellup-account.js?v=6"></script>
+<script src="../lib/sellup-account.js?v=7"></script>
 <script>
 /* ===== Szablon pizzerii: dane lokalu z bazy (nazwa, menu, ceny, składniki) ===== */
 const SLUG = new URLSearchParams(location.search).get('l') || 'forno450';
@@ -1620,7 +1620,7 @@ SellUpOrder.isOpen(SLUG).then(o => SellUpOrder.closedBar(!o));
 </script>
 
 <script src="../lib/sellup-lead.js?v=11" defer></script>
-<script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){var w=x.active||x.waiting||x.installing;if(!(w&&/sw-push\.js/.test(w.scriptURL)))x.unregister()})});</script>
 <script src="../lib/sellup-kitchen.js?v=3" defer></script>
 </body>
 </html>
