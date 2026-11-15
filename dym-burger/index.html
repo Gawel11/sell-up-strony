@@ -215,6 +215,22 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
 .st-h{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
 .eyebrow{font-weight:700;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
 .st-h h2{font-family:var(--font-display);font-weight:400;font-size:clamp(50px,7vw,96px);line-height:.9;margin:6px 0 0;text-transform:uppercase;text-shadow:0 6px 30px rgba(0,0,0,.7)}
+
+/* Kroki 1-2-3-4 i strzałki „dalej” */
+.steps4{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 16px;padding:8px;border-radius:20px;background:rgba(10,9,8,.85);border:1px solid var(--line);position:sticky;top:8px;z-index:30;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.steps4 li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;cursor:pointer;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:13px;position:relative;transition:background .3s,color .3s}
+.steps4 li b{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:rgba(255,255,255,.08);color:var(--muted);transition:all .3s}
+.steps4 li:not(:last-child)::after{content:"";position:absolute;right:-8px;top:50%;width:8px;height:2px;background:var(--line)}
+.steps4 li.now{background:var(--accent-soft);color:var(--fg)}.steps4 li.now b{background:var(--accent);color:var(--accent-fg);box-shadow:0 0 0 6px var(--accent-soft);animation:zglow 1.9s ease-in-out infinite}
+.steps4 li.done{color:#d9d2c6}.steps4 li.done b{background:var(--ok);color:#0b0907;font-size:0}.steps4 li.done b::after{content:"✓";font-size:20px}
+@media (max-width:700px){.steps4{gap:4px;padding:6px}.steps4 li{flex-direction:column;gap:4px;padding:6px 2px;font-size:10.5px;text-align:center}.steps4 li b{width:34px;height:34px;font-size:19px}}
+.grab-btn .arr,.nextb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.grab-btn .arr{margin-left:auto;animation:arrn 1.4s ease-in-out infinite}@keyframes arrn{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+.grab-btn:disabled .arr{display:none}
+.nextb{display:none;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;padding:12px 16px;border-radius:14px;border:1.5px solid var(--accent);color:var(--accent);background:transparent;font-weight:800;font-size:14px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.nextb svg{animation:arrn 1.4s ease-in-out infinite}
+.zone.pulse{animation:zpulse .9s ease}@keyframes zpulse{30%{transform:scale(1.015);box-shadow:0 0 0 3px var(--accent),0 0 50px var(--accent-soft)}}
+.blk.ok .nextb{display:flex}.blk.ok.now .nextb,.blk.ok .nextb.hot{background:var(--accent);color:var(--accent-fg)}
 .howto{font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13.5px;color:#e4d9cb;margin:0}
 .howto b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-fg);font-size:12px;margin:0 4px 0 10px}
 .howto b:first-child{margin-left:0}
@@ -265,6 +281,8 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
 .allin{margin-left:auto;padding:6px 12px;border-radius:99px;border:1.5px solid var(--accent);color:var(--accent);font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:11.5px}
 /* Sosy: butelki */
 .sauces{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.sb img.btl{display:block;height:74px;width:auto;margin:0 auto 6px;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45));transition:transform .3s}.sb[aria-pressed="true"] img.btl{transform:translateY(-4px) rotate(-8deg)}
+.flyer.pourb{position:fixed;left:0;top:0;height:auto;z-index:60;pointer-events:none;transform-origin:50% 30%;filter:drop-shadow(0 10px 12px rgba(0,0,0,.5))}
 .sb{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:16px;background:var(--surface);border:1.5px solid var(--line);font-weight:700;font-size:12.5px;text-align:center;line-height:1.15}
 .sb svg{width:30px;height:56px;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45));transition:transform .3s}
 .sb[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
@@ -533,8 +551,14 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
     <div class="wrap">
       <div class="st-h">
         <div><div class="eyebrow" id="stEyebrow">//Stanowisko grillowe</div><h2>Złóż swojego<br><span class="hl">burgera.</span></h2></div>
-        <p class="howto"><b>1</b> kotlet z ognia <b>2</b> dodatki z lady <b>3</b> sos <b>4</b> zamknij burgera</p>
+        
       </div>
+      <ol class="steps4" id="steps4">
+        <li data-go="meat"><b>1</b><span id="st1">Kotlet</span></li>
+        <li data-go="extras"><b>2</b><span>Dodatki</span></li>
+        <li data-go="sauce"><b>3</b><span>Sos</span></li>
+        <li data-go="close"><b>4</b><span>Zamknij</span></li>
+      </ol>
       <div class="sgrid">
         <div class="spanel">
           <section class="blk zone" data-z="meat" data-now="Zacznij tutaj">
@@ -547,7 +571,8 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
               </div>
               <div class="meatctl">
                 <p id="meatTxt"></p>
-                <button class="grab-btn" id="grab"><img src="assets/patty_fire.webp" alt="" id="grabImg"><span id="grabTx">Zdejmij kotlet</span></button>
+                <button class="grab-btn" id="grab"><img src="assets/n_patty_fire.webp" alt="" id="grabImg"><span id="grabTx">Zdejmij kotlet</span><svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+                <button class="nextb" data-next="extras" type="button">Dalej: dodatki <svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
                 <div class="pcount"><span>Kotlety w burgerze<small id="pPriceTx"></small></span><button id="pMinusS" aria-label="Mniej kotletów">−</button><b class="num" id="pN">0</b><button id="pPlusS" aria-label="Więcej kotletów">+</button></div>
               </div>
             </div>
@@ -555,10 +580,12 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
           <section class="blk zone" data-z="extras" data-now="Teraz dodatki">
             <h3 class="bh"><b>2</b>Dodatki z lady<button class="allin" id="allIn">Klasycznie: sałata, pomidor, cebula, ogórek</button></h3>
             <div class="gns" id="gns"></div>
+            <button class="nextb" data-next="sauce" type="button">Dalej: sos <svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
           </section>
           <section class="blk zone" data-z="sauce" data-now="Teraz sos">
             <h3 class="bh"><b>3</b>Sos<small>w cenie</small></h3>
             <div class="sauces" id="sauces"></div>
+            <button class="nextb" data-next="close" type="button">Dalej: zamknij burgera <svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
           </section>
         </div>
         <div class="stagecol">
@@ -807,6 +834,10 @@ const L = { /* warstwy z boku (Higgsfield 15.11): sq 1 = bez spłaszczania; smas
   pickles:    { img:'n_pickles',     w:.86, sq:1, sink:.30, top:.45 },
   jalapeno:   { img:'n_jalapeno',    w:.86, sq:1, sink:.30, top:.45 },
   egg:        { img:'n_egg',         w:.88, sq:1, sink:.30, top:.42 },
+  sauce_dym:     { img:'n_sauce_dym',     w:.90, sq:1, sink:.62, top:.70 },
+  sauce_bbq:     { img:'n_sauce_bbq',     w:.90, sq:1, sink:.62, top:.70 },
+  sauce_ostry:   { img:'n_sauce_ostry',   w:.90, sq:1, sink:.62, top:.70 },
+  sauce_czosnek: { img:'n_sauce_czosnek', w:.90, sq:1, sink:.62, top:.70 },
 };
 /* Dodatki do wyboru w kreatorze (kolejność na liście) i ich miejsce w burgerze */
 const TOPS = [
@@ -901,6 +932,7 @@ function sequence(st, lid = true){
   for (let i = 1; i <= (st.t.bacon || 0); i++) out.push({ k:'bacon' + i, id:'bacon' });
   if (st.t.egg) out.push({ k:'egg1', id:'egg' });
   for (const id of ['onion', 'pickles', 'jalapeno']) for (let i = 1; i <= (st.t[id] || 0); i++) out.push({ k:id + i, id });
+  if (st.sauce && st.p !== 0) out.push({ k:'sauce_' + st.sauce, id:'sauce_' + st.sauce });
   if (lid) out.push({ k:'bun_t', id:'bun_t' });
   return out;
 }
@@ -955,7 +987,7 @@ addEventListener('hashchange', () => { const m = hashMode(); if (m && m !== M) s
 function hashMode(){ const h = location.hash.slice(1); return h === 'smash' ? 'smash' : h === 'z-ognia' ? 'fire' : null; }
 
 /* ===== Menu ===== */
-function itemState(it, mode){ return { p: it.p, t: { ...it.t }, patty: MODES[mode].patty }; }
+function itemState(it, mode){ return { p: it.p, t: { ...it.t }, patty: MODES[mode].patty, sauce: it.sauce }; }
 function renderGrid(){
   const list = MD().items, W = Math.min(260, Math.max(150, ($('#grid').clientWidth || 600) / (innerWidth < 520 ? 2 : 3) - 30));
   $('#countLbl').textContent = list.length + ' pozycji';
@@ -1015,7 +1047,7 @@ let S = 400, H = 400, SC = 1, busy = false, grabbing = false, inView = false;
 const BASE = () => S * .115;
 const flyLayer = document.createElement('div'); flyLayer.className = 'fly-layer'; document.body.appendChild(flyLayer);
 const center = r => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-const curState = () => ({ p: B.p, t: B.t, patty: MD().patty });
+const curState = () => ({ p: B.p, t: B.t, patty: MD().patty, sauce: B.p ? B.sauce : null });
 function arcFrames(from, to, rot0, rot1, s0, s1, lift, sq = 1, flip = 0){
   const c = { x: (from.x + to.x) / 2 + (Math.random() - .5) * 120, y: Math.min(from.y, to.y) - lift }, fr = [];
   for (let k = 0; k <= 24; k++){
@@ -1061,7 +1093,7 @@ function place(newKeys = [], lidMode = null){
 }
 /* ===== Sos: polewany na żywo (rysowana linia) ===== */
 let sauceSvg = null;
-function drawSauce(surface, z, animate){
+function drawSauce(surface, z, animate){ return; /* sos jest teraz warstwą-zdjęciem w stosie */
   if (!sauceSvg){ sauceSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); stk.appendChild(sauceSvg); }
   sauceSvg.style.zIndex = z;
   if (!B.sauce || !B.p){ sauceSvg.innerHTML = ''; return; }
@@ -1224,18 +1256,38 @@ function nudge(el){ el && el.animate([{ transform: 'translateX(0)' }, { transfor
 /* ===== Krok 3: sos z butelki ===== */
 const bottle = c => `<svg viewBox="0 0 30 56" aria-hidden="true"><path d="M13 0h4l1 6h-6z" fill="#e8e2d8"/><path d="M11 6h8l2 6H9z" fill="#f2ede6"/><rect x="5" y="12" width="20" height="42" rx="7" fill="${c}"/><rect x="8" y="16" width="4" height="30" rx="2" fill="rgba(255,255,255,.35)"/><rect x="5" y="28" width="20" height="12" fill="rgba(0,0,0,.18)"/></svg>`;
 function renderSauces(){
-  $('#sauces').innerHTML = SAUCES.map(s => `<button class="sb" data-s="${s.id}" aria-pressed="${s.id === B.sauce}">${bottle(s.c)}${s.name}</button>`).join('');
+  $('#sauces').innerHTML = SAUCES.map(s => `<button class="sb" data-s="${s.id}" aria-pressed="${s.id === B.sauce}"><img class="btl" src="${src('n_bottle_' + s.id)}" alt="">${s.name}</button>`).join('');
 }
 $('#sauces').onclick = e => {
   const b = e.target.closest('[data-s]'); if (!b || busy) return;
   if (!B.p){ hint('Najpierw <b>zdejmij kotlet</b> z ognia'); nudge($('.blk[data-z="meat"]')); return; }
   B.hist.push(snap()); B.sauce = b.dataset.s; renderSauces();
   const nb = $(`[data-s="${B.sauce}"]`); nb.classList.add('squeeze');
-  const { surface } = place(); drawSauce(surface, Object.keys(els).length + 1, true);
-  setTimeout(() => { const r = stage.getBoundingClientRect(); spark(r.left + r.width * .5, r.top + r.height * .45, 6, .4, SAUCES.find(s => s.id === B.sauce).c); thud(240, .08); }, 500);
+  const key = 'sauce_' + B.sauce; place([key]); pour(key, nb);
   renderAll(0);
 };
 
+/* Polewanie: butelka nad burgerem przechyla się i jedzie w poprzek, sos odsłania się od lewej */
+function pour(key, btn){
+  const im = els[key]; if (!im) return;
+  if (REDUCED) { im.classList.remove('wait'); return; }
+  const r = im.getBoundingClientRect(), b = document.createElement('img');
+  b.src = src('n_bottle_' + B.sauce); b.alt = ''; b.className = 'flyer pourb'; flyLayer.appendChild(b);
+  const bw = Math.max(46, r.width * .22), fr = (btn && btn.querySelector('img') || btn).getBoundingClientRect();
+  b.style.width = bw + 'px';
+  const y = r.top - bw * 1.9, x0 = r.left + r.width * .08, x1 = r.left + r.width * .78;
+  b.animate([
+    { transform: `translate(${fr.left}px,${fr.top}px) rotate(0deg)`, opacity: .9 },
+    { transform: `translate(${x0}px,${y}px) rotate(150deg)`, opacity: 1, offset: .28 },
+    { transform: `translate(${x0 + 4}px,${y + 6}px) rotate(160deg)`, offset: .36 },
+    { transform: `translate(${x1}px,${y + 6}px) rotate(160deg)`, offset: .86 },
+    { transform: `translate(${x1 + 30}px,${y - 40}px) rotate(40deg)`, opacity: 0 }
+  ], { duration: 1900, easing: 'ease-in-out', fill: 'forwards' }).onfinish = () => b.remove();
+  im.classList.remove('wait'); im.dataset.lock = 1;
+  im.animate([{ clipPath: 'inset(0 100% 0 0)', transform: im.dataset.base + ' translateY(-6px)' }, { clipPath: 'inset(0 100% 0 0)', transform: im.dataset.base + ' translateY(-6px)', offset: .3 }, { clipPath: 'inset(0 0% 0 0)', transform: im.dataset.base, offset: .88 }, { clipPath: 'inset(0 0 0 0)', transform: im.dataset.base }],
+    { duration: 1900, easing: 'linear' }).onfinish = () => { delete im.dataset.lock; };
+  setTimeout(() => { squash(.25); thud(240, .06); }, 1700);
+}
 /* ===== Krok 4: zamknięcie burgera ===== */
 function closeBurger(next){
   if (busy) return;
@@ -1279,7 +1331,7 @@ function apiOf(){
 }
 function lineOf(){
   const changed = !B.item || B.item.p !== B.p || B.item.sauce !== B.sauce || JSON.stringify(B.item.t) !== JSON.stringify(B.t);
-  return { kind: 'burger', mode: M, name: B.item ? B.item.name + (changed ? ' (po Twojemu)' : '') : (M === 'fire' ? 'Twój burger z ognia' : 'Twój smash'), unit: price(), qty: 1, st: { p: B.p, t: { ...B.t }, patty: MD().patty }, extra: describeT(B.t, B.p, B.sauce), api: apiOf() };
+  return { kind: 'burger', mode: M, name: B.item ? B.item.name + (changed ? ' (po Twojemu)' : '') : (M === 'fire' ? 'Twój burger z ognia' : 'Twój smash'), unit: price(), qty: 1, st: { p: B.p, t: { ...B.t }, patty: MD().patty, sauce: B.sauce }, extra: describeT(B.t, B.p, B.sauce), api: apiOf() };
 }
 ['#closeBtn', '#closeBtnM'].forEach(q => $(q).onclick = () => closeBurger('upsell'));
 ['#moreBtn', '#moreBtnM'].forEach(q => $(q).onclick = () => closeBurger('more'));
@@ -1292,6 +1344,9 @@ function price(){
   TOPS.forEach(t => p += (B.t[t.id] || 0) * t.price);
   return p;
 }
+function goZone(z){ const el = $(`.station .zone[data-z="${z}"]`); if (!el) return; const y = el.getBoundingClientRect().top + scrollY - ($('#steps4').offsetHeight + 24); scrollTo({ top: y, behavior: 'smooth' }); el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }
+document.querySelector('#steps4').addEventListener('click', e => { const li = e.target.closest('[data-go]'); if (li) goZone(li.dataset.go); });
+document.querySelectorAll('.nextb').forEach(b => b.onclick = () => goZone(b.dataset.next));
 function curZone(){ if (!B.p) return 'meat'; if (!Object.keys(B.t).length && !B.sauce) return 'extras'; if (!B.sauce) return 'sauce'; return 'close'; }
 let hintT;
 function hint(h){ const el = $('#shint'); el.innerHTML = h; el.style.opacity = 1; clearTimeout(hintT); hintT = setTimeout(stepHint, 2400); }
@@ -1302,6 +1357,9 @@ function renderAll(delta){
   $('.blk[data-z="meat"]').classList.toggle('ok', B.p > 0);
   $('.blk[data-z="extras"]').classList.toggle('ok', Object.keys(B.t).length > 0);
   $('.blk[data-z="sauce"]').classList.toggle('ok', !!B.sauce);
+  { const order = ['meat', 'extras', 'sauce', 'close'], zi = order.indexOf(z), done = { meat: B.p > 0, extras: Object.keys(B.t).length > 0, sauce: !!B.sauce, close: false };
+    document.querySelectorAll('#steps4 li').forEach((li, i) => { li.classList.toggle('now', i === zi); li.classList.toggle('done', done[order[i]] && i !== zi); });
+    $('#st1').textContent = M === 'fire' ? 'Kotlet' : 'Smash'; }
   $('#pN').textContent = B.p + '/' + d.maxP;
   $('#pMinusS').disabled = !B.p; $('#pPlusS').disabled = B.p >= d.maxP; $('#grab').disabled = B.p >= d.maxP;
   $('#grabTx').textContent = B.p ? (B.p >= d.maxP ? 'Komplet kotletów' : `Dołóż ${B.p === 1 ? 'drugi' : 'trzeci'} kotlet`) : (M === 'fire' ? 'Zdejmij kotlet z rusztu' : 'Zdejmij smash z płyty');
@@ -1337,7 +1395,7 @@ function setStationMode(){
   $('#vTag').textContent = M === 'fire' ? 'Ruszt · na żywo' : 'Płyta · na żywo';
   $('#meatTitle').textContent = M === 'fire' ? 'Kotlet prosto z rusztu' : 'Smash prosto z płyty';
   $('#meatTxt').textContent = M === 'fire' ? 'Gruby kotlet 180 g z żywego ognia. Dotknij, a zdejmiemy go z rusztu prosto do Twojej bułki.' : 'Cienki kotlet 90 g z chrupiącym brzegiem. Bierz jeden, dwa albo trzy.';
-  $('#grabImg').src = src(d.patty);
+  $('#grabImg').src = src(L[d.patty].img);
   $('#stEyebrow').textContent = M === 'fire' ? '//Stanowisko: ruszt i żywy ogień' : '//Stanowisko: rozgrzana płyta';
   resetStation(false);
 }
