@@ -353,7 +353,7 @@ function trackScreen(status){
     ${cancelled ? '<div class="stp on"><i>✕</i><div><b>Zamówienie anulowane</b><span>Zapytaj obsługę przy ladzie.</span></div></div>'
       : STEPS.map((x, i) => `<div class="stp${i < idx ? ' ok' : i === idx ? ' on' : ''}"><i>${i < idx ? '✓' : i + 1}</i><div><b>${x[1]}</b><span>${x[2]}</span></div></div>`).join('')}
     <div class="tot"><span>Do zapłaty przy odbiorze</span><span>${zl(TRK.total)}</span></div>
-    ${status === 'done' ? `<p class="note">🧋 +${TRK.n} ${plS(TRK.n)} na Twojej karcie.</p>` : ''}
+    ${status === 'done' ? `<p class="note">🧋 +${TRK.n} ${TRK.n === 1 ? 'pieczątka' : TRK.n < 5 ? 'pieczątki' : 'pieczątek'} na Twojej karcie.</p>` : ''}
     <button class="close" type="button">${status === 'done' || cancelled ? 'Gotowe' : 'Schowaj (status zobaczysz w Karcie)'}</button></div>`;
   w.querySelector('.close').onclick = () => { w.remove(); if (status === 'done' || cancelled) { TRK = null; try { localStorage.removeItem('bt-trk'); } catch (e) {} clearTimeout(trkT); } };
 }
