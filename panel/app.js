@@ -71,13 +71,13 @@ async function pick(id){
   let pb = $('#planBox'); if (!pb) { pb = document.createElement('div'); pb.id = 'planBox'; pb.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut)'; $('#rs').after(pb); }
   pb.innerHTML = cur.admin ? `Pakiet <select class="in" id="planSel" style="width:auto;padding:6px 8px;margin:0">${Object.entries(PN).map(([k, v]) => `<option value="${k}"${k === cur.plan ? ' selected' : ''}>${v}</option>`).join('')}</select>` : `<span class="chip" style="cursor:default">Pakiet ${PN[cur.plan] || cur.plan}</span>`;
   if (cur.admin) $('#planSel').onchange = async e => { const v = e.target.value; const { error } = await sb.rpc('admin_set_plan', { p_restaurant: cur.id, p_plan: v }); if (error) { toast(error.message, true); return; } cur.info.settings = Object.assign({}, cur.info.settings, { plan: v }); toast('Pakiet: ' + PN[v] + ' ✓'); pick(cur.id); };
-  const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['crm', cur.plan === 'start' ? 'Karta i PUSH' : 'Klienci i PUSH'], ['promo', 'Promocje'], ['stats', 'Statystyki'], ['qr', 'QR i link'], ['shop', 'Dane lokalu']);
+  const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['crm', cur.plan === 'start' ? 'Karta i PUSH' : 'Klienci i PUSH'], ['promo', 'Promocje'], ['stats', 'Statystyki'], ['qr', 'QR i link'], ['shop', 'Dane lokalu']); if (cur.admin) tabs.push(['leads', 'Leady']);
   if (!tabs.some(t => t[0] === tab)) tab = 'menu';
   $('#tabs').innerHTML = tabs.map(([k, t]) => `<button class="tab" data-t="${k}" aria-pressed="${k === tab}">${t}</button>`).join('');
   $('#tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.t; $('#tabs').querySelectorAll('.tab').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
   render();
 }
-function render(){ if (!cur) return; ({ menu: renderMenu, ready: renderReady, look: renderLook, shop: renderShop, promo: renderPromo, crm: renderCRM, stats: renderStats, qr: renderQR })[tab](); }
+function render(){ if (!cur) return; ({ menu: renderMenu, ready: renderReady, look: renderLook, shop: renderShop, promo: renderPromo, crm: renderCRM, stats: renderStats, qr: renderQR, leads: renderLeads })[tab](); }
 async function saveSettings(patch){
   const s = { ...(cur.info.settings || {}), ...patch };
   const { error } = await sb.from('restaurants').update({ settings: s }).eq('id', cur.id);
@@ -555,4 +555,47 @@ function renderQR(){
   $('#q_png').onclick = () => { const a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = 'qr-' + cur.slug + '.png'; a.click(); };
   $('#q_print').onclick = () => { const b = (cur.info.settings || {}).brand || {}, w = window.open('', '_blank'); if (!w) return toast('Zezwól na wyskakujące okno', true);
     w.document.write(`<!doctype html><meta charset="utf-8"><title>QR</title><style>body{font-family:system-ui,sans-serif;text-align:center;padding:40px}h1{font-size:44px;margin:0 0 6px}p{font-size:22px;margin:4px 0}img{width:420px;margin:24px 0}</style><h1>${esc(b.name || cur.name)}</h1><p>Zamów online: zeskanuj kod</p><img src="${cv.toDataURL('image/png')}"><p style="font-size:18px">${esc(url)}</p>`); w.document.close(); w.focus(); setTimeout(() => w.print(), 400); };
+}
+
+/* ===== Leady (tylko admin Sell-UP) ===== */
+let ldF = 'open', ldQ = '', LEADS = [];
+const LST = [['nowy', 'Nowy'], ['dzwonilem', 'Dzwoniłem'], ['umowiony', 'Umówiony'], ['klient', 'Klient'], ['odpada', 'Odpada'], ['test', 'Test']];
+async function renderLeads(){
+  $('#main').innerHTML = '<p class="hint">Wczytuję leady…</p>';
+  const { data, error } = await sb.rpc('admin_leads');
+  if (error){ $('#main').innerHTML = '<p class="err">' + esc(error.message) + '</p>'; return; }
+  LEADS = data || []; drawLeads();
+}
+function drawLeads(){
+  const now = Date.now();
+  const tel = p => { const x = String(p || '').replace(/\D/g, ''); return x.length === 11 && x.startsWith('48') ? x.slice(2) : x; };
+  const ago = t => { const m = Math.floor((now - new Date(t)) / 6e4); return m < 60 ? m + ' min temu' : m < 1440 ? Math.floor(m / 60) + ' h temu' : new Date(t).toLocaleString('pl-PL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); };
+  const hv = l => l.has_venue || (l.demo ? '' : 'tak');
+  const F = { open: l => !['odpada', 'test', 'klient'].includes(l.status), tak: l => hv(l) === 'tak', planuje: l => hv(l) === 'planuje', nowy: l => l.status === 'nowy', all: () => true };
+  const list = LEADS.filter(F[ldF]).filter(l => !ldQ || [l.name, tel(l.phone), l.venue, l.city, l.source, l.message, l.note].join(' ').toLowerCase().includes(ldQ.toLowerCase()));
+  const nNew = LEADS.filter(l => l.status === 'nowy').length;
+  const VB = { tak: ['Ma lokal', '#2f7d32'], planuje: ['Planuje lokal', '#8a6d1f'], nie: ['Ciekawski', '#444'] };
+  $('#main').innerHTML = `<div class="card"><h2 style="margin:0 0 4px">Leady</h2><p class="hint" style="margin:0 0 12px">Zgłoszenia z formularza na stronie i z testowych zamówień w demach (numer potwierdzony SMS-em). Widzisz to tylko Ty jako admin. Nowe: <b>${nNew}</b>.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <div class="chips" style="margin:0">${[['open', 'Do obsługi'], ['nowy', 'Nowe'], ['tak', 'Mają lokal'], ['planuje', 'Planują'], ['all', 'Wszystkie']].map(([k, t]) => `<button class="chip" data-lf="${k}" aria-pressed="${k === ldF}">${t}</button>`).join('')}</div>
+    <input class="in" id="l_q" placeholder="Szukaj: imię, telefon, lokal, miasto" value="${esc(ldQ)}" style="flex:1;min-width:200px;margin:0">
+    <button class="btn g s" id="l_csv">Eksport CSV</button></div></div>
+  ${list.length ? list.map(l => { const v = VB[hv(l)]; return `<div class="card" data-lid="${l.id}" style="display:grid;gap:8px;${l.status === 'nowy' ? 'box-shadow:inset 4px 0 0 var(--accent,#ff7a3d)' : ''}">
+    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><b style="font-size:18px">${esc(l.name || 'Bez imienia')}</b>
+      <a href="tel:+48${esc(tel(l.phone))}" class="btn s" style="padding:6px 12px">📞 ${esc(tel(l.phone).replace(/(\d{3})(?=\d)/g, '$1 '))}</a>
+      ${v ? `<span class="chip" style="cursor:default;background:${v[1]};color:#fff">${v[0]}</span>` : ''}
+      ${l.consent ? '<span class="chip" style="cursor:default">zgoda na telefon ✓</span>' : '<span class="chip" style="cursor:default;opacity:.6">bez zgody na telefon</span>'}
+      <span class="hint" style="margin-left:auto">${ago(l.created_at)}</span></div>
+    <div class="hint" style="margin:0">${[l.venue && 'Lokal: ' + esc(l.venue), l.city && esc(l.city), l.nip && 'NIP ' + esc(l.nip), l.email && esc(l.email), l.package && 'Pakiet: ' + esc(l.package), l.segment && !l.demo && esc(l.segment), 'Źródło: ' + esc(l.source || 'strona')].filter(Boolean).join(' · ')}</div>
+    ${l.message ? `<div style="font-size:14px">${esc(l.message)}</div>` : ''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select class="in" data-ls style="width:auto;margin:0">${LST.map(([k, t]) => `<option value="${k}"${k === l.status ? ' selected' : ''}>${t}</option>`).join('')}</select>
+      <input class="in" data-ln placeholder="Notatka, np. oddzwonić we wtorek" value="${esc(l.note || '')}" style="flex:1;min-width:200px;margin:0"></div></div>`; }).join('') : '<div class="card"><p class="hint" style="margin:0">Brak leadów w tym widoku.</p></div>'}`;
+  $('#main').querySelectorAll('[data-lf]').forEach(b => b.onclick = () => { ldF = b.dataset.lf; drawLeads(); });
+  const q = $('#l_q'); q.oninput = () => { ldQ = q.value; clearTimeout(drawLeads.t); drawLeads.t = setTimeout(() => { const pos = q.selectionStart; drawLeads(); const n = $('#l_q'); n.focus(); n.setSelectionRange(pos, pos); }, 250); };
+  const save = async (id, st, note) => { const { error } = await sb.rpc('admin_lead_set', { p_id: id, p_status: st, p_note: note }); if (error) { toast(error.message, true); return false; } const l = LEADS.find(x => x.id === id); if (st) l.status = st; if (note != null) l.note = note; toast('Zapisano ✓'); return true; };
+  $('#main').querySelectorAll('[data-lid]').forEach(c => { const id = c.dataset.lid;
+    c.querySelector('[data-ls]').onchange = async e => { if (await save(id, e.target.value, null)) drawLeads(); };
+    c.querySelector('[data-ln]').onchange = e => save(id, null, e.target.value.trim()); });
+  $('#l_csv').onclick = () => { const rows = [['Data', 'Imię', 'Telefon', 'Lokal (pytanie)', 'Zgoda na telefon', 'Nazwa lokalu', 'Miasto', 'NIP', 'E-mail', 'Pakiet', 'Źródło', 'Wiadomość', 'Status', 'Notatka']].concat(list.map(l => [new Date(l.created_at).toLocaleString('pl-PL'), l.name || '', tel(l.phone), hv(l), l.consent ? 'tak' : 'nie', l.venue || '', l.city || '', l.nip || '', l.email || '', l.package || '', l.source || '', l.message || '', l.status, l.note || '']));
+    const csv = '﻿' + rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(';')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'leady-sell-up.csv'; a.click(); };
 }
