@@ -38,7 +38,20 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .live.ok i{background:var(--ready);box-shadow:0 0 8px var(--ready)}.live.bad i{background:var(--bad)}
 /* Tablica */
 .board{display:grid;grid-template-columns:repeat(4,minmax(260px,1fr));gap:12px;padding:12px 16px;align-items:start}
-@media (max-width:1100px){.board{grid-template-columns:repeat(4,82vw);overflow-x:auto;scroll-snap-type:x mandatory}.col{scroll-snap-align:start}}
+/* tablet i telefon: zakładki zamiast przewijania w bok, karty w siatce */
+.ktabs{display:none}
+@media (max-width:1100px){
+  .ktabs{display:flex;gap:6px;padding:10px 12px 0;position:sticky;top:var(--toph,58px);z-index:4;background:var(--bg)}
+  .ktabs button{flex:1;padding:12px 6px;border-radius:12px;background:var(--s1);color:var(--mut);font-weight:800;font-size:14px;display:flex;flex-direction:column;align-items:center;gap:2px;border-bottom:3px solid transparent}
+  .ktabs button b{font-size:22px;color:var(--fg)}.ktabs button.on{background:var(--s2);color:var(--fg)}
+  .ktabs button[data-st="new"].on{border-color:var(--new)}.ktabs button[data-st="cooking"].on{border-color:var(--cook)}.ktabs button[data-st="ready"].on{border-color:var(--ready)}.ktabs button[data-st="delivering"].on{border-color:var(--road)}
+  .ktabs button.hot{animation:flash 1s ease 4}.ktabs button.hot b{color:var(--new)}
+  .board{display:block;padding:10px 12px}
+  .board .col{display:none;background:none;padding:0;min-height:0}
+  .board .col.on{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;align-items:start}
+  .board .col h3,.board .col .empty{display:none}
+  .board .col.on .empty{display:block;grid-column:1/-1}
+}
 .col{background:var(--s1);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:60vh}
 .col h3{margin:2px 4px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between}
 .col[data-st="new"] h3{color:var(--new)}.col[data-st="cooking"] h3{color:var(--cook)}.col[data-st="ready"] h3{color:var(--ready)}.col[data-st="delivering"] h3{color:var(--road)}
@@ -109,6 +122,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
       <button class="chip" id="outBtn">Wyloguj</button>
     </div>
   </div>
+  <div class="ktabs" id="ktabs"></div>
   <div class="board" id="board"></div>
 </section>
 
@@ -249,15 +263,21 @@ function card(o){
     <div class="tot"><span>Razem</span><b class="num">${zl(o.total)}</b></div>
     <div class="acts">${act}<button class="x" data-print="${o.id}" aria-label="Drukuj" title="Drukuj zamówienie">🖨</button><button class="x" data-cancel="${o.id}" aria-label="Anuluj">✕</button></div></div>`;
 }
+let VIEW = 'new';
 function render(){
-  const c = cols();
+  const c = cols(), cnt = st => orders.filter(o => o.status === st).length;
+  if (!cnt(VIEW)) { const f = c.find(([st]) => cnt(st)); if (f) VIEW = f[0]; }
+  const hot = orders.some(o => o._flash && o.status === 'new') && VIEW !== 'new';
+  $('#ktabs').innerHTML = c.filter(([st]) => st !== 'delivering' || cnt(st) || (R && R.module !== 'inne')).map(([st, nm]) => `<button data-st="${st}" class="${st === VIEW ? 'on' : ''}${hot && st === 'new' ? ' hot' : ''}"><b class="num">${cnt(st)}</b>${nm}</button>`).join('');
   $('#board').innerHTML = c.map(([st, nm]) => { const l = orders.filter(o => o.status === st);
-    return `<div class="col" data-st="${st}"><h3>${nm}<b class="num">${l.length}</b></h3>${l.map(card).join('') || '<div class="empty">Brak zamówień</div>'}</div>`; }).join('');
+    return `<div class="col${st === VIEW ? ' on' : ''}" data-st="${st}"><h3>${nm}<b class="num">${l.length}</b></h3>${l.map(card).join('') || '<div class="empty">Brak zamówień</div>'}</div>`; }).join('');
   orders.forEach(o => o._flash = false);
   const n = s => orders.filter(o => o.status === s).length;
   $('#stats').innerHTML = `<span>Nowe<b class="num">${n('new')}</b></span><span>${COOK[R.module] || 'W toku'}<b class="num">${n('cooking')}</b></span><span>Gotowe<b class="num">${n('ready')}</b></span><span>Wydane dziś<b class="num">${doneToday}</b></span>`;
   document.title = (n('new') ? `(${n('new')}) ` : '') + 'Kuchnia · ' + R.name;
 }
+try { new ResizeObserver(() => document.documentElement.style.setProperty('--toph', document.querySelector('.top').offsetHeight + 'px')).observe(document.querySelector('.top')); } catch (e) {}
+$('#ktabs').onclick = e => { const b = e.target.closest('[data-st]'); if (b) { VIEW = b.dataset.st; render(); scrollTo({ top: 0 }); } };
 $('#board').onclick = async e => {
   const b = e.target.closest('[data-to]'), c = e.target.closest('[data-cancel]'), pr = e.target.closest('[data-print]');
   if (pr){ const o = orders.find(x => x.id === pr.dataset.print); if (o) printOrder(o); return; }

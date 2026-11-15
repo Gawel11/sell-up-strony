@@ -66,13 +66,13 @@ async function pick(id){
   cur = shops.find(s => s.id === id); try { localStorage.setItem('panel-shop', id); } catch (e) {}
   $('#seeSite').href = '../' + cur.slug + '/';
   await load();
-  const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['promo', 'Kody rabatowe'], ['stats', 'Statystyki'], ['qr', 'QR i link'], ['shop', 'Dane lokalu']);
+  const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['crm', 'Klienci'], ['promo', 'Kody rabatowe'], ['stats', 'Statystyki'], ['qr', 'QR i link'], ['shop', 'Dane lokalu']);
   if (!tabs.some(t => t[0] === tab)) tab = 'menu';
   $('#tabs').innerHTML = tabs.map(([k, t]) => `<button class="tab" data-t="${k}" aria-pressed="${k === tab}">${t}</button>`).join('');
   $('#tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.t; $('#tabs').querySelectorAll('.tab').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
   render();
 }
-function render(){ if (!cur) return; ({ menu: renderMenu, ready: renderReady, look: renderLook, shop: renderShop, promo: renderPromo, stats: renderStats, qr: renderQR })[tab](); }
+function render(){ if (!cur) return; ({ menu: renderMenu, ready: renderReady, look: renderLook, shop: renderShop, promo: renderPromo, crm: renderCRM, stats: renderStats, qr: renderQR })[tab](); }
 async function saveSettings(patch){
   const s = { ...(cur.info.settings || {}), ...patch };
   const { error } = await sb.from('restaurants').update({ settings: s }).eq('id', cur.id);
@@ -418,6 +418,58 @@ async function renderStats(){
   <h3><span>Godziny zamówień</span></h3><div class="card"><div style="display:flex;align-items:end;gap:3px;height:110px">${hours.map((v, i) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%"><div title="${i}:00 – ${v}" style="width:100%;height:${v / hmax * 90}%;min-height:${v ? 3 : 0}px;background:var(--acc);border-radius:3px 3px 0 0"></div><small style="font-size:9px;color:var(--mut)">${i % 3 === 0 ? i : ''}</small></div>`).join('')}</div></div>
   ${days > 1 ? `<h3><span>Utarg dzień po dniu</span></h3><div class="card"><div style="display:flex;align-items:end;gap:3px;height:110px">${dkeys.map(k => `<div style="flex:1;display:flex;flex-direction:column;justify-content:end;height:100%"><div title="${k}: ${zl(byDay[k] || 0)}" style="width:100%;height:${(byDay[k] || 0) / dmax * 100}%;min-height:${byDay[k] ? 3 : 0}px;background:var(--ok);border-radius:3px 3px 0 0"></div></div>`).join('')}</div></div>` : ''}`;
   $('#main').querySelectorAll('[data-r]').forEach(b => b.onclick = () => { statRange = +b.dataset.r; renderStats(); });
+}
+
+/* ---------- Klienci (CRM) i program lojalnościowy ---------- */
+let crmF = 'all', crmQ = '', CRM = [];
+async function renderCRM(){
+  $('#main').innerHTML = '<p class="hint">Wczytuję klientów…</p>';
+  const { data, error } = await sb.rpc('staff_customers', { p_restaurant: cur.id });
+  if (error){ $('#main').innerHTML = '<p class="err">' + esc(error.message) + '</p>'; return; }
+  CRM = data || []; drawCRM();
+}
+function loyCfg(){ const l = (cur.info.settings || {}).loyalty || {}; return { mode: l.mode || 'stamps', need: l.need || 8, reward: l.reward || 'Nagroda gratis', per_item: !!l.per_item, per_zl: l.per_zl ?? 1, rewards: l.rewards || [], referral: Object.assign({ enabled: true, limit: 3, bonus: (l.mode === 'points' ? 50 : 1) }, l.referral || {}), enabled: l.enabled !== false }; }
+function drawCRM(){
+  const L = loyCfg(), now = Date.now(), d30 = 30 * 864e5, zl = v => Number(v).toFixed(2).replace('.', ',') + ' zł', pl = (n, a, b, c) => n === 1 ? a : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? b : c;
+  const ago = t => { if (!t) return '—'; const d = Math.floor((now - new Date(t)) / 864e5); return d <= 0 ? 'dziś' : d === 1 ? 'wczoraj' : d + ' dni temu'; };
+  const tel = p => { const x = String(p || ''); return x.length === 11 && x.startsWith('48') ? x.slice(2) : x; };
+  const F = { all: () => true, best: () => true, gone: c => c.last_at && now - new Date(c.last_at) > d30, new: c => now - new Date(c.created_at) < 7 * 864e5, reward: c => c.card && (c.card.rewards > 0 || (L.mode === 'points' && c.card.points >= Math.min(...(L.rewards.map(r => r.cost).concat(9e9))))) };
+  let list = CRM.filter(F[crmF]).filter(c => !crmQ || [c.name, tel(c.phone), c.code].join(' ').toLowerCase().includes(crmQ.toLowerCase()));
+  if (crmF === 'best') list = list.slice().sort((a, b) => b.spent - a.spent || b.orders - a.orders);
+  const active = CRM.filter(c => c.last_at && now - new Date(c.last_at) < d30).length, toPick = CRM.reduce((a, c) => a + (c.card ? c.card.rewards : 0), 0), refs = CRM.reduce((a, c) => a + c.invited, 0);
+  $('#main').innerHTML = `<div class="g2" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">${[['Klienci z kontem', CRM.length], ['Aktywni (30 dni)', active], ['Nagrody do odbioru', toPick], ['Udane polecenia', refs]].map(([k, v]) => `<div class="card" style="margin:0"><div class="hint" style="margin:0">${k}</div><div style="font-size:28px;font-weight:800">${v}</div></div>`).join('')}</div>
+  <details class="card" style="margin-top:12px"><summary style="cursor:pointer;font-weight:800">⚙️ Program lojalnościowy i polecenia</summary>
+    <div class="grid" style="margin-top:12px">
+      <label class="f">Karta włączona<select class="in" id="l_en"><option value="1"${L.enabled ? ' selected' : ''}>Tak</option><option value="0"${L.enabled ? '' : ' selected'}>Nie</option></select></label>
+      ${L.mode === 'points' ? `<label class="f">Punkty za 1 zł<input class="in" id="l_pz" inputmode="decimal" value="${n2(L.per_zl)}"></label>`
+        : `<label class="f">Pieczątek do nagrody<input class="in" id="l_need" inputmode="numeric" value="${L.need}"></label>
+      <label class="f">Nagroda<input class="in" id="l_rw" value="${esc(L.reward)}" maxlength="60"></label>
+      <label class="f">Pieczątka za<select class="in" id="l_pi"><option value="0"${L.per_item ? '' : ' selected'}>każde zamówienie</option><option value="1"${L.per_item ? ' selected' : ''}>każdą sztukę</option></select></label>`}
+      <label class="f">Polecenia<select class="in" id="r_en"><option value="1"${L.referral.enabled ? ' selected' : ''}>Włączone</option><option value="0"${L.referral.enabled ? '' : ' selected'}>Wyłączone</option></select></label>
+      <label class="f">Limit nagród za polecenia / miesiąc<input class="in" id="r_lim" inputmode="numeric" value="${L.referral.limit}"></label>
+      <label class="f">Nagroda za polecenie (${L.mode === 'points' ? 'punkty' : 'pieczątki'}) dla obu<input class="in" id="r_bon" inputmode="numeric" value="${L.referral.bonus}"></label>
+    </div><button class="btn" id="l_save" style="margin-top:10px">Zapisz ustawienia</button>
+    <p class="hint">Nagroda za polecenie: tylko nowi klienci (nowy numer), po pierwszym zakupie. Zmiany działają od razu.</p></details>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 8px">
+    <div class="chips" style="margin:0">${[['all', 'Wszyscy'], ['best', 'Najlepsi'], ['gone', 'Dawno nie byli'], ['new', 'Nowi'], ['reward', 'Mają nagrodę']].map(([k, t]) => `<button class="chip" data-f="${k}" aria-pressed="${k === crmF}">${t}</button>`).join('')}</div>
+    <input class="in" id="c_q" placeholder="Szukaj: imię, telefon, kod karty" value="${esc(crmQ)}" style="flex:1;min-width:200px;margin:0">
+    <button class="btn g s" id="c_csv">Eksport CSV</button></div>
+  ${list.length ? `<div class="crm">${list.map(c => `<div class="card crm-r">
+      <div class="crm-n"><b>${esc(c.name || 'Klient bez imienia')}</b><a href="tel:${esc(tel(c.phone))}">${esc(tel(c.phone).replace(/(\d{3})(?=\d)/g, '$1 '))}</a><small>karta ${esc(c.code)}${c.invited_by ? ' · polecił(a) ' + esc(c.invited_by) : ''}</small></div>
+      <div class="crm-s"><span><b>${c.orders}</b> ${pl(c.orders, 'zamówienie', 'zamówienia', 'zamówień')}</span><span><b>${zl(c.spent)}</b></span><span><b>${c.visits}</b> ${pl(c.visits, 'wizyta', 'wizyty', 'wizyt')} przy ladzie</span><span>ostatnio <b>${ago(c.last_at)}</b></span></div>
+      <div class="crm-k">${c.card ? (L.mode === 'points' ? `<b>${c.card.points} pkt</b>` : `<b>${c.card.stamps}/${L.need}</b> pieczątek`) + (c.card.rewards ? ` · <span style="color:var(--ok,#7fd17a)">🎁 ${c.card.rewards} do odbioru</span>` : '') : '—'}${c.invited ? ` · 🤝 ${c.invited} ${pl(c.invited, 'polecenie', 'polecenia', 'poleceń')}` : ''}${c.redeemed ? ` · odebrane: ${c.redeemed}` : ''}</div></div>`).join('')}</div>`
+    : `<p class="hint">${CRM.length ? 'Brak klientów dla tego filtra.' : 'Nie ma jeszcze klientów z kontem. Pojawią się, gdy ktoś zaloguje się numerem telefonu na stronie lokalu.'}</p>`}`;
+  $('#main').querySelectorAll('[data-f]').forEach(b => b.onclick = () => { crmF = b.dataset.f; drawCRM(); });
+  const q = $('#c_q'); q.oninput = () => { crmQ = q.value; clearTimeout(drawCRM.t); drawCRM.t = setTimeout(() => { const pos = q.selectionStart; drawCRM(); const n = $('#c_q'); n.focus(); n.setSelectionRange(pos, pos); }, 250); };
+  $('#c_csv').onclick = () => { const rows = [['Imię', 'Telefon', 'Kod karty', 'Zamówienia', 'Wydane zł', 'Wizyty przy ladzie', 'Ostatnio', 'Pieczątki/punkty', 'Nagrody do odbioru', 'Polecenia', 'Polecił(a)']].concat(list.map(c => [c.name || '', tel(c.phone), c.code, c.orders, String(c.spent).replace('.', ','), c.visits, c.last_at ? new Date(c.last_at).toLocaleDateString('pl-PL') : '', c.card ? (L.mode === 'points' ? c.card.points : c.card.stamps) : '', c.card ? c.card.rewards : '', c.invited, c.invited_by || '']));
+    const csv = '﻿' + rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(';')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'klienci-' + cur.slug + '.csv'; a.click(); };
+  $('#l_save').onclick = async () => {
+    const old = (cur.info.settings || {}).loyalty || {}, num = (id, d) => { const e = $('#' + id); if (!e) return d; const v = parseFloat(String(e.value).replace(',', '.')); return isFinite(v) ? v : d; };
+    const loy = Object.assign({}, old, { enabled: $('#l_en').value === '1', referral: { enabled: $('#r_en').value === '1', limit: Math.max(0, Math.round(num('r_lim', 3))), bonus: Math.max(1, Math.round(num('r_bon', 1))) } });
+    if (L.mode === 'points') loy.per_zl = Math.max(0, num('l_pz', 1));
+    else { loy.need = Math.min(30, Math.max(2, Math.round(num('l_need', 8)))); loy.reward = ($('#l_rw').value || '').trim() || 'Nagroda gratis'; loy.per_item = $('#l_pi').value === '1'; }
+    if (await saveSettings({ loyalty: loy })) { toast('Zapisano ✓'); drawCRM(); }
+  };
 }
 
 /* ---------- QR i link ---------- */
