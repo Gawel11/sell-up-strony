@@ -75,3 +75,5 @@ grant execute on function public.demo_kitchen_set(uuid, text) to anon, authentic
 -- 029: lista leadów dla admina Sell-UP
 alter table public.leads add column if not exists admin_note text;
 -- admin_leads() i admin_lead_set(p_id, p_status, p_note): tylko public.is_admin()
+
+-- 030: admin_lead_delete(p_id) – usuwanie leada przez admina

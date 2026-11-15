@@ -589,13 +589,15 @@ function drawLeads(){
     <div class="hint" style="margin:0">${[l.venue && 'Lokal: ' + esc(l.venue), l.city && esc(l.city), l.nip && 'NIP ' + esc(l.nip), l.email && esc(l.email), l.package && 'Pakiet: ' + esc(l.package), l.segment && !l.demo && esc(l.segment), 'Źródło: ' + esc(l.source || 'strona')].filter(Boolean).join(' · ')}</div>
     ${l.message ? `<div style="font-size:14px">${esc(l.message)}</div>` : ''}
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select class="in" data-ls style="width:auto;margin:0">${LST.map(([k, t]) => `<option value="${k}"${k === l.status ? ' selected' : ''}>${t}</option>`).join('')}</select>
-      <input class="in" data-ln placeholder="Notatka, np. oddzwonić we wtorek" value="${esc(l.note || '')}" style="flex:1;min-width:200px;margin:0"></div></div>`; }).join('') : '<div class="card"><p class="hint" style="margin:0">Brak leadów w tym widoku.</p></div>'}`;
+      <input class="in" data-ln placeholder="Notatka, np. oddzwonić we wtorek" value="${esc(l.note || '')}" style="flex:1;min-width:200px;margin:0"><button class="btn g s" data-ld title="Usuń lead" style="color:#ff8a8a">✕ Usuń</button></div></div>`; }).join('') : '<div class="card"><p class="hint" style="margin:0">Brak leadów w tym widoku.</p></div>'}`;
   $('#main').querySelectorAll('[data-lf]').forEach(b => b.onclick = () => { ldF = b.dataset.lf; drawLeads(); });
   const q = $('#l_q'); q.oninput = () => { ldQ = q.value; clearTimeout(drawLeads.t); drawLeads.t = setTimeout(() => { const pos = q.selectionStart; drawLeads(); const n = $('#l_q'); n.focus(); n.setSelectionRange(pos, pos); }, 250); };
   const save = async (id, st, note) => { const { error } = await sb.rpc('admin_lead_set', { p_id: id, p_status: st, p_note: note }); if (error) { toast(error.message, true); return false; } const l = LEADS.find(x => x.id === id); if (st) l.status = st; if (note != null) l.note = note; toast('Zapisano ✓'); return true; };
   $('#main').querySelectorAll('[data-lid]').forEach(c => { const id = c.dataset.lid;
     c.querySelector('[data-ls]').onchange = async e => { if (await save(id, e.target.value, null)) drawLeads(); };
-    c.querySelector('[data-ln]').onchange = e => save(id, null, e.target.value.trim()); });
+    c.querySelector('[data-ln]').onchange = e => save(id, null, e.target.value.trim());
+    c.querySelector('[data-ld]').onclick = async () => { const l = LEADS.find(x => x.id === id); if (!confirm('Usunąć lead ' + (l.name || tel(l.phone)) + '? Tego nie da się cofnąć.')) return;
+      const { error } = await sb.rpc('admin_lead_delete', { p_id: id }); if (error) { toast(error.message, true); return; } LEADS = LEADS.filter(x => x.id !== id); toast('Usunięto ✓'); drawLeads(); }; });
   $('#l_csv').onclick = () => { const rows = [['Data', 'Imię', 'Telefon', 'Lokal (pytanie)', 'Zgoda na telefon', 'Nazwa lokalu', 'Miasto', 'NIP', 'E-mail', 'Pakiet', 'Źródło', 'Wiadomość', 'Status', 'Notatka']].concat(list.map(l => [new Date(l.created_at).toLocaleString('pl-PL'), l.name || '', tel(l.phone), hv(l), l.consent ? 'tak' : 'nie', l.venue || '', l.city || '', l.nip || '', l.email || '', l.package || '', l.source || '', l.message || '', l.status, l.note || '']));
     const csv = '﻿' + rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(';')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'leady-sell-up.csv'; a.click(); };
 }
