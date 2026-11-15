@@ -23,6 +23,10 @@ img{display:block;max-width:100%}
 .intro{position:fixed;inset:0;z-index:100;background:#2a1606;overflow:hidden;transition:opacity .7s,visibility .7s}
 .intro.out{opacity:0;visibility:hidden}
 .intro video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+video::-webkit-media-controls,video::-webkit-media-controls-panel,video::-webkit-media-controls-start-playback-button,video::-webkit-media-controls-overlay-play-button{display:none!important;-webkit-appearance:none;opacity:0!important}
+.intro .kb{position:absolute;inset:-4%;background:url(img/intro.jpg) center/cover;display:none}
+.intro.still .kb{display:block;animation:kbz 4.6s cubic-bezier(.2,.8,.3,1) forwards}.intro.still video{visibility:hidden}
+@keyframes kbz{from{transform:scale(1.18) rotate(-1.5deg);filter:brightness(.7)}to{transform:scale(1);filter:brightness(1)}}
 .intro:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,rgba(42,22,6,0) 30%,rgba(42,22,6,.55));pointer-events:none}
 .intro .brand{position:absolute;left:0;right:0;top:50%;z-index:2;transform:translateY(-50%);text-align:center;opacity:0;transition:opacity .8s}
 .intro.logo .brand{opacity:1}
@@ -165,12 +169,12 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
 </head>
 <body>
 <div class="intro" id="intro" aria-hidden="true">
-  <video id="introV" src="img/intro.mp4" poster="img/intro.jpg" muted playsinline autoplay preload="auto"></video>
+  <div class="kb"></div><video id="introV" src="img/intro.mp4" poster="img/intro.jpg" muted playsinline webkit-playsinline autoplay preload="auto" disablepictureinpicture></video>
   <div class="brand"><h1>bubble<br>tea</h1><p>skomponuj swoją</p></div>
   <button class="skip" type="button">Pomiń ›</button>
 </div>
 
-<div class="bgp" aria-hidden="true"><video src="img/bgloop.mp4" poster="img/bg2.jpg" muted loop playsinline autoplay preload="auto"></video></div>
+<div class="bgp" aria-hidden="true"><video id="bgV" src="img/bgloop.mp4" poster="img/bg2.jpg" muted loop playsinline webkit-playsinline autoplay preload="auto" disablepictureinpicture></video></div>
 <div class="app">
   <header class="top"><div class="logo">bubble tea</div><button class="pill" id="favBtn" type="button"><span class="hh">♥</span>Ulubione<b id="favN"></b></button></header>
 
@@ -232,8 +236,21 @@ const zl = n => n + ' zł';
 /* ===== Intro ===== */
 const intro = $('#intro'), iv = $('#introV');
 let ended = false; const endIntro = () => { if (ended) return; ended = true; intro.classList.add('out'); setTimeout(() => intro.remove(), 800); };
-{ setTimeout(() => intro.classList.add('logo'), 2600); iv.addEventListener('ended', () => setTimeout(endIntro, 500));
-  iv.addEventListener('error', () => { intro.classList.add('logo'); setTimeout(endIntro, 1600); }); setTimeout(endIntro, 6500); intro.addEventListener('click', endIntro); }
+{ /* iPhone: wideo bez dźwięku, próba odtworzenia z kodu; gdy telefon blokuje (np. tryb oszczędzania), ruchome zdjęcie zamiast przycisku play */
+  const vids = [iv, document.getElementById('bgV')].filter(Boolean);
+  vids.forEach(v => { v.muted = true; v.defaultMuted = true; v.playsInline = true; v.removeAttribute('controls'); });
+  const tryPlay = v => { try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} };
+  let timed = false; const timers = (logoAt, endAt) => { if (timed) return; timed = true; setTimeout(() => intro.classList.add('logo'), logoAt); setTimeout(endIntro, endAt); };
+  iv.addEventListener('playing', () => timers(2600, 6500));
+  iv.addEventListener('ended', () => setTimeout(endIntro, 500));
+  iv.addEventListener('error', () => { intro.classList.add('still'); timers(900, 3600); });
+  vids.forEach(tryPlay);
+  setTimeout(() => { if (iv.paused || iv.currentTime === 0) { intro.classList.add('still'); timers(900, 3800); } }, 1100);
+  setTimeout(endIntro, 8000);
+  const kick = () => { vids.forEach(v => { if (v.paused) tryPlay(v); }); };
+  ['touchstart', 'click'].forEach(ev => document.addEventListener(ev, kick, { once: true, passive: true }));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
+  intro.addEventListener('click', endIntro); }
 
 /* ===== Warstwy: klient wybiera każdą sam. [obraz, nazwa, dopłata, kubek] ===== */
 const sizeSvg = h => `<svg viewBox="0 0 24 34" width="${h * .7}" height="${h}"><path d="M3 6h18l-2.2 26H5.2z"/><path d="M1.5 6h21"/><path d="M14 6l2.5-5"/></svg>`;
