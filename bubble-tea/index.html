@@ -135,6 +135,7 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
 .rw .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:23px;background:rgba(255,181,71,.14)}
 .rw b{display:block}.rw span{font-size:13px;color:var(--mut)}
 .rw button{padding:9px 13px;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--lil));color:#fff;font-weight:800;font-size:13px}.rw button:disabled{background:#3a3940;color:#8a8494}
+.acct{margin:0 0 12px}.acct .box{display:flex;gap:12px;align-items:center;margin:0}.acct .box>div{flex:1}.acct .box button{flex:none;padding:11px 16px;border-radius:99px;background:linear-gradient(135deg,#ffc46b,#ff8a2a);color:#2a160a;font-weight:800;font-size:14px}.acct .box button.out{background:rgba(255,255,255,.08);color:#ddd;box-shadow:inset 0 0 0 1px var(--line);font-weight:700}.ghostb{background:rgba(255,255,255,.08)!important;color:#eee!important;box-shadow:inset 0 0 0 1px var(--line)}
 .box{background:rgba(26,16,10,.55);backdrop-filter:blur(8px);box-shadow:inset 0 0 0 1px rgba(255,190,110,.2);border-radius:20px;padding:16px;margin-top:6px}.box b{display:block}.box span{color:var(--mut);font-size:14px}
 /* dolne menu */
 .nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:20;width:min(480px,100%);display:grid;grid-template-columns:repeat(3,1fr);padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(22,14,9,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line)}
@@ -174,9 +175,10 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
   <!-- KARTA -->
   <section class="scr" id="s-card" hidden>
     <h2>Twoja karta</h2>
+    <div class="acct" id="acct"></div>
     <div class="stamp"><div class="t"><span>Pieczątki</span><b id="stN">0/8</b></div><div class="cups" id="cups"></div><p id="stTxt"></p></div>
     <div class="card"><b style="font-size:18px">Pokaż kod przy ladzie</b><div class="q" id="qr"></div><div class="num" id="cardNo"></div><p>Za każdą herbatę jedna pieczątka.</p>
-      <button class="btn" id="addStamp" type="button">＋ Symuluj pieczątkę (demo)</button></div>
+      <button class="btn ghostb" id="addStamp" type="button">＋ Symuluj skan obsługi (demo)</button></div>
   </section>
 
   <!-- NAGRODY -->
@@ -199,6 +201,7 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
 <canvas class="conf" id="conf"></canvas>
 
 <script src="../bulkaikromka/qrcode.min.js"></script>
+<script src="../lib/sellup-account.js?v=1"></script>
 <script>
 const $ = s => document.querySelector(s);
 const zl = n => n + ' zł';
@@ -224,9 +227,11 @@ const KEYS = LAYERS.map(L => L.id), BASE_PRICE = 15;
 const fresh = () => ({ size: 0, base: 0, milk: 0, sweet: 2, pearl: 0, top: 0, ice: 0 });
 let ORDER = [fresh()], CUR = 0, FAV = [];
 try { const o = JSON.parse(sessionStorage.getItem('bt-order')); if (o && o.length) ORDER = o; } catch (e) {}
-try { FAV = JSON.parse(localStorage.getItem('bt-fav')) || []; } catch (e) {}
+function loadFav(){ try { return JSON.parse(localStorage.getItem('bt-fav')) || []; } catch (e) { return []; } }
+FAV = loadFav();
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const keep = () => { try { sessionStorage.setItem('bt-order', JSON.stringify(ORDER)); } catch (e) {} };
-const keepFav = () => { try { localStorage.setItem('bt-fav', JSON.stringify(FAV)); } catch (e) {} };
+const keepFav = () => { if (S && S.srv) return; try { localStorage.setItem('bt-fav', JSON.stringify(FAV)); } catch (e) {} };
 const sel = () => ORDER[CUR];
 const same = (a, b) => KEYS.every(k => a[k] === b[k]);
 const opt = (id, d) => LAYERS.find(L => L.id === id).o[d[id]];
@@ -279,12 +284,19 @@ $('#tabs').addEventListener('click', e => { const rm = e.target.closest('[data-r
 function renderFav(){ $('#favN').textContent = FAV.length || '';
   $('#favL').innerHTML = FAV.length ? FAV.map((f, i) => `<div class="fv"><img src="img/${cupOf(f)}.webp" alt=""><div><b>${name(f)}</b><span>${desc(f).join(' · ')}</span><div class="p">${zl(price(f))}</div></div><div class="act"><button data-f="${i}" type="button">Wybierz</button><button class="rm" data-fr="${i}" type="button">Usuń</button></div></div>`).join('')
     : '<div class="box"><b>Nie masz jeszcze ulubionych</b><span>Skomponuj herbatę i dotknij „♡ Do ulubionych” pod kubkiem. Następnym razem wybierzesz ją tutaj jednym dotknięciem.</span><button class="btn" data-s="make" type="button">Skomponuj herbatę</button></div>'; }
-$('#favL').addEventListener('click', e => { const r = e.target.closest('[data-fr]'); if (r){ FAV.splice(+r.dataset.fr, 1); keepFav(); paint(); return; }
+$('#favL').addEventListener('click', e => { const r = e.target.closest('[data-fr]'); if (r){ const [f] = FAV.splice(+r.dataset.fr, 1); keepFav(); paint(); if (f && f._id) ACC.favDel(f._id).catch(er => notify('Nie udało się', er.message)); return; }
   const m = e.target.closest('[data-s]'); if (m){ go('make'); return; }
-  const b = e.target.closest('[data-f]'); if (!b) return; Object.assign(sel(), FAV[+b.dataset.f]); keep(); paint(); go('make'); notify('♥ Twoja ulubiona', name(sel())); });
+  const b = e.target.closest('[data-f]'); if (!b) return; Object.assign(sel(), stripId(FAV[+b.dataset.f])); keep(); paint(); go('make'); notify('♥ Twoja ulubiona', name(sel())); });
 $('#favBtn').onclick = () => go(document.querySelector('#s-fav').hidden ? 'fav' : 'make');
-$('#heart').onclick = () => { const d = sel(), i = FAV.findIndex(f => same(f, d));
-  if (i >= 0){ FAV.splice(i, 1); notify('Usunięto z ulubionych', name(d)); } else { FAV.unshift(Object.assign({}, d)); FAV = FAV.slice(0, 8); notify('♥ Zapisano w ulubionych', 'Następnym razem wybierzesz ją jednym dotknięciem.'); }
+$('#heart').onclick = async () => { const d = sel(), i = FAV.findIndex(f => same(f, d));
+  if (S.srv){
+    try {
+      if (i >= 0){ const [f] = FAV.splice(i, 1); paint(); await ACC.favDel(f._id); notify('Usunięto z ulubionych', name(d)); }
+      else { if (FAV.length >= 8) { notify('Masz już 8 ulubionych', 'Usuń jedną w zakładce Ulubione.'); return; }
+        const r = await ACC.favSave(SLUG, name(d), stripId(d)); FAV.push(Object.assign({}, stripId(d), { _id: r.id })); paint(); notify('♥ Zapisano na Twoim koncie', 'Zobaczysz ją na każdym telefonie po zalogowaniu.'); }
+    } catch (er) { notify('Nie udało się', er.message); syncMe(); }
+    return; }
+  if (i >= 0){ FAV.splice(i, 1); notify('Usunięto z ulubionych', name(d)); } else { FAV.unshift(Object.assign({}, d)); FAV = FAV.slice(0, 8); notify('♥ Zapisano w ulubionych', ACC ? 'Zaloguj się w Karcie, żeby mieć ją na każdym telefonie.' : 'Następnym razem wybierzesz ją jednym dotknięciem.'); }
   keepFav(); paint(); };
 $('#more').onclick = () => { ORDER.push(fresh()); CUR = ORDER.length - 1; keep(); paint(); jump(); scrollTo({ top: 0, behavior: 'smooth' }); notify('🧋 Herbata ' + ORDER.length, 'Skomponuj ją dla kolejnej osoby.'); };
 
@@ -292,7 +304,7 @@ $('#more').onclick = () => { ORDER.push(fresh()); CUR = ORDER.length - 1; keep()
 $('#go').onclick = () => {
   const tot = ORDER.reduce((s, x) => s + price(x), 0), no = String(Math.floor(100 + Math.random() * 900)), w = document.createElement('div'); w.className = 'show';
   const ascii = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/Ł/g, 'L');
-  const txt = ascii('BUBBLE TEA nr ' + no + '\n' + ORDER.map((x, i) => (i + 1) + '. ' + desc(x).join(', ') + ' = ' + price(x) + ' zl').join('\n') + '\nRAZEM ' + tot + ' zl');
+  const txt = ascii('BUBBLE TEA nr ' + no + '\n' + ORDER.map((x, i) => (i + 1) + '. ' + desc(x).join(', ') + ' = ' + price(x) + ' zl').join('\n') + '\nRAZEM ' + tot + ' zl' + (S.srv ? '\nKARTA ' + S.no : ''));
   w.innerHTML = `<div class="in"><h3>Zamówienie przy ladzie · nr ${no}</h3><div class="big">Poproszę ${ORDER.length === 1 ? 'herbatę' : ORDER.length + ' herbaty'}:</div>
     <div class="qr"><div id="oqr"></div><div><b>Obsługa skanuje ten kod</b><span>i od razu widzi cały skład ${ORDER.length === 1 ? 'herbaty' : 'wszystkich herbat'}. Nie trzeba niczego dyktować.</span></div></div>
     ${ORDER.map((x, i) => `<div class="ord"><img src="img/${cupOf(x)}.webp" alt=""><div><b>${i + 1}. ${opt('base', x)[1]}</b><span>${desc(x).join('<br>')}</span></div><div class="p">${zl(price(x))}</div></div>`).join('')}
@@ -302,27 +314,57 @@ $('#go').onclick = () => {
   try { new QRCode(w.querySelector('#oqr'), { text: txt, width: 132, height: 132, colorDark: '#202125', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.L }); } catch (e) {}
 };
 
-/* ===== Karta pieczątek (demo) ===== */
+/* ===== Karta pieczątek: konto klienta (baza) albo demo w telefonie ===== */
+const SLUG = 'bubble-tea', ACC = window.SellUpAccount; let ME = null;
 const N = 8;
-let S; try { S = JSON.parse(localStorage.getItem('bt-karta')) || null; } catch (e) {}
-if (!S) S = { st: 5, free: 0, no: String(Math.floor(1e7 + Math.random() * 9e7)) };
-const save = () => { try { localStorage.setItem('bt-karta', JSON.stringify(S)); } catch (e) {} };
+function loadLocal(){ let x; try { x = JSON.parse(localStorage.getItem('bt-karta')) || null; } catch (e) {} return x || { st: 5, free: 0, no: String(Math.floor(1e7 + Math.random() * 9e7)) }; }
+let S = loadLocal();
+const save = () => { if (S.srv) return; try { localStorage.setItem('bt-karta', JSON.stringify(S)); } catch (e) {} };
 const cupSvg = '<svg viewBox="0 0 24 30"><path d="M3 8h18l-2 20H5z" fill="#ff8ab9"/><path d="M2 8q0-5 10-5t10 5z" fill="#c9b6ff"/><rect x="13" y="0" width="3" height="10" rx="1.5" fill="#8c6cff"/><circle cx="8" cy="24" r="2" fill="#3b2418"/><circle cx="12" cy="25" r="2" fill="#3b2418"/><circle cx="16" cy="24" r="2" fill="#3b2418"/></svg>';
+function renderAcct(){
+  const a = $('#acct'); if (!ACC) { a.innerHTML = ''; return; }
+  a.innerHTML = ME ? `<div class="box"><div><b>${ME.name ? 'Cześć, ' + esc(ME.name) + '!' : 'Jesteś zalogowany'}</b><span>Pieczątki i ulubione są na Twoim koncie (${esc(ME.phone)}).</span></div><button class="out" id="logout" type="button">Wyloguj</button></div>`
+    : `<div class="box"><div><b>Zaloguj się numerem telefonu</b><span>Pieczątki i ulubione zapiszą się na koncie i nie zginą przy zmianie telefonu.</span></div><button id="login" type="button">Zaloguj</button></div>`;
+}
+$('#acct').addEventListener('click', e => {
+  if (e.target.id === 'login') ACC.login({ venue: 'Bubble tea' }).then(() => { notify('👋 Zalogowano', 'Twoja karta jest teraz na koncie.'); syncMe(true); }).catch(() => {});
+  if (e.target.id === 'logout') ACC.logout().then(() => { ME = null; S = loadLocal(); FAV = loadFav(); renderAcct(); renderCard(); paint(); $('#qr').innerHTML = ''; qr(); notify('Wylogowano', 'Karta wróciła do trybu demo.'); });
+});
+function fromMe(m){ ME = m; S = { st: m.card.stamps, free: m.card.rewards, no: m.code, srv: true }; FAV = (m.favorites || []).map(f => Object.assign({}, f.data, { _id: f.id })); }
+async function syncMe(merge){
+  if (!ACC || !ACC.logged()) return;
+  try {
+    let m = await ACC.me(SLUG);
+    if (merge){ const local = loadFav().filter(f => !(m.favorites || []).some(x => same(x.data, f)));
+      for (const f of local.slice(0, Math.max(0, 8 - (m.favorites || []).length))) { try { await ACC.favSave(SLUG, name(f), stripId(f)); } catch (e) {} }
+      if (local.length) m = await ACC.me(SLUG); }
+    const before = S && S.srv ? S.st + S.free * N : null; fromMe(m);
+    renderAcct(); renderCard(before != null && S.st + S.free * N > before); paint(); $('#qr').innerHTML = ''; if (!$('#s-card').hidden) qr();
+  } catch (e) { if (e.code === '28000') { ME = null; renderAcct(); } }
+}
+const stripId = f => { const o = Object.assign({}, f); delete o._id; return o; };
 function renderCard(pop){
   $('#cups').innerHTML = Array.from({ length: N }, (_, i) => `<div class="cup${i < S.st ? ' on' : ''}${pop && i === S.st - 1 ? ' pop' : ''}">${cupSvg}</div>`).join('');
   $('#stN').textContent = S.free ? 'Masz darmową 🎁' : 'Masz już ' + S.st + '/' + N;
   $('#stTxt').innerHTML = S.free ? '<b>Masz darmową herbatę!</b> Odbierz ją w Nagrodach.' : `Jeszcze ${N - S.st} i dowolna herbata L gratis.`;
   if (pop) setTimeout(() => { const p = document.querySelector('.cup.pop'); if (p) p.classList.remove('pop'); }, 400);
-  const R = [['🧋', 'Dowolna herbata L gratis', `za ${N} pieczątek`, S.free > 0, 'free'], ['⬆️', 'Rozmiar L w cenie M', 'za 4 pieczątki', S.st >= 4, 'up'], ['🎂', 'Dodatek gratis w urodziny', 'pianka albo syrop', true, 'bday']];
+  const R = [['🧋', 'Dowolna herbata L gratis', S.free > 1 ? `masz ${S.free} do odbioru` : `za ${N} pieczątek`, S.free > 0, 'free']].concat(S.srv ? [] : [['⬆️', 'Rozmiar L w cenie M', 'za 4 pieczątki', S.st >= 4, 'up']], [['🎂', 'Dodatek gratis w urodziny', 'pianka albo syrop', true, 'bday']]);
   $('#rws').innerHTML = R.map(r => `<div class="rw"><div class="ic">${r[0]}</div><div><b>${r[1]}</b><span>${r[2]}</span></div><button data-rw="${r[4]}" ${r[3] ? '' : 'disabled'}>${r[3] ? 'Odbierz' : 'Zbieraj'}</button></div>`).join('');
 }
 $('#rws').addEventListener('click', e => { const b = e.target.closest('[data-rw]'); if (!b) return;
-  if (b.dataset.rw === 'free'){ S.free--; save(); renderCard(); notify('🎁 Nagroda odebrana', 'Pokaż ekran przy ladzie: herbata L gratis.'); }
+  if (b.dataset.rw === 'free' && S.srv){ b.disabled = true; ACC.staff.redeem(SLUG, S.no).then(m => { S.free = m.card.rewards; S.st = m.card.stamps; renderCard(); notify('🎁 Nagroda odebrana', 'W lokalu zatwierdza to obsługa, skanując Twój kod z karty.'); }).catch(er => { notify('Nie udało się', er.message); b.disabled = false; }); }
+  else if (b.dataset.rw === 'free'){ S.free--; save(); renderCard(); notify('🎁 Nagroda odebrana', 'Pokaż ekran przy ladzie: herbata L gratis.'); }
   else if (b.dataset.rw === 'up'){ S.st -= 4; save(); renderCard(); notify('⬆️ Rozmiar L w cenie M', 'Pokaż ekran przy ladzie.'); }
   else notify('🎂 Zapisane', 'W dniu urodzin dostaniesz dodatek gratis.'); });
-function qr(){ const box = $('#qr'); if (box.childNodes.length) return; $('#cardNo').textContent = S.no.replace(/(\d{4})(?=\d)/g, '$1 ');
-  try { new QRCode(box, { text: 'BT-' + S.no, width: 170, height: 170, colorDark: '#202125', colorLight: '#ffffff' }); } catch (e) {} }
-$('#addStamp').onclick = () => { S.st++; let won = false; if (S.st >= N){ S.st = 0; S.free++; won = true; } save(); renderCard(!won);
+function qr(){ const box = $('#qr'); if (box.childNodes.length) return; $('#cardNo').textContent = S.srv ? S.no : S.no.replace(/(\d{4})(?=\d)/g, '$1 ');
+  try { new QRCode(box, { text: S.srv ? 'SU:' + S.no : 'BT-' + S.no, width: 170, height: 170, colorDark: '#202125', colorLight: '#ffffff' }); } catch (e) {} }
+$('#addStamp').onclick = () => {
+  if (S.srv){ const b = $('#addStamp'); b.disabled = true;
+    ACC.staff.stamp(SLUG, S.no, 1).then(m => { const won = m.card.rewards > S.free; S.st = m.card.stamps; S.free = m.card.rewards; renderCard(!won);
+      if (won){ confetti(); notify('🎉 Pełna karta!', 'Dowolna herbata L gratis czeka w Nagrodach.'); } else notify('🧋 +1 pieczątka', `Masz ${S.st}/${N}.`); })
+     .catch(er => notify('Chwileczkę', er.message)).finally(() => { b.disabled = false; });
+    return; }
+  S.st++; let won = false; if (S.st >= N){ S.st = 0; S.free++; won = true; } save(); renderCard(!won);
   if (won){ confetti(); notify('🎉 Pełna karta!', 'Dowolna herbata L gratis czeka w Nagrodach.'); } else notify('🧋 +1 pieczątka', `Masz ${S.st}/${N}.`); };
 $('#ref').onclick = () => { const url = location.origin + location.pathname + '?od=' + S.no.slice(-5); const done = () => notify('💌 Zaproszenie gotowe', 'Gdy znajomy kupi herbatę, oboje dostaniecie pieczątkę.');
   if (navigator.share) navigator.share({ title: 'Bubble tea', text: 'Skomponuj swoją bubble tea, dostaniesz pieczątkę na start:', url }).then(done, () => {});
@@ -332,7 +374,7 @@ $('#ref').onclick = () => { const url = location.origin + location.pathname + '?
 function go(s){
   document.querySelectorAll('.scr').forEach(x => x.hidden = x.id !== 's-' + s);
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.s === s)); $('#favBtn').classList.toggle('on', s === 'fav');
-  $('#dock').hidden = s !== 'make'; if (s === 'card') qr(); if (s === 'make') setTimeout(jump, 30); scrollTo({ top: 0 });
+  $('#dock').hidden = s !== 'make'; if (s === 'card') { qr(); syncMe(); } if (s === 'make') setTimeout(jump, 30); scrollTo({ top: 0 });
 }
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if (b) go(b.dataset.s); });
 
@@ -343,7 +385,7 @@ function confetti(){
   let t = 0; (function f(){ x.clearRect(0, 0, c.width, c.height); P.forEach(p => { p.vy += .35; p.x += p.vx; p.y += p.vy; x.fillStyle = p.c; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 7); x.fill(); }); if (++t < 120) requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height); })();
 }
 
-build(); renderCard(); paint(); jump(); setTimeout(jump, 120); setTimeout(jump, 600); addEventListener('load', () => jump());
+renderAcct(); build(); renderCard(); paint(); syncMe(true); document.addEventListener('visibilitychange', () => { if (!document.hidden) syncMe(); }); jump(); setTimeout(jump, 120); setTimeout(jump, 600); addEventListener('load', () => jump());
 addEventListener('resize', () => jump());
 </script>
 <script src="../lib/sellup-lead.js?v=11" defer></script>

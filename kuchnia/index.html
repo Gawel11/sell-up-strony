@@ -67,6 +67,13 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .tot{display:flex;justify-content:space-between;font-size:13.5px;color:var(--mut)}.tot b{color:var(--fg)}
 /* Okno potwierdzenia, start dźwięku */
 .modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:20px}
+.ck{position:relative;text-align:left}.ck h3{margin:0 0 12px}.ckx{position:absolute;right:14px;top:14px;width:34px;height:34px;border-radius:50%;background:var(--s3);color:var(--fg)}
+.ckv{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3}.ckv video{width:100%;height:100%;object-fit:cover}.ckv i{position:absolute;inset:18%;border:3px solid var(--new);border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.ckh{color:var(--mut);font-size:13.5px;margin:10px 0}.ckr{display:flex;gap:8px}.ckr input{flex:1;min-width:0;font:inherit;font-size:18px;letter-spacing:.12em;text-transform:uppercase;background:var(--s2);border:1px solid var(--line);color:var(--fg);border-radius:12px;padding:12px}.ckr .btn{width:auto;padding:0 18px;margin:0}
+.ckc{background:var(--s2);border-radius:14px;padding:14px;margin-bottom:12px}.ckc b{font-size:19px}.ckc small{display:block;color:var(--mut);margin-top:2px}
+.ckd{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 4px}.ckd i{width:26px;height:26px;border-radius:50%;border:2px dashed #555}.ckd i.on{background:var(--new);border:0;box-shadow:0 0 10px rgba(255,177,92,.5)}
+.ckp{font-size:30px;font-weight:800;margin-top:6px}.ckg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ckg .btn{margin:0}.ckg .full{grid-column:1/-1}
+.ckrw{background:#203a1f;color:#bff0bb;border-radius:12px;padding:10px 12px;margin:10px 0 0;font-weight:700}
 .mbox{width:min(420px,100%);background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:22px;text-align:center}
 .mbox h3{margin:0 0 8px;font-size:20px}.mbox p{color:var(--mut);margin:0 0 16px}
 .mbox .row{display:flex;gap:10px}.mbox .row .btn{flex:1}
@@ -97,6 +104,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
       <button class="chip" id="openBtn" title="Czy lokal przyjmuje zamówienia">…</button>
       <button class="chip on" id="sndBtn">🔔 Dźwięk</button>
       <button class="chip" id="testBtn" title="Wyślij zamówienie próbne">+ Próbne</button>
+      <button class="chip" id="cardBtn" title="Zeskanuj kartę klienta: pieczątki, punkty, nagrody" style="background:var(--new);color:#1b1206">🎟 Karta klienta</button>
       <span class="clock num" id="clock"></span>
       <button class="chip" id="outBtn">Wyloguj</button>
     </div>
@@ -109,6 +117,17 @@ button{cursor:pointer;border:0;background:none;padding:0}
 </div>
 <div class="modal" id="confirmModal" hidden>
   <div class="mbox"><h3 id="cfT"></h3><p id="cfP"></p><div class="row"><button class="btn g" id="cfNo">Wróć</button><button class="btn" id="cfYes" style="background:var(--bad);color:#fff">Tak, anuluj</button></div></div>
+</div>
+<div class="modal" id="cardModal" hidden>
+  <div class="mbox ck">
+    <button class="ckx" id="ckClose" aria-label="Zamknij">✕</button>
+    <h3>Karta klienta</h3>
+    <div id="ckScan"><div class="ckv"><video id="ckVid" playsinline muted></video><i></i></div>
+      <p class="ckh">Skieruj aparat na kod z karty w telefonie klienta albo wpisz kod ręcznie.</p>
+      <div class="ckr"><input id="ckCode" maxlength="12" placeholder="np. 0CC0C1A4" autocomplete="off"><button class="btn w" id="ckFind">Sprawdź</button></div></div>
+    <div id="ckRes" hidden></div>
+    <div class="err" id="ckErr"></div>
+  </div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -305,6 +324,65 @@ setInterval(() => { if (R && orders.some(o => o.status === 'new' && mins(o.creat
 /* ===== Zegar ===== */
 setInterval(() => { $('#clock').textContent = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }); document.querySelectorAll('[data-t]').forEach(el => el.textContent = mins(el.dataset.t) + ' min'); }, 1000);
 let tT; function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(tT); tT = setTimeout(() => el.classList.remove('show'), 2200); }
+
+/* ===== Karta klienta: skan QR, pieczątki, punkty, nagrody ===== */
+let ckStream = null, ckTimer = null, ckCur = null, ckDet = null;
+const ckSlug = () => (R && R.slug) || (RS[0] && RS[0].slug);
+function ckParse(t){ t = String(t || '').trim(); const m = t.match(/SU:([0-9A-F]{8})/i) || t.match(/KARTA\s+([0-9A-F]{8})/i) || t.match(/^([0-9A-F]{8})$/i); return m ? m[1].toUpperCase() : null; }
+async function ckOpen(){
+  if (!R || R.id === 'all') { toast('Wybierz jeden lokal na górze'); return; }
+  $('#cardModal').hidden = false; $('#ckRes').hidden = true; $('#ckScan').hidden = false; $('#ckErr').textContent = ''; $('#ckCode').value = '';
+  try {
+    ckStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    const v = $('#ckVid'); v.srcObject = ckStream; await v.play();
+    if ('BarcodeDetector' in window) ckDet = new BarcodeDetector({ formats: ['qr_code'] });
+    else if (!window.jsQR) await new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+    const c = document.createElement('canvas'), x = c.getContext('2d', { willReadFrequently: true });
+    ckTimer = setInterval(async () => {
+      if (v.readyState < 2) return; let txt = null;
+      try {
+        if (ckDet) { const r = await ckDet.detect(v); txt = r[0] && r[0].rawValue; }
+        else if (window.jsQR) { c.width = v.videoWidth; c.height = v.videoHeight; x.drawImage(v, 0, 0); const d = x.getImageData(0, 0, c.width, c.height); const r = jsQR(d.data, d.width, d.height); txt = r && r.data; }
+      } catch (e) {}
+      const code = txt && ckParse(txt); if (code) { ckStop(); ckFind(code); }
+    }, 250);
+  } catch (e) { $('#ckErr').textContent = 'Brak dostępu do aparatu. Wpisz kod ręcznie.'; }
+}
+function ckStop(){ clearInterval(ckTimer); ckTimer = null; if (ckStream) { ckStream.getTracks().forEach(t => t.stop()); ckStream = null; } }
+function ckClose(){ ckStop(); $('#cardModal').hidden = true; ckCur = null; }
+async function ckRpc(fn, args){ const { data, error } = await sb.rpc(fn, args); if (error) throw new Error(error.message); return data; }
+async function ckFind(code){
+  code = ckParse(code) || String(code || '').trim().toUpperCase(); $('#ckErr').textContent = '';
+  if (!/^[0-9A-F]{8}$/.test(code)) { $('#ckErr').textContent = 'Kod ma 8 znaków (cyfry i litery A–F)'; return; }
+  try { ckCur = code; ckShow(await ckRpc('staff_card', { p_restaurant: ckSlug(), p_code: code })); }
+  catch (e) { $('#ckErr').textContent = e.message; }
+}
+function ckShow(d, msg){
+  ckStop(); const c = d.card; $('#ckScan').hidden = true; $('#ckRes').hidden = false;
+  let body = `<div class="ckc"><b>${esc(d.name)}</b><small>${esc(d.phone || '')} · karta ${esc(ckCur)}</small>`;
+  if (c.mode === 'points') body += `<div class="ckp">${c.points} pkt</div></div>
+    <div class="ckr" style="margin-bottom:8px"><input id="ckAmt" inputmode="decimal" placeholder="Kwota zakupu, zł" style="letter-spacing:0"><button class="btn w" id="ckAddPts">Dodaj punkty</button></div>
+    <div class="ckg">${(c.rewards_catalog || []).map(r => `<button class="btn g" data-rw="${esc(r.id)}" ${c.points >= r.cost ? '' : 'disabled'}>${esc(r.name)} · ${r.cost} pkt</button>`).join('')}</div>`;
+  else body += `<div class="ckd">${Array.from({ length: c.need }, (_, i) => `<i class="${i < c.stamps ? 'on' : ''}"></i>`).join('')}</div><small>${c.stamps}/${c.need} pieczątek · łącznie ${c.total}</small>
+    ${c.rewards > 0 ? `<div class="ckrw">🎁 Do odbioru: ${esc(c.reward)}${c.rewards > 1 ? ' ×' + c.rewards : ''}</div>` : ''}</div>
+    <div class="ckg"><button class="btn w" data-st="1">+1 pieczątka</button><button class="btn g" data-st="2">+2</button>
+    ${c.rewards > 0 ? `<button class="btn full" data-rw="" style="background:var(--ready);color:#0d1a0c">Wydaj nagrodę: ${esc(c.reward)}</button>` : ''}</div>`;
+  body += `<button class="btn g" id="ckNext" style="margin-top:10px">Następny klient</button>${msg ? `<p class="ckh" style="color:var(--ready);font-weight:700">${esc(msg)}</p>` : ''}`;
+  $('#ckRes').innerHTML = body;
+}
+$('#ckRes').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.id === 'ckNext') { ckClose(); ckOpen(); return; }
+  b.disabled = true; $('#ckErr').textContent = '';
+  try {
+    if (b.dataset.st) { const d = await ckRpc('staff_stamp', { p_restaurant: ckSlug(), p_code: ckCur, p_count: +b.dataset.st, p_amount: null }); ckShow(Object.assign(d, { phone: '' }), '+' + b.dataset.st + ' dodane'); }
+    else if (b.id === 'ckAddPts') { const amt = parseFloat(($('#ckAmt').value || '').replace(',', '.')); if (!(amt > 0)) { $('#ckErr').textContent = 'Wpisz kwotę zakupu'; b.disabled = false; return; }
+      const d = await ckRpc('staff_stamp', { p_restaurant: ckSlug(), p_code: ckCur, p_count: 1, p_amount: amt }); ckShow(Object.assign(d, { phone: '' }), 'Punkty dodane'); }
+    else if ('rw' in b.dataset) { const d = await ckRpc('staff_redeem', { p_restaurant: ckSlug(), p_code: ckCur, p_reward: b.dataset.rw || null }); ckShow(Object.assign(d, { phone: '' }), 'Nagroda wydana'); toast('🎁 Nagroda wydana'); }
+  } catch (er) { $('#ckErr').textContent = er.message; b.disabled = false; }
+});
+$('#cardBtn').onclick = ckOpen; $('#ckClose').onclick = ckClose;
+$('#ckFind').onclick = () => ckFind($('#ckCode').value); $('#ckCode').addEventListener('keydown', e => { if (e.key === 'Enter') ckFind($('#ckCode').value); });
 </script>
 </body>
 </html>
