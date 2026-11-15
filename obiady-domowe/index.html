@@ -368,7 +368,7 @@ footer .pasiak{position:absolute;left:0;right:0;top:0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
 .odf{display:grid;gap:8px;margin:6px 0 10px}.odf input{font:inherit;font-size:16px;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(42,33,24,.18);background:#fffaf2;color:inherit}.odf input:focus{outline:none;border-color:#c0392b}
 </style>
-<script src="../lib/sellup-account.js?v=9"></script>
+<script src="../lib/sellup-account.js?v=10"></script>
 </head>
 <body class="locked">
 <div class="grain"></div>
@@ -754,6 +754,7 @@ function openCart(){
     ${err?`<p style="color:#c0392b;font-weight:700;font-size:14px;margin:8px 0 0">${escH(err)}</p>`:''}
     <div class="sheet-act"><button class="btn btn-primary" id="pay" style="width:100%" ${busy?'disabled':''}>${busy?'Wysyłam…':'Zamawiam · '+zl(sum+del)}</button></div>
     <p style="text-align:center;font-size:12px;color:rgba(42,33,24,.5);margin-top:10px">Płacisz przy odbiorze. Zamówienie trafia od razu do kuchni.</p>`);
+    if(window.SellUpAccount&&SellUpAccount.demoBanner)SellUpAccount.demoBanner('obiady-domowe',[...sheet.querySelectorAll('.lbl2')].pop());
     sheet.oninput=e=>{if(e.target.id==='fN')fn=e.target.value;if(e.target.id==='fP')fp=e.target.value;if(e.target.id==='fA')fa=e.target.value;};
     sheet.onclick=e=>{const t=e.target;
       if(t.dataset.m!==undefined){const c=cart[+t.dataset.m];c.q--;if(c.q<=0)cart.splice(+t.dataset.m,1);updCart();if(!cart.length){closeSheet();return;}draw();}
@@ -767,9 +768,9 @@ function openCart(){
         if(mode==='dostawa'&&fa.trim().length<5){err='Podaj adres dostawy';draw();return;}
         err='';busy=true;draw();
         const items=cart.map(c=>{const z=c.z!==undefined,w=z?WEEK[c.z]:null;return{code:z?'zestaw'+c.z:c.k,qty:c.q,label:z?`${D[w[0]].n} + ${D[w[1]].n.toLowerCase()} + kompot`:'',note:c.when?'na '+c.when:''};});
-        const s=slot,m=mode;
-        rpc('place_order',{p_restaurant:'obiady-domowe',p_items:items,p_mode:m==='odbior'?'pickup':'delivery',p_name:fn.trim(),p_phone:fp.trim(),p_address:m==='dostawa'?fa.trim():null,p_note:(m==='odbior'?'Odbiór o ':'Dostawa ok. ')+s,p_payment:'cash'})
-          .then(d=>{if(window.SellUpAccount&&SellUpAccount.logged())SellUpAccount.attach(d.id,d.track_token).catch(()=>{});try{localStorage.setItem('od-dane',JSON.stringify({n:fn.trim(),p:fp.trim(),a:fa.trim()}))}catch(e){}cart=[];updCart();sheet.onclick=null;sheet.oninput=null;showDone(d.number,m,s,d.id,d.track_token);})
+        const s=slot,m=mode;let lead=null;
+        (window.SellUpAccount&&SellUpAccount.demoGate?SellUpAccount.demoGate({slug:'obiady-domowe',phone:fp.trim(),name:fn.trim()}):Promise.resolve(null)).then(l=>{lead=l;return rpc('place_order',{p_restaurant:'obiady-domowe',p_items:items,p_mode:m==='odbior'?'pickup':'delivery',p_name:fn.trim(),p_phone:fp.trim(),p_address:m==='dostawa'?fa.trim():null,p_note:(m==='odbior'?'Odbiór o ':'Dostawa ok. ')+s,p_payment:'cash'});},()=>{throw new Error('Potwierdź numer kodem SMS, a zobaczysz, jak zamówienie wpada do kuchni')})
+          .then(d=>{if(window.SellUpAccount&&SellUpAccount.logged())SellUpAccount.attach(d.id,d.track_token).catch(()=>{});if(lead)SellUpAccount.demoAfter({slug:'obiady-domowe',id:d.id,track:d.track_token,answers:lead});try{localStorage.setItem('od-dane',JSON.stringify({n:fn.trim(),p:fp.trim(),a:fa.trim()}))}catch(e){}cart=[];updCart();sheet.onclick=null;sheet.oninput=null;showDone(d.number,m,s,d.id,d.track_token);})
           .catch(e2=>{busy=false;err=e2.message+'. Możesz też zadzwonić: 500 600 700';draw();});
       }
     };

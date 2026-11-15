@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101010">
+<meta name="robots" content="noindex">
+<title>Podgląd kuchni · Sell-UP</title>
+<style>
+:root{--bg:#0f0f0f;--s1:#171717;--s2:#202020;--s3:#2a2a2a;--line:#2c2c2c;--fg:#f2f2f2;--mut:#9a9a9a;--new:#ffb15c;--cook:#ff7a3d;--ready:#7fd17a;--road:#6cb6ff;--bad:#ff5d5d;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+.num{font-variant-numeric:tabular-nums}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top,0px));background:#151515;border-bottom:1px solid var(--line)}
+.top h2{margin:0;font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.top h2 small{color:var(--mut);font-weight:500;margin-left:6px}
+.tag{padding:5px 10px;border-radius:99px;background:linear-gradient(135deg,#ffe14d,#ff8a1f);color:#1b1206;font-weight:900;font-size:12px;letter-spacing:.06em}
+.right{margin-left:auto;display:flex;gap:10px;align-items:center}.clock{font-size:20px;font-weight:800}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut)}.live i{width:9px;height:9px;border-radius:50%;background:var(--ready);box-shadow:0 0 8px var(--ready)}
+.wrap{max-width:1180px;margin:0 auto;padding:14px 16px 40px}
+.intro{background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin:0 0 14px;display:flex;gap:14px;align-items:flex-start}
+.intro i{font-style:normal;font-size:30px;line-height:1}.intro b{display:block;font-size:18px;margin:0 0 4px}.intro p{margin:0;color:#c9c9c9;line-height:1.45;font-size:14.5px}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+.col{background:var(--s1);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:46vh}
+.col h3{margin:2px 4px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between}
+.col[data-st="new"] h3{color:var(--new)}.col[data-st="cooking"] h3{color:var(--cook)}.col[data-st="ready"] h3{color:var(--ready)}.col[data-st="delivering"] h3{color:var(--road)}
+.empty{color:#4d4d4d;font-size:13px;text-align:center;padding:24px 0}
+@media (max-width:900px){.board{grid-template-columns:1fr}.col{min-height:0}.col:not(.on){padding:8px 10px}.col:not(.on) .empty{display:none}}
+.card{background:var(--s2);border-radius:14px;padding:12px;border-left:5px solid #444;display:flex;flex-direction:column;gap:8px}
+.card[data-st="new"]{border-left-color:var(--new)}.card[data-st="cooking"]{border-left-color:var(--cook)}.card[data-st="ready"]{border-left-color:var(--ready)}.card[data-st="delivering"]{border-left-color:var(--road)}
+.card.flash{animation:flash 1s ease 4}@keyframes flash{50%{background:#4a2f12}}
+.h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.h b{font-size:26px}.age{font-size:13px;color:var(--mut)}
+.meta{display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px}.meta span{background:var(--s3);border-radius:7px;padding:3px 8px;color:#d0d0d0}
+.meta .pk{background:#24321f;color:#a9e39b}.meta .dl{background:#1f2a36;color:#9fcbff}.meta .you{background:linear-gradient(135deg,#ffe14d,#ff8a1f);color:#1b1206;font-weight:800}
+.items{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.items li{display:grid;grid-template-columns:auto 1fr;gap:8px;font-size:15.5px;line-height:1.25}.items li>b{font-size:17px}
+.items small{display:block;color:#bcbcbc;font-size:13px;margin-top:2px}.items small i{font-style:normal;color:var(--new)}
+.note{background:#3a2a17;color:#ffd9a8;border-radius:8px;padding:6px 9px;font-size:13.5px}
+.tot{display:flex;justify-content:space-between;font-size:13.5px;color:var(--mut)}.tot b{color:var(--fg)}
+.acts button{width:100%;padding:15px;border-radius:12px;font-weight:800;font-size:16px;background:var(--cook);color:#1a0d05;position:relative}
+.acts .go-new{background:var(--new)}.acts .go-ready{background:var(--ready);color:#0b1a0a}.acts .go-road{background:var(--road);color:#04121f}
+.acts button:disabled{opacity:.5}
+.acts button.pulse::after{content:"";position:absolute;inset:-4px;border-radius:15px;border:2px solid currentColor;opacity:.0;animation:pl 1.6s ease-out infinite}
+.acts .go-new.pulse::after{border-color:var(--new)}.acts .go-ready.pulse::after{border-color:var(--ready)}.acts .go-road.pulse::after{border-color:var(--road)}
+@keyframes pl{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.06,1.25)}}
+.hint{margin:6px 2px 0;font-size:13px;color:var(--mut);text-align:center}
+.fin{display:none;margin:16px 0 0;background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:20px;text-align:center}
+.fin.on{display:block}.fin b{display:block;font-size:20px;margin:0 0 6px}.fin p{margin:0 0 14px;color:#c9c9c9}
+.fin a{display:inline-block;padding:14px 22px;border-radius:99px;background:linear-gradient(135deg,#ffe14d,#ff8a1f);color:#1b1206;font-weight:900;text-decoration:none}
+.msg{max-width:520px;margin:12vh auto;text-align:center;padding:20px}.msg b{display:block;font-size:22px;margin-bottom:8px}.msg p{color:var(--mut)}
+.msg a{color:var(--new)}
+</style>
+</head>
+<body>
+<header class="top"><span class="tag">DEMO</span><h2 id="ttl">Kuchnia</h2><div class="right"><span class="live"><i></i>na żywo</span><span class="clock num" id="clock"></span></div></header>
+<main class="wrap" id="app" hidden>
+  <div class="intro"><i>👨‍🍳</i><div><b>Tak widzi Twoje zamówienie kuchnia lokalu</b><p>Ten panel lokal ma na tablecie przy kasie. Klikaj przyciski jak kucharz. Klient na telefonie od razu widzi zmianę statusu, a przy włączonych powiadomieniach dostaje też PUSH.</p></div></div>
+  <div class="board" id="board"></div>
+  <div class="fin" id="fin"><b>🎉 Tak działa cały proces</b><p>Zamówienie z telefonu klienta, panel kuchni i statusy na żywo. Chcesz to w swoim lokalu?</p><a href="/" id="finA">Zobacz, co dostaje lokal →</a></div>
+</main>
+<div class="msg" id="msg" hidden></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const sb = supabase.createClient('https://medldonrwgoxfryandbp.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZGxkb25yd2dveGZyeWFuZGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MjQ5OTYsImV4cCI6MjExMDAwMDk5Nn0.F4S0Wv3PXhb3ii5IQWsOuNZwSYq84Dnf3diAvfTcY20');
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const zl = n => Number(n).toFixed(2).replace('.', ',') + ' zł';
+const mins = t => Math.max(0, Math.round((Date.now() - new Date(t)) / 60000));
+const T = new URLSearchParams(location.search).get('t') || '';
+const COLS = [['new', 'Nowe'], ['cooking', 'W przygotowaniu'], ['ready', 'Gotowe'], ['delivering', 'W drodze']];
+const MOD = s => /pizza|forno/.test(s) ? 'pizza' : /kebab|zar|rozen/.test(s) ? 'kebab' : /burger/.test(s) ? 'burger' : 'x';
+let O = null, busy = false, lastSt = null;
+setInterval(() => { $('#clock').textContent = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }); }, 1000);
+$('#clock').textContent = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+function msg(h){ $('#app').hidden = true; const m = $('#msg'); m.hidden = false; m.innerHTML = h; }
+function card(o){
+  const items = (o.items || []).map(i => {
+    const opts = (i.options || []).filter(x => x.code && !String(x.code).startsWith('sauce_')).map(x => `+ ${esc(String(x.name || '').toLowerCase())}${x.qty > 1 ? ' ×' + x.qty : ''}`);
+    const sauce = (i.options || []).filter(x => x.code && String(x.code).startsWith('sauce_')).map(x => esc(String(x.name || '').toLowerCase()));
+    const sub = [i.variant ? esc(i.variant) : '', i.label ? `<i>${esc(i.label)}</i>` : '', opts.join(', '), sauce.join(', '), i.note ? '„' + esc(i.note) + '”' : ''].filter(Boolean).join(' · ');
+    return `<li><b>${i.qty}×</b><span>${esc(i.name)}${sub ? `<small>${sub}</small>` : ''}</span></li>`; }).join('');
+  const md = MOD(o.slug); let act = '', hint = '';
+  if (o.status === 'new') { act = `<button class="go-new pulse" data-to="cooking">${md === 'pizza' ? 'Do pieca' : md === 'kebab' ? 'Kroimy' : md === 'burger' ? 'Na grill' : 'Przyjmij'}</button>`; hint = 'Kliknij, żeby przyjąć zamówienie. Klient zobaczy, że już je przygotowujecie.'; }
+  if (o.status === 'cooking') { act = `<button class="go-ready pulse" data-to="ready">Gotowe, pakuj</button>`; hint = 'Kliknij, gdy jedzenie jest gotowe.'; }
+  if (o.status === 'ready') { act = o.mode === 'delivery' ? `<button class="go-road pulse" data-to="delivering">Kierowca wziął</button>` : `<button class="go-ready pulse" data-to="done">Wydane klientowi</button>`; hint = o.mode === 'delivery' ? 'Kliknij, gdy kierowca wyjeżdża.' : 'Kliknij, gdy klient odbierze zamówienie.'; }
+  if (o.status === 'delivering') { act = `<button class="go-ready pulse" data-to="done">Dostarczone</button>`; hint = 'Kliknij, gdy kierowca dostarczy zamówienie.'; }
+  return `<div class="card${o.status !== lastSt ? ' flash' : ''}" data-st="${o.status}">
+    <div class="h"><b class="num">#${o.number}</b><span class="age num">${mins(o.created_at)} min</span></div>
+    <div class="meta"><span class="you">Twoje zamówienie</span><span class="${o.mode === 'delivery' ? 'dl' : 'pk'}">${o.mode === 'delivery' ? 'Dostawa' : 'Odbiór'}</span><span>${esc(o.name)}</span></div>
+    <ul class="items">${items}</ul>
+    ${o.note ? `<div class="note">${esc(o.note)}</div>` : ''}
+    <div class="tot"><span>Razem</span><b class="num">${zl(o.total)}</b></div>
+    ${act ? `<div class="acts">${act}</div><p class="hint">${hint}</p>` : ''}</div>`;
+}
+function render(){
+  $('#ttl').innerHTML = esc(O.restaurant) + '<small>panel kuchni</small>';
+  const st = O.status === 'done' ? 'done' : O.status;
+  $('#board').innerHTML = COLS.filter(c => c[0] !== 'delivering' || O.mode === 'delivery').map(([k, n]) => `<section class="col${k === st ? ' on' : ''}" data-st="${k}"><h3><span>${n}</span><span class="num">${k === st ? 1 : 0}</span></h3>${k === st ? card(O) : '<div class="empty">Brak zamówień</div>'}</section>`).join('');
+  $('#board').style.gridTemplateColumns = innerWidth > 900 ? `repeat(${O.mode === 'delivery' ? 4 : 3},minmax(0,1fr))` : '';
+  $('#fin').classList.toggle('on', O.status === 'done');
+  $('#board').querySelectorAll('[data-to]').forEach(b => b.onclick = () => go(b.dataset.to, b));
+  lastSt = O.status;
+}
+async function go(to, b){
+  if (busy) return; busy = true; b.disabled = true;
+  const { error } = await sb.rpc('demo_kitchen_set', { p_token: T, p_status: to });
+  busy = false;
+  if (error) { b.disabled = false; alert(error.message); return; }
+  await load();
+}
+async function load(){
+  const { data, error } = await sb.rpc('demo_kitchen', { p_token: T });
+  if (error || !data) { if (!O) msg('<b>Nie znaleźliśmy tego zamówienia</b><p>Link mógł wygasnąć. Złóż nowe testowe zamówienie na <a href="/">sell-up.pl</a>.</p>'); return; }
+  const ch = !O || O.status !== data.status; O = data; $('#app').hidden = false; $('#msg').hidden = true;
+  if (ch) render(); else { const a = document.querySelector('.age'); if (a) a.textContent = mins(O.created_at) + ' min'; }
+}
+if (!/^[0-9a-f-]{36}$/.test(T)) msg('<b>Brak zamówienia</b><p>Ten podgląd otwiera się z linku po testowym zamówieniu na <a href="/">sell-up.pl</a>.</p>');
+else { load(); setInterval(load, 4000); addEventListener('resize', () => O && render()); }
+</script>
+</body>
+</html>

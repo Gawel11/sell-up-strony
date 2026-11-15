@@ -228,7 +228,7 @@ h2{margin:18px 0 4px;font:400 32px/1.05 "Iowan Old Style","Palatino Linotype",Ge
 <canvas class="conf" id="conf"></canvas>
 
 <script src="../bulkaikromka/qrcode.min.js"></script>
-<script src="../lib/sellup-account.js?v=9"></script>
+<script src="../lib/sellup-account.js?v=10"></script>
 <script>
 const $ = s => document.querySelector(s);
 const zl = n => n + ' zł';
@@ -364,13 +364,18 @@ function orderScreen(){
   const btn = w.querySelector('.send'), err = w.querySelector('.err');
   btn.onclick = async () => {
     err.textContent = '';
+    let lead = null;
     try {
-      if (!ACC.logged()) { await ACC.login({ venue: 'Bubble tea', title: 'Zaloguj się, żeby zamówić', text: 'Podaj numer telefonu. Wyślemy SMS z kodem. Obsługa zobaczy Twoje zamówienie, a pieczątki trafią na kartę.' }); syncMe(true); }
+      const was = ACC.logged();
+      if (ACC.demoGate) lead = await ACC.demoGate({ slug: SLUG });
+      if (!ACC.logged()) await ACC.login({ venue: 'Bubble tea', title: 'Zaloguj się, żeby zamówić', text: 'Podaj numer telefonu. Wyślemy SMS z kodem. Obsługa zobaczy Twoje zamówienie, a pieczątki trafią na kartę.' });
+      if (!was) syncMe(true);
     } catch (e) { return; }
     btn.disabled = true; btn.textContent = 'Wysyłam…';
     try {
       const r = await ACC.placeOrder(SLUG, ORDER.map(toItem));
       TRK = { id: r.id, t: r.track_token, no: r.number, n: ORDER.length, total: r.total };
+      if (lead) ACC.demoAfter({ slug: SLUG, id: r.id, track: r.track_token, answers: lead });
       try { localStorage.setItem('bt-trk', JSON.stringify(Object.assign({ at: Date.now() }, TRK))); } catch (e) {}
       ORDER = [fresh()]; CUR = 0; keep(); paint(); w.remove(); trackScreen('new'); loadOrders();
     } catch (e) { err.textContent = e.message; btn.disabled = false; btn.textContent = 'Spróbuj ponownie'; }

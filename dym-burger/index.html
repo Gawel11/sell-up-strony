@@ -489,7 +489,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
 .loading b{color:var(--accent);font-weight:400}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-<script src="../lib/sellup-account.js?v=9"></script>
+<script src="../lib/sellup-account.js?v=10"></script>
 </head>
 <body>
 <div class="loading" id="loading"><b>Burger</b></div>
@@ -1456,6 +1456,7 @@ function openForm(){
   $('#fAddrWrap').hidden = mode !== 'delivery';
   $('#fTotal').textContent = zl(t.total); $('#fTotalBtn').textContent = zl(t.total); $('#fErr').textContent = '';
   try { const d = JSON.parse(localStorage.getItem('dym-dane') || '{}'); if (d.n && !$('#fName').value) $('#fName').value = d.n; if (d.p && !$('#fPhone').value) $('#fPhone').value = d.p; if (d.a && !$('#fAddr').value) $('#fAddr').value = d.a; } catch(e) {}
+  if (window.SellUpAccount && SellUpAccount.demoBanner) SellUpAccount.demoBanner(SLUG, $('#fName').closest('.fld'));
   openSheet($('#formSheet')); setTimeout(() => (!$('#fName').value ? $('#fName') : $('#fPhone')).focus(), 350);
 }
 document.querySelectorAll('[data-pay]').forEach(b => b.onclick = () => { PAY = b.dataset.pay; document.querySelectorAll('[data-pay]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
@@ -1469,12 +1470,15 @@ $('#orderForm').onsubmit = async e => {
   else if (!/^[0-9 +()-]{9,20}$/.test(ph)){ bad = $('#fPhone'); }
   else if (mode === 'delivery' && ad.length < 5){ bad = $('#fAddr'); }
   if (bad){ bad.closest('.fld').classList.add('bad'); bad.focus(); $('#fErr').textContent = bad === $('#fName') ? 'Podaj imię' : bad === $('#fPhone') ? 'Podaj poprawny numer telefonu' : 'Podaj adres dostawy'; return; }
+  let lead = null;
+  if (window.SellUpAccount && SellUpAccount.demoGate) { sending = true; try { lead = await SellUpAccount.demoGate({ slug: SLUG, phone: ph, name: nm }); } catch (e3) { sending = false; $('#fErr').textContent = 'Potwierdź numer kodem SMS, a zobaczysz, jak zamówienie wpada do kuchni.'; return; } }
   sending = true; $('#fSend').disabled = true; $('#fErr').textContent = '';
   const items = cart.map(c => ({ code: c.api.code, qty: c.qty, options: c.api.options, label: c.kind === 'burger' ? ((c.mode === 'fire' ? 'Z ognia' : 'Smash') + (c.name.includes('Twój') || c.name.includes('po Twojemu') ? ' · ' + c.name : '')) : '', note: c.api.note }));
   const { data, error } = await SB.rpc('place_order', { p_restaurant: SLUG, p_items: items, p_mode: mode, p_name: nm, p_phone: ph, p_address: mode === 'delivery' ? ad : null, p_note: nt || null, p_payment: PAY });
   sending = false; $('#fSend').disabled = false;
   if (error){ $('#fErr').textContent = (error.message || 'Nie udało się wysłać zamówienia').replace(/^.*?: /, '') + '. Spróbuj jeszcze raz albo zadzwoń: 500 600 700.'; return; }
   if (window.SellUpAccount && SellUpAccount.logged()) SellUpAccount.attach(data.id, data.track_token).catch(() => {});
+  if (lead) SellUpAccount.demoAfter({ slug: SLUG, id: data.id, track: data.track_token, answers: lead });
   try { localStorage.setItem('dym-dane', JSON.stringify({ n: nm, p: ph, a: ad })); localStorage.setItem('dym-last', JSON.stringify({ id: data.id, t: data.track_token, no: data.number, m: cart.find(c => c.kind === 'burger')?.mode || M, at: Date.now() })); } catch(e) {}
   closeSheet(); startDone(data);
 };
