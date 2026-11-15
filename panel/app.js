@@ -66,7 +66,7 @@ async function pick(id){
   cur = shops.find(s => s.id === id); try { localStorage.setItem('panel-shop', id); } catch (e) {}
   $('#seeSite').href = '../' + cur.slug + '/';
   await load();
-  const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['crm', 'Klienci'], ['promo', 'Kody rabatowe'], ['stats', 'Statystyki'], ['qr', 'QR i link'], ['shop', 'Dane lokalu']);
+  const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['crm', 'Klienci'], ['promo', 'Promocje'], ['stats', 'Statystyki'], ['qr', 'QR i link'], ['shop', 'Dane lokalu']);
   if (!tabs.some(t => t[0] === tab)) tab = 'menu';
   $('#tabs').innerHTML = tabs.map(([k, t]) => `<button class="tab" data-t="${k}" aria-pressed="${k === tab}">${t}</button>`).join('');
   $('#tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.t; $('#tabs').querySelectorAll('.tab').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
@@ -373,7 +373,26 @@ async function renderPromo(){
   const { data } = await sb.from('promo_codes').select('*').eq('restaurant_id', cur.id).order('created_at', { ascending: false });
   const list = data || [];
   const kindTxt = c => c.kind === 'percent' ? `−${n2(c.value)}%` : c.kind === 'amount' ? `−${n2(c.value)} zł` : 'darmowa dostawa';
-  $('#main').innerHTML = `<div class="card"><h4 style="margin:0 0 6px">Nowy kod</h4><div class="grid">
+  const st = cur.info.settings || {}, P = st.promo || {}, D = st.special || {};
+  const dtl = v => { if (!v) return ''; const d = new Date(v); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16); };
+  const live = x => x.active && (!x.until || new Date(x.until) > new Date());
+  $('#main').innerHTML = `<p class="hint">Baner i danie dnia pokazują się klientom w okienku przy wejściu na stronę (raz dziennie). Kod rabatowy z banera wpisze się sam w zamówieniu.</p>
+  <div class="g2" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr))">
+  <div class="card" style="margin:0"><h4 style="margin:0 0 6px">🔥 Baner promocji ${live(P) ? '<span style="color:#7fd17a">· widoczny</span>' : '<span class="hint">· wyłączony</span>'}</h4>
+    <label class="f">Tytuł</label><input class="in" id="b_t" maxlength="50" value="${esc(P.title || '')}" placeholder="np. Druga pizza -50%">
+    <label class="f">Opis</label><input class="in" id="b_x" maxlength="140" value="${esc(P.text || '')}" placeholder="np. Tylko dziś do 20:00, przy zamówieniu w aplikacji">
+    <label class="f">Kod rabatowy (opcjonalnie)</label><select class="in" id="b_c"><option value="">— bez kodu —</option>${list.filter(c => c.active).map(c => `<option${(P.code || '').toUpperCase() === c.code.toUpperCase() ? ' selected' : ''}>${esc(c.code.toUpperCase())}</option>`).join('')}</select>
+    <label class="f">Ważny do (puste = do wyłączenia)</label><input class="in" id="b_u" type="datetime-local" value="${dtl(P.until)}">
+    <label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:14px"><input type="checkbox" id="b_p"> Wyślij też jako powiadomienie push</label>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" id="b_on">${live(P) ? 'Zapisz' : 'Włącz baner'}</button>${P.active ? '<button class="btn g" id="b_off">Wyłącz</button>' : ''}</div></div>
+  <div class="card" style="margin:0"><h4 style="margin:0 0 6px">🍽 Danie dnia ${live(D) ? '<span style="color:#7fd17a">· widoczne</span>' : '<span class="hint">· wyłączone</span>'}</h4>
+    <label class="f">Nazwa</label><input class="in" id="d_n" maxlength="60" value="${esc(D.name || '')}" placeholder="np. Schabowy z ziemniakami i mizerią">
+    <label class="f">Cena (zł, opcjonalnie)</label><input class="in" id="d_p" inputmode="decimal" value="${esc(D.price || '')}">
+    <label class="f">Opis (opcjonalnie)</label><input class="in" id="d_x" maxlength="140" value="${esc(D.text || '')}" placeholder="np. Do wyczerpania, ok. 30 porcji">
+    <label class="f">Ważne do (puste = do końca dnia)</label><input class="in" id="d_u" type="datetime-local" value="${dtl(D.until)}">
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" id="d_on">${live(D) ? 'Zapisz' : 'Włącz danie dnia'}</button>${D.active ? '<button class="btn g" id="d_off">Wyłącz</button>' : ''}</div></div></div>
+  <h3><span>Kody rabatowe</span></h3>
+  <div class="card"><h4 style="margin:0 0 6px">Nowy kod</h4><div class="grid">
     <div><label class="f">Kod (litery i cyfry)</label><input class="in" id="p_code" maxlength="24" style="text-transform:uppercase" placeholder="np. NOC10"></div>
     <div><label class="f">Rodzaj</label><select class="in" id="p_kind"><option value="percent">Procent od zamówienia</option><option value="amount">Kwota (zł)</option><option value="free_delivery">Darmowa dostawa</option></select></div>
     <div><label class="f">Wartość (% lub zł)</label><input class="in" id="p_val" inputmode="decimal" value="10"></div>
@@ -382,6 +401,25 @@ async function renderPromo(){
     <div><label class="f">Ważny do (puste = bez końca)</label><input class="in" id="p_to" type="date"></div></div>
     <button class="btn w" id="p_add">Dodaj kod</button><p class="err" id="p_err"></p></div>
   <h3><span>Twoje kody</span></h3><div class="g2">${list.map(c => `<div class="row${c.active ? '' : ' off'}"><div class="nm"><div><b>${esc(c.code.toUpperCase())}</b><small style="display:block;color:var(--mut);font-weight:400">${kindTxt(c)}${c.min_order > 0 ? ', od ' + n2(c.min_order) + ' zł' : ''} · użyto ${c.uses}${c.max_uses ? '/' + c.max_uses : ''}${c.valid_to ? ' · do ' + c.valid_to.slice(0, 10) : ''}</small></div></div><button class="x" data-pdel="${c.id}">✕</button><button class="sw" data-pact="${c.id}" aria-pressed="${c.active}" aria-label="Aktywny"></button></div>`).join('') || '<p class="hint">Jeszcze nie ma kodów.</p>'}</div>`;
+  const endOfDay = () => { const d = new Date(); d.setHours(23, 59, 0, 0); return d.toISOString(); };
+  $('#b_on').onclick = async () => {
+    const title = $('#b_t').value.trim(), text = $('#b_x').value.trim(); if (title.length < 2) { toast('Wpisz tytuł promocji', true); return; }
+    const u = $('#b_u').value; const promo = { active: true, title, text, code: $('#b_c').value || null, until: u ? new Date(u).toISOString() : null, v: Date.now() };
+    if (!(await saveSettings({ promo }))) return; toast('Baner włączony ✓');
+    if ($('#b_p').checked) {
+      try { const { data: { session } } = await sb.auth.getSession();
+        const r = await fetch(SELLUP.url + '/functions/v1/push-send', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SELLUP.key, Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify({ type: 'broadcast', restaurant_id: cur.id, title: '🔥 ' + title, body: text || (promo.code ? 'Kod: ' + promo.code : 'Sprawdź w aplikacji') }) });
+        const j = await r.json(); toast(r.ok ? `Powiadomienie wysłane: ${j.sent} z ${j.total}` : (j.error || 'Nie wysłano powiadomienia'), !r.ok); } catch (e) { toast('Nie wysłano powiadomienia', true); } }
+    renderPromo();
+  };
+  if ($('#b_off')) $('#b_off').onclick = async () => { if (await saveSettings({ promo: Object.assign({}, P, { active: false }) })) { toast('Baner wyłączony'); renderPromo(); } };
+  $('#d_on').onclick = async () => {
+    const name = $('#d_n').value.trim(); if (name.length < 2) { toast('Wpisz nazwę dania', true); return; }
+    const pr = $('#d_p').value.trim().replace(',', '.'), u = $('#d_u').value;
+    const special = { active: true, name, text: $('#d_x').value.trim(), price: pr && isFinite(+pr) ? +pr : null, until: u ? new Date(u).toISOString() : endOfDay(), v: Date.now() };
+    if (await saveSettings({ special })) { toast('Danie dnia włączone ✓'); renderPromo(); }
+  };
+  if ($('#d_off')) $('#d_off').onclick = async () => { if (await saveSettings({ special: Object.assign({}, D, { active: false }) })) { toast('Danie dnia wyłączone'); renderPromo(); } };
   $('#p_add').onclick = async () => {
     const code = $('#p_code').value.trim(), kind = $('#p_kind').value, val = kind === 'free_delivery' ? 0 : pn($('#p_val').value), mn = pn($('#p_min').value), mx = $('#p_max').value.trim() ? parseInt($('#p_max').value) : null, to = $('#p_to').value;
     const err = t => { $('#p_err').textContent = t; };
