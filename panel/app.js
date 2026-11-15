@@ -66,7 +66,12 @@ async function pick(id){
   cur = shops.find(s => s.id === id); try { localStorage.setItem('panel-shop', id); } catch (e) {}
   $('#seeSite').href = '../' + cur.slug + '/';
   await load();
-  const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['crm', 'Klienci i PUSH'], ['promo', 'Promocje'], ['stats', 'Statystyki'], ['qr', 'QR i link'], ['shop', 'Dane lokalu']);
+  try { const { data: pl } = await sb.rpc('staff_plan', { p_restaurant: cur.id }); cur.plan = (pl && pl.plan) || 'pro'; cur.admin = !!(pl && pl.admin); } catch (e) { cur.plan = 'pro'; cur.admin = false; }
+  const PN = { start: 'Start', pro: 'PRO', pro_ai: 'PRO AI' };
+  let pb = $('#planBox'); if (!pb) { pb = document.createElement('div'); pb.id = 'planBox'; pb.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut)'; $('#rs').after(pb); }
+  pb.innerHTML = cur.admin ? `Pakiet <select class="in" id="planSel" style="width:auto;padding:6px 8px;margin:0">${Object.entries(PN).map(([k, v]) => `<option value="${k}"${k === cur.plan ? ' selected' : ''}>${v}</option>`).join('')}</select>` : `<span class="chip" style="cursor:default">Pakiet ${PN[cur.plan] || cur.plan}</span>`;
+  if (cur.admin) $('#planSel').onchange = async e => { const v = e.target.value; const { error } = await sb.rpc('admin_set_plan', { p_restaurant: cur.id, p_plan: v }); if (error) { toast(error.message, true); return; } cur.info.settings = Object.assign({}, cur.info.settings, { plan: v }); toast('Pakiet: ' + PN[v] + ' ✓'); pick(cur.id); };
+  const tabs = [['menu', 'Menu i ceny']]; if (isKebab()) tabs.push(['ready', 'Gotowe dania'], ['look', 'Wygląd']); tabs.push(['crm', cur.plan === 'start' ? 'Karta i PUSH' : 'Klienci i PUSH'], ['promo', 'Promocje'], ['stats', 'Statystyki'], ['qr', 'QR i link'], ['shop', 'Dane lokalu']);
   if (!tabs.some(t => t[0] === tab)) tab = 'menu';
   $('#tabs').innerHTML = tabs.map(([k, t]) => `<button class="tab" data-t="${k}" aria-pressed="${k === tab}">${t}</button>`).join('');
   $('#tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.t; $('#tabs').querySelectorAll('.tab').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
@@ -312,6 +317,7 @@ function renderShop(){
   $('#main').innerHTML = `<div class="card"><div class="open"><span>Przyjmujemy zamówienia online <small class="hint">(ręczny włącznik, działa zawsze)</small></span><button class="sw" id="open" aria-pressed="${r.is_open}" aria-label="Otwarte"></button></div></div>
   <div class="card"><div class="grid">
   <div><label class="f">Telefon</label><input class="in" id="f_phone" value="${esc(r.phone)}" maxlength="30"></div>
+  <div><label class="f">Telefon do alarmu SMS (zamówienie czeka 4+ min)</label><input class="in" id="f_alarm" value="${esc(st.alarm_phone || '')}" maxlength="20" placeholder="pusty = telefon lokalu"></div>
   <div><label class="f">Adres lokalu</label><input class="in" id="f_address" value="${esc(r.address)}" maxlength="120"></div>
   <div><label class="f">Koszt dostawy (zł), gdy nie ma stref</label><input class="in" id="f_fee" inputmode="decimal" value="${n2(r.delivery_fee)}"></div>
   <div><label class="f">Darmowa dostawa od (zł), gdy nie ma stref</label><input class="in" id="f_free" inputmode="decimal" value="${r.free_delivery_from == null ? '' : n2(r.free_delivery_from)}" placeholder="brak"></div>
@@ -336,6 +342,7 @@ function renderShop(){
     const pair = (a, b) => { const x = parseInt($(a).value), y = parseInt($(b).value); return isFinite(x) && x > 0 ? [x, isFinite(y) && y >= x ? y : x] : null; };
     const e = {}; const d = pair('#e_d0', '#e_d1'), p = pair('#e_p0', '#e_p1'); if (d) e.delivery = d; if (p) e.pickup = p;
     const s = { ...(cur.info.settings || {}) }; if (Object.keys(e).length) s.eta = e; else delete s.eta;
+    const al = $('#f_alarm').value.replace(/[^0-9+]/g, ''); if (al) s.alarm_phone = al; else delete s.alarm_phone;
     const upd = { phone: $('#f_phone').value.trim() || null, address: $('#f_address').value.trim() || null, delivery_fee: fee, free_delivery_from: fr, min_order: mn, settings: s };
     const { error } = await sb.from('restaurants').update(upd).eq('id', cur.id);
     if (error) return toast('Nie zapisano: ' + error.message, true); Object.assign(cur.info, upd); toast('Zapisano ✓');
@@ -462,6 +469,7 @@ async function renderStats(){
 let crmF = 'all', crmQ = '', CRM = [];
 async function renderCRM(){
   $('#main').innerHTML = '<p class="hint">Wczytuję klientów…</p>';
+  if (cur.plan === 'start') { CRM = []; drawCRM(); return; }
   const { data, error } = await sb.rpc('staff_customers', { p_restaurant: cur.id });
   if (error){ $('#main').innerHTML = '<p class="err">' + esc(error.message) + '</p>'; return; }
   CRM = data || []; drawCRM();
@@ -501,7 +509,7 @@ function drawCRM(){
       <div class="crm-n"><b>${esc(c.name || 'Klient bez imienia')}</b><a href="tel:${esc(tel(c.phone))}">${esc(tel(c.phone).replace(/(\d{3})(?=\d)/g, '$1 '))}</a><small>karta ${esc(c.code)}${c.invited_by ? ' · polecił(a) ' + esc(c.invited_by) : ''}</small></div>
       <div class="crm-s"><span><b>${c.orders}</b> ${pl(c.orders, 'zamówienie', 'zamówienia', 'zamówień')}</span><span><b>${zl(c.spent)}</b></span><span><b>${c.visits}</b> ${pl(c.visits, 'wizyta', 'wizyty', 'wizyt')} przy ladzie</span><span>ostatnio <b>${ago(c.last_at)}</b></span></div>
       <div class="crm-k">${c.card ? (L.mode === 'points' ? `<b>${c.card.points} pkt</b>` : `<b>${c.card.stamps}/${L.need}</b> pieczątek`) + (c.card.rewards ? ` · <span style="color:var(--ok,#7fd17a)">🎁 ${c.card.rewards} do odbioru</span>` : '') : '—'}${c.invited ? ` · 🤝 ${c.invited} ${pl(c.invited, 'polecenie', 'polecenia', 'poleceń')}` : ''}${c.redeemed ? ` · odebrane: ${c.redeemed}` : ''}</div></div>`).join('')}</div>`
-    : `<p class="hint">${CRM.length ? 'Brak klientów dla tego filtra.' : 'Nie ma jeszcze klientów z kontem. Pojawią się, gdy ktoś zaloguje się numerem telefonu na stronie lokalu.'}</p>`}`;
+    : `<p class="hint">${cur.plan === 'start' ? 'Lista klientów (CRM) z historią zamówień jest w pakiecie PRO. Karta, polecenia i powiadomienia PUSH działają w pakiecie Start.' : CRM.length ? 'Brak klientów dla tego filtra.' : 'Nie ma jeszcze klientów z kontem. Pojawią się, gdy ktoś zaloguje się numerem telefonu na stronie lokalu.'}</p>`}`;
   $('#main').querySelectorAll('[data-f]').forEach(b => b.onclick = () => { crmF = b.dataset.f; drawCRM(); });
   const q = $('#c_q'); q.oninput = () => { crmQ = q.value; clearTimeout(drawCRM.t); drawCRM.t = setTimeout(() => { const pos = q.selectionStart; drawCRM(); const n = $('#c_q'); n.focus(); n.setSelectionRange(pos, pos); }, 250); };
   $('#c_csv').onclick = () => { const rows = [['Imię', 'Telefon', 'Kod karty', 'Zamówienia', 'Wydane zł', 'Wizyty przy ladzie', 'Ostatnio', 'Pieczątki/punkty', 'Nagrody do odbioru', 'Polecenia', 'Polecił(a)']].concat(list.map(c => [c.name || '', tel(c.phone), c.code, c.orders, String(c.spent).replace('.', ','), c.visits, c.last_at ? new Date(c.last_at).toLocaleDateString('pl-PL') : '', c.card ? (L.mode === 'points' ? c.card.points : c.card.stamps) : '', c.card ? c.card.rewards : '', c.invited, c.invited_by || '']));

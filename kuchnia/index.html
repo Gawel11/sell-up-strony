@@ -38,6 +38,9 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .live.ok i{background:var(--ready);box-shadow:0 0 8px var(--ready)}.live.bad i{background:var(--bad)}
 /* Tablica */
 .board{display:grid;grid-template-columns:repeat(4,minmax(260px,1fr));gap:12px;padding:12px 16px;align-items:start}
+.alarm{position:sticky;top:var(--toph,58px);z-index:6;margin:10px 12px 0;padding:14px 16px;border-radius:14px;background:#b3261e;color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;gap:12px;cursor:pointer;animation:alm 1s steps(2) infinite}
+.alarm small{display:block;font-weight:600;font-size:13px;opacity:.9}@keyframes alm{50%{background:#e5412d}}
+.startinfo{margin:40px auto;max-width:520px;text-align:center;background:var(--s1);border-radius:18px;padding:28px}.startinfo b{display:block;font-size:22px;margin-bottom:8px}.startinfo span{display:block;color:var(--mut);margin-bottom:18px}
 /* tablet i telefon: zakładki zamiast przewijania w bok, karty w siatce */
 .ktabs{display:none}
 @media (max-width:1100px){
@@ -122,6 +125,8 @@ button{cursor:pointer;border:0;background:none;padding:0}
       <button class="chip" id="outBtn">Wyloguj</button>
     </div>
   </div>
+  <div class="alarm" id="alarm" hidden></div>
+  <div class="startinfo" id="startInfo" hidden><b>Pakiet Start</b><span>Zamówienia online i tablica kuchni są w pakiecie PRO. Tutaj obsłużysz kartę klienta: pieczątki, punkty i nagrody.</span><button class="btn" id="startCard">🎟 Karta klienta</button></div>
   <div class="ktabs" id="ktabs"></div>
   <div class="board" id="board"></div>
 </section>
@@ -204,6 +209,9 @@ async function openRestaurant(){
   $('#rName').innerHTML = R.all ? 'Wszystkie kuchnie' : `${esc(R.name)} <small>kuchnia</small>`;
   $('#openBtn').hidden = !!R.all; $('#testBtn').hidden = !!R.all;
   if (!R.all) renderOpen();
+  PLAN = 'pro';
+  if (!R.all) { try { const { data } = await sb.rpc('staff_plan', { p_restaurant: R.id }); if (data) PLAN = data.plan; } catch (e) {} }
+  const st = PLAN === 'start'; $('#startInfo').hidden = !st; $('#board').hidden = st; $('#ktabs').hidden = st; $('#testBtn').hidden = st || !!R.all;
   await load();
   subscribe();
 }
@@ -263,7 +271,7 @@ function card(o){
     <div class="tot"><span>Razem</span><b class="num">${zl(o.total)}</b></div>
     <div class="acts">${act}<button class="x" data-print="${o.id}" aria-label="Drukuj" title="Drukuj zamówienie">🖨</button><button class="x" data-cancel="${o.id}" aria-label="Anuluj">✕</button></div></div>`;
 }
-let VIEW = 'new';
+let VIEW = 'new', PLAN = 'pro';
 function render(){
   const c = cols(), cnt = st => orders.filter(o => o.status === st).length;
   if (!cnt(VIEW)) { const f = c.find(([st]) => cnt(st)); if (f) VIEW = f[0]; }
@@ -339,7 +347,24 @@ function ding(soft){
 function notify(o){ try { if (document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification(`Nowe zamówienie #${o.number}`, { body: `${o.mode === 'delivery' ? 'Dostawa' : 'Odbiór'} · ${zl(o.total)}` }); } catch(e) {} }
 $('#sndBtn').onclick = () => { sound = !sound; $('#sndBtn').textContent = sound ? '🔔 Dźwięk' : '🔕 Cisza'; $('#sndBtn').className = 'chip ' + (sound ? 'on' : ''); if (sound) ding(true); };
 /* przypomnienie: dzwoń co 30 s, dopóki są nieprzyjęte zamówienia */
-setInterval(() => { if (R && orders.some(o => o.status === 'new' && mins(o.created_at) >= 1)) ding(); }, 30000);
+setInterval(() => { if (R && orders.some(o => o.status === 'new' && mins(o.created_at) >= 1 && mins(o.created_at) < 3)) ding(); }, 30000);
+/* alarm: zamówienie czeka 3+ min – czerwony pasek i syrena co 12 s (także przy wyciszonym dźwięku) */
+function siren(){ const a = audio(); if (!a) return; if (a.state === 'suspended') a.resume();
+  for (let i = 0; i < 6; i++) { const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + i * .32; o.type = 'square'; o.frequency.setValueAtTime(i % 2 ? 740 : 1180, t);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.35, t + .02); g.gain.setValueAtTime(.35, t + .26); g.gain.linearRampToValueAtTime(0, t + .3); o.connect(g).connect(a.destination); o.start(t); o.stop(t + .31); }
+  try { navigator.vibrate && navigator.vibrate([400, 150, 400, 150, 400]); } catch(e) {} }
+let alT = 0;
+setInterval(() => {
+  const late = R ? orders.filter(o => o.status === 'new' && mins(o.created_at) >= 3 && mins(o.created_at) < 120) : [];
+  const el = $('#alarm'); if (!el) return;
+  if (!late.length) { el.hidden = true; return; }
+  const oldest = Math.max(...late.map(o => mins(o.created_at)));
+  el.hidden = false;
+  el.innerHTML = `<span style="font-size:28px">⚠️</span><div>${late.length === 1 ? 'Zamówienie #' + late[0].number + ' czeka' : late.length + ' zamówienia czekają'} ${oldest} min!<small>Dotknij, żeby przejść do nowych i przyjąć. Po 4 min wyślemy SMS do lokalu.</small></div>`;
+  if (Date.now() - alT > 12000) { alT = Date.now(); siren(); }
+}, 2000);
+$('#alarm').onclick = () => { VIEW = 'new'; render(); scrollTo({ top: 0 }); };
+$('#startCard').onclick = () => $('#cardBtn').click();
 
 /* ===== Zegar ===== */
 setInterval(() => { $('#clock').textContent = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }); document.querySelectorAll('[data-t]').forEach(el => el.textContent = mins(el.dataset.t) + ' min'); }, 1000);
