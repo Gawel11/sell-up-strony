@@ -557,7 +557,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
         <li data-go="meat"><b>1</b><span id="st1">Kotlet</span></li>
         <li data-go="extras"><b>2</b><span>Dodatki</span></li>
         <li data-go="sauce"><b>3</b><span>Sos</span></li>
-        <li data-go="close"><b>4</b><span>Zamknij</span></li>
+        <li data-go="close"><b>4</b><span>Gotowe</span></li>
       </ol>
       <div class="sgrid">
         <div class="spanel">
@@ -585,7 +585,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
           <section class="blk zone" data-z="sauce" data-now="Teraz sos">
             <h3 class="bh"><b>3</b>Sos<small>w cenie</small></h3>
             <div class="sauces" id="sauces"></div>
-            <button class="nextb" data-next="close" type="button">Dalej: zamknij burgera <svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+            <button class="nextb" data-next="close" type="button">Dalej: zakończ składanie <svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
           </section>
         </div>
         <div class="stagecol">
@@ -602,11 +602,11 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
           </div>
           <div class="bsum zone" data-z="close" data-now="Krok 4">
             <div class="bs1"><div><div class="eyebrow" id="sEyebrow">Twój burger z ognia</div><h3 id="sName">Zacznij od kotleta</h3><p id="sDesc">Bułka brioche na desce.</p></div><div class="pr num" id="sPrice"></div></div>
-            <div class="acts"><button class="close-btn" id="closeBtn">Zamknij burgera</button><button class="more-btn" id="moreBtn">+ Zamknij i składaj kolejnego</button></div>
+            <div class="acts"><button class="close-btn" id="closeBtn">Burger złożony</button><button class="more-btn" id="moreBtn">+ Złożony, składaj kolejnego</button></div>
           </div>
         </div>
       </div>
-      <div class="mobar"><div class="pr num" id="mPrice"></div><button class="more-btn" id="moreBtnM">+ Kolejny</button><button class="close-btn" id="closeBtnM">Zamknij burgera</button></div>
+      <div class="mobar"><div class="pr num" id="mPrice"></div><button class="more-btn" id="moreBtnM">+ Kolejny</button><button class="close-btn" id="closeBtnM">Burger złożony</button></div>
     </div>
   </section>
 
@@ -1353,7 +1353,7 @@ document.querySelectorAll('.nextb').forEach(b => b.onclick = () => goZone(b.data
 function curZone(){ if (!B.p) return 'meat'; if (!Object.keys(B.t).length && !B.sauce) return 'extras'; if (!B.sauce) return 'sauce'; return 'close'; }
 let hintT;
 function hint(h){ const el = $('#shint'); el.innerHTML = h; el.style.opacity = 1; clearTimeout(hintT); hintT = setTimeout(stepHint, 2400); }
-function stepHint(){ const z = curZone(); $('#shint').innerHTML = { meat: `Krok 1 · <b>${M === 'fire' ? 'zdejmij kotlet z rusztu' : 'zdejmij smash z płyty'}</b>`, extras: 'Krok 2 · <b>dodatki z lady</b>', sauce: 'Krok 3 · <b>wybierz sos</b>', close: 'Krok 4 · <b>zamknij burgera</b>' }[z]; }
+function stepHint(){ const z = curZone(); $('#shint').innerHTML = { meat: `Krok 1 · <b>${M === 'fire' ? 'zdejmij kotlet z rusztu' : 'zdejmij smash z płyty'}</b>`, extras: 'Krok 2 · <b>dodatki z lady</b>', sauce: 'Krok 3 · <b>wybierz sos</b>', close: 'Krok 4 · <b>zakończ składanie</b>' }[z]; }
 function renderAll(delta){
   const d = MD(), z = curZone();
   document.querySelectorAll('.station .zone').forEach(el => { el.classList.toggle('now', el.dataset.z === z); });
@@ -1374,7 +1374,7 @@ function renderAll(delta){
   $('#sName').textContent = B.p ? `${B.p === 1 ? 'Single' : B.p === 2 ? 'Double' : 'Triple'} ${M === 'fire' ? 'z ognia' : 'smash'}` : 'Zacznij od kotleta';
   $('#sDesc').textContent = B.p ? describeT(B.t, B.p, B.sauce) : 'Bułka brioche czeka na desce.';
   ['#closeBtn', '#closeBtnM', '#moreBtn', '#moreBtnM'].forEach(q => $(q).classList.toggle('off', !B.p));
-  $('#closeBtn').textContent = B.p ? `Zamknij burgera · ${zl(pr)}` : 'Zamknij burgera';
+  $('#closeBtn').textContent = B.p ? `Burger złożony · ${zl(pr)}` : 'Burger złożony';
   if (!busy) stepHint();
 }
 function resetStation(dropBun){
