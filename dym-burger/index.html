@@ -834,10 +834,10 @@ const L = { /* warstwy z boku (Higgsfield 15.11): sq 1 = bez spłaszczania; smas
   pickles:    { img:'n_pickles',     w:.86, sq:1, sink:.30, top:.45 },
   jalapeno:   { img:'n_jalapeno',    w:.86, sq:1, sink:.30, top:.45 },
   egg:        { img:'n_egg',         w:.88, sq:1, sink:.30, top:.42 },
-  sauce_dym:     { img:'n_sauce_dym',     w:.90, sq:1, sink:.62, top:.70 },
-  sauce_bbq:     { img:'n_sauce_bbq',     w:.90, sq:1, sink:.62, top:.70 },
-  sauce_ostry:   { img:'n_sauce_ostry',   w:.90, sq:1, sink:.62, top:.70 },
-  sauce_czosnek: { img:'n_sauce_czosnek', w:.90, sq:1, sink:.62, top:.70 },
+  sauce_dym:     { img:'n_sauce_dym',     w:.84, sq:1, sink:.55, top:.72 },
+  sauce_bbq:     { img:'n_sauce_bbq',     w:.84, sq:1, sink:.55, top:.72 },
+  sauce_ostry:   { img:'n_sauce_ostry',   w:.84, sq:1, sink:.55, top:.72 },
+  sauce_czosnek: { img:'n_sauce_czosnek', w:.84, sq:1, sink:.55, top:.72 },
 };
 /* Dodatki do wyboru w kreatorze (kolejność na liście) i ich miejsce w burgerze */
 const TOPS = [
@@ -929,10 +929,11 @@ function sequence(st, lid = true){
   }
   /* nadmiarowy ser (więcej plastrów niż kotletów) kładziemy na górnym kotlecie */
   for (let i = st.p + 1; i <= (st.t.cheddar || 0); i++) out.push({ k:'cheddar' + i, id:'cheddar' });
+  /* sos na serze, pod resztą dodatków – widać i sos, i warzywa */
+  if (st.sauce && st.p !== 0) out.push({ k:'sauce_' + st.sauce, id:'sauce_' + st.sauce });
   for (let i = 1; i <= (st.t.bacon || 0); i++) out.push({ k:'bacon' + i, id:'bacon' });
   if (st.t.egg) out.push({ k:'egg1', id:'egg' });
   for (const id of ['onion', 'pickles', 'jalapeno']) for (let i = 1; i <= (st.t[id] || 0); i++) out.push({ k:id + i, id });
-  if (st.sauce && st.p !== 0) out.push({ k:'sauce_' + st.sauce, id:'sauce_' + st.sauce });
   if (lid) out.push({ k:'bun_t', id:'bun_t' });
   return out;
 }
