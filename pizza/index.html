@@ -822,7 +822,7 @@ window.SELLUP = {
 };
 </script>
 <script src="../lib/sellup-order.js?v=9"></script>
-<script src="../lib/sellup-account.js?v=2"></script>
+<script src="../lib/sellup-account.js?v=5"></script>
 <script>
 /* ===== Szablon pizzerii: dane lokalu z bazy (nazwa, menu, ceny, składniki) ===== */
 const SLUG = new URLSearchParams(location.search).get('l') || 'forno450';
@@ -1338,7 +1338,7 @@ function info(title, text){ $('#iTitle').textContent = title; $('#iText').textCo
 document.querySelectorAll('[data-nav]').forEach(b => b.onclick = () => {
   const n = b.dataset.nav;
   if (n === 'cart') return openCart();
-  if (n === 'orders') return info('Zamówienia', 'Tu klient zobaczy status zamówienia na żywo (przyjęte, w piecu, w drodze) i historię. Dołożymy to razem z płatnościami.');
+  if (n === 'orders') { if (window.SellUpAccount) { if (SellUpAccount.logged()) SellUpAccount.ordersSheet({ slug: SLUG }); else SellUpAccount.login({ venue: 'Pizza', text: 'Zaloguj się numerem telefonu, żeby widzieć swoje zamówienia i ich status.' }).then(() => SellUpAccount.ordersSheet({ slug: SLUG })).catch(() => {}); } return; }
   if (n === 'account') return openLoy();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });

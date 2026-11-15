@@ -470,7 +470,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
 .loading b{color:var(--accent);font-weight:400}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-<script src="../lib/sellup-account.js?v=2"></script>
+<script src="../lib/sellup-account.js?v=5"></script>
 </head>
 <body>
 <div class="loading" id="loading"><b>Burger</b></div>
@@ -1451,7 +1451,7 @@ function info(title, text){ $('#iTitle').textContent = title; $('#iText').textCo
 document.querySelectorAll('[data-nav]').forEach(b => b.onclick = () => {
   const n = b.dataset.nav;
   if (n === 'cart') return openCart();
-  if (n === 'orders') return info('Zamówienia', 'Tu klient zobaczy status zamówienia na żywo (przyjęte, na ruszcie, w drodze) i historię. Dołożymy to razem z płatnościami.');
+  if (n === 'orders') { if (window.SellUpAccount) { if (SellUpAccount.logged()) SellUpAccount.ordersSheet({ slug: SLUG }); else SellUpAccount.login({ venue: 'Burger', text: 'Zaloguj się numerem telefonu, żeby widzieć swoje zamówienia i ich status.' }).then(() => SellUpAccount.ordersSheet({ slug: SLUG })).catch(() => {}); } return; }
   if (n === 'account') return openLoy();
   scrollTo({ top:0, behavior:'smooth' });
 });
