@@ -368,7 +368,7 @@ footer .pasiak{position:absolute;left:0;right:0;top:0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
 .odf{display:grid;gap:8px;margin:6px 0 10px}.odf input{font:inherit;font-size:16px;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(42,33,24,.18);background:#fffaf2;color:inherit}.odf input:focus{outline:none;border-color:#c0392b}
 </style>
-<script src="../lib/sellup-account.js?v=10"></script>
+<script src="../lib/sellup-account.js?v=11"></script>
 </head>
 <body class="locked">
 <div class="grain"></div>
@@ -754,7 +754,7 @@ function openCart(){
     ${err?`<p style="color:#c0392b;font-weight:700;font-size:14px;margin:8px 0 0">${escH(err)}</p>`:''}
     <div class="sheet-act"><button class="btn btn-primary" id="pay" style="width:100%" ${busy?'disabled':''}>${busy?'Wysyłam…':'Zamawiam · '+zl(sum+del)}</button></div>
     <p style="text-align:center;font-size:12px;color:rgba(42,33,24,.5);margin-top:10px">Płacisz przy odbiorze. Zamówienie trafia od razu do kuchni.</p>`);
-    if(window.SellUpAccount&&SellUpAccount.demoBanner)SellUpAccount.demoBanner('obiady-domowe',[...sheet.querySelectorAll('.lbl2')].pop());
+    if(window.SellUpAccount&&SellUpAccount.demoBanner)SellUpAccount.demoBanner('obiady-domowe',sheet.querySelector('#fP'));
     sheet.oninput=e=>{if(e.target.id==='fN')fn=e.target.value;if(e.target.id==='fP')fp=e.target.value;if(e.target.id==='fA')fa=e.target.value;};
     sheet.onclick=e=>{const t=e.target;
       if(t.dataset.m!==undefined){const c=cart[+t.dataset.m];c.q--;if(c.q<=0)cart.splice(+t.dataset.m,1);updCart();if(!cart.length){closeSheet();return;}draw();}

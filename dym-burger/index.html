@@ -489,7 +489,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
 .loading b{color:var(--accent);font-weight:400}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-<script src="../lib/sellup-account.js?v=10"></script>
+<script src="../lib/sellup-account.js?v=11"></script>
 </head>
 <body>
 <div class="loading" id="loading"><b>Burger</b></div>
@@ -1456,7 +1456,7 @@ function openForm(){
   $('#fAddrWrap').hidden = mode !== 'delivery';
   $('#fTotal').textContent = zl(t.total); $('#fTotalBtn').textContent = zl(t.total); $('#fErr').textContent = '';
   try { const d = JSON.parse(localStorage.getItem('dym-dane') || '{}'); if (d.n && !$('#fName').value) $('#fName').value = d.n; if (d.p && !$('#fPhone').value) $('#fPhone').value = d.p; if (d.a && !$('#fAddr').value) $('#fAddr').value = d.a; } catch(e) {}
-  if (window.SellUpAccount && SellUpAccount.demoBanner) SellUpAccount.demoBanner(SLUG, $('#fName').closest('.fld'));
+  if (window.SellUpAccount && SellUpAccount.demoBanner) SellUpAccount.demoBanner(SLUG, $('#fPhone').closest('.fld'));
   openSheet($('#formSheet')); setTimeout(() => (!$('#fName').value ? $('#fName') : $('#fPhone')).focus(), 350);
 }
 document.querySelectorAll('[data-pay]').forEach(b => b.onclick = () => { PAY = b.dataset.pay; document.querySelectorAll('[data-pay]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
