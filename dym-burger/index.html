@@ -231,6 +231,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
 .nextb svg{animation:arrn 1.4s ease-in-out infinite}
 .zone.pulse{animation:zpulse .9s ease}@keyframes zpulse{30%{transform:scale(1.015);box-shadow:0 0 0 3px var(--accent),0 0 50px var(--accent-soft)}}
 .blk.ok .nextb{display:flex}.blk.ok.now .nextb,.blk.ok .nextb.hot{background:var(--accent);color:var(--accent-fg)}
+.pcount[hidden]{display:none!important}
 .howto{font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13.5px;color:#e4d9cb;margin:0}
 .howto b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-fg);font-size:12px;margin:0 4px 0 10px}
 .howto b:first-child{margin-left:0}
@@ -573,7 +574,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:10px 20px;border-top:1p
                 <p id="meatTxt"></p>
                 <button class="grab-btn" id="grab"><img src="assets/n_patty_fire.webp" alt="" id="grabImg"><span id="grabTx">Zdejmij kotlet</span><svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
                 <button class="nextb" data-next="extras" type="button">Dalej: dodatki <svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
-                <div class="pcount"><span>Kotlety w burgerze<small id="pPriceTx"></small></span><button id="pMinusS" aria-label="Mniej kotletów">−</button><b class="num" id="pN">0</b><button id="pPlusS" aria-label="Więcej kotletów">+</button></div>
+                <div class="pcount" hidden><span>Kotlety w burgerze<small id="pPriceTx"></small></span><button id="pMinusS" aria-label="Mniej kotletów">−</button><b class="num" id="pN">0</b><button id="pPlusS" aria-label="Więcej kotletów">+</button></div>
               </div>
             </div>
           </section>
@@ -1365,7 +1366,7 @@ function renderAll(delta){
     $('#st1').textContent = M === 'fire' ? 'Kotlet' : 'Smash'; }
   $('#pN').textContent = B.p + '/' + d.maxP;
   $('#pMinusS').disabled = !B.p; $('#pPlusS').disabled = B.p >= d.maxP; $('#grab').disabled = B.p >= d.maxP;
-  $('#grabTx').textContent = B.p ? (B.p >= d.maxP ? 'Komplet kotletów' : `Dołóż ${B.p === 1 ? 'drugi' : 'trzeci'} kotlet`) : (M === 'fire' ? 'Zdejmij kotlet z rusztu' : 'Zdejmij smash z płyty');
+  $('#grabTx').textContent = B.p ? (B.p >= d.maxP ? 'Komplet kotletów' : `Dołóż ${B.p === 1 ? 'drugi' : 'trzeci'} kotlet · +${zl(d.extraP)}`) : (M === 'fire' ? 'Zdejmij kotlet z rusztu' : 'Zdejmij smash z płyty');
   $('#pPriceTx').textContent = `pierwszy w cenie · kolejny +${zl(d.extraP)}`;
   renderGN(); renderSauces();
   const pr = price();
