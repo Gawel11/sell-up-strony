@@ -938,14 +938,16 @@ function sequence(st, lid = true){
 }
 /* Zwraca pozycje w px dla sceny o szerokości S. lift = o ile unieść górną bułkę (otwarta pokrywka). */
 function layout(seq, S, lift = 0, base = S * .06){
-  let surface = base, z = 1;
+  let surface = base, z = 1, alt = 0;
   const pos = seq.map(e => {
     const p = L[e.id], w = p.w * S, h = w * (AR[p.img] || .6) * p.sq;
     let bottom = e.id === 'bun_b' ? surface : surface - p.sink * h;
     if (e.id === 'bun_t') bottom += lift;
     if (e.id !== 'bun_t') surface = Math.max(surface, bottom + h * (1 - p.top));
     /* drobne przesunięcia, żeby warstwy nie były idealnie równe */
-    const jx = e.id.startsWith('bun') ? 0 : ((hash(e.k) % 7) - 3) * S * .004;
+    /* warstwy na przemian trochę w prawo i w lewo, żeby wystawały i było je widać */
+    const ni = e.id.startsWith('bun') ? 0 : ++alt;
+    const jx = e.id.startsWith('bun') ? 0 : (ni % 2 ? 1 : -1) * S * (.022 + (hash(e.k) % 5) * .003) * (e.id.startsWith('patty') ? .45 : 1);
     return { ...e, w, h, bottom, z: z++, jx, sq: p.sq };
   });
   const top = pos[pos.length - 1]; return { pos, height: top.bottom + top.h, surface };
